@@ -4,15 +4,15 @@ import { flattenServices, type Service } from '@/lib/services/data';
 import { ServiceCard } from './service-card';
 
 /**
- * Mosaic grid positions (desktop, 4 columns × 3 rows). The first slot is the title tile.
- * Extra services beyond the layout fall back to single cells.
+ * Mosaic grid positions (desktop, 4 columns × 3 rows). The intro tile sits top-left (row 1,
+ * columns 1–2). Extra services beyond the layout fall back to single cells.
  */
 const LAYOUT = [
-  'lg:col-span-2 lg:row-span-2', // Funerals — large
-  'lg:row-span-2', // Quran Academy — tall
+  'lg:col-span-2 lg:row-span-2 lg:col-start-1 lg:row-start-2', // Funerals — large, under the intro
+  'lg:col-start-3 lg:row-span-2 lg:row-start-1', // Quran Academy — tall
   'lg:col-start-4 lg:row-start-1', // Sunday lessons
   'lg:col-start-4 lg:row-start-2', // Sisters' lessons
-  'lg:col-span-2', // Nikah — wide (row 3, beside the intro)
+  'lg:col-span-2 lg:col-start-3 lg:row-start-3', // Nikah — wide
 ];
 
 /** Home-page mosaic of the masjid's services (same list as the navbar "Services" menu). */
@@ -33,11 +33,8 @@ export function ServicesSection({ items = flattenServices() }: { items?: Service
     <section aria-labelledby="services-title" className="bg-primary-950 text-white">
       <Container className="py-20 sm:py-28">
         <div className="grid auto-rows-[18rem] gap-4 sm:grid-cols-2 lg:auto-rows-[17rem] lg:grid-cols-4">
-          {sorted.map((service, i) => (
-            <ServiceCard key={service.href} service={service} className={LAYOUT[i] ?? ''} />
-          ))}
-          {/* Intro tile (row 3, right half on desktop). */}
-          <Reveal className="flex flex-col justify-end sm:col-span-2 lg:col-start-3 lg:row-start-3 lg:pl-8">
+          {/* Intro tile (top-left on desktop, first on mobile). */}
+          <Reveal className="flex flex-col justify-start sm:col-span-2 lg:col-start-1 lg:row-start-1 lg:pr-8">
             <p className="font-label text-xs font-bold tracking-[0.3em] text-secondary-300 uppercase sm:text-sm">
               How we can help
             </p>
@@ -52,6 +49,9 @@ export function ServicesSection({ items = flattenServices() }: { items?: Service
               family.
             </p>
           </Reveal>
+          {sorted.map((service, i) => (
+            <ServiceCard key={service.href} service={service} className={LAYOUT[i] ?? ''} />
+          ))}
         </div>
       </Container>
     </section>
