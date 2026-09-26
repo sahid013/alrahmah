@@ -1,25 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import type { ComponentType, SVGProps } from 'react';
-import {
-  ArrowRightIcon,
-  CalendarIcon,
-  MoonIcon,
-  PeopleIcon,
-  QuranIcon,
-  RingsIcon,
-} from '@/components/icons';
-import type { Service, ServiceIcon } from '@/lib/services/data';
+import { ArrowRightIcon } from '@/components/icons';
+import type { Service } from '@/lib/services/data';
 import { cn } from '@/lib/utils/cn';
 
-const icons: Record<ServiceIcon, ComponentType<SVGProps<SVGSVGElement>>> = {
-  funeral: MoonIcon,
-  nikah: RingsIcon,
-  quran: QuranIcon,
-  weekly: CalendarIcon,
-  sisters: PeopleIcon,
-  education: QuranIcon,
-};
+const FALLBACK_IMAGE = { src: '/images/hero/al-rahmah-centre.webp', alt: 'Al-Rahmah Centre' };
 
 /**
  * Service tile. At rest: tinted media, inset outline and the service name.
@@ -28,26 +13,19 @@ const icons: Record<ServiceIcon, ComponentType<SVGProps<SVGSVGElement>>> = {
  * way over a dark panel. Touch devices show the revealed state.
  */
 export function ServiceCard({ service, className }: { service: Service; className?: string }) {
-  const Icon = icons[service.icon];
+  const image = service.image ?? FALLBACK_IMAGE;
 
   return (
     <Link href={service.href} className={cn('service-card group block', className)}>
-      {/* Media: photo when supplied, otherwise a brand panel with a line icon. */}
+      {/* Media: full-bleed photo filling the whole tile. */}
       <div className="service-card__media absolute inset-0 -z-20">
-        {service.image ? (
-          <Image
-            src={service.image.src}
-            alt={service.image.alt}
-            fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-primary-700">
-            <div aria-hidden className="bg-islamic-pattern absolute inset-0 opacity-[0.07]" />
-            <Icon className="relative size-28 text-secondary-300/70 sm:size-32" />
-          </div>
-        )}
+        <Image
+          src={image.src}
+          alt={image.alt}
+          fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="object-cover"
+        />
       </div>
 
       <span aria-hidden className="service-card__tint" />

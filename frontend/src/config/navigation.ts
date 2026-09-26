@@ -1,5 +1,6 @@
 import { EVENTS_PAGE, getEventHref, type EventItem } from '@/lib/events';
-import { services, type Service } from '@/lib/services/data';
+import { impactReport } from '@/lib/impact/data';
+import { flattenServices, services, type Service } from '@/lib/services/data';
 import { siteConfig } from './site';
 
 /** Site navigation. Items with `children` render as a dropdown (desktop) / expandable group (mobile). */
@@ -61,6 +62,35 @@ export const buildMainNav = (latestEvents: EventItem[]): NavItem[] => [
     href: siteConfig.socials[0].href,
     panel: 'socials',
     children: siteConfig.socials.map((social) => ({ label: social.name, href: social.href })),
+  },
+];
+
+/** Footer link columns. Services come from the same list as the navbar menu. */
+export const footerNav: { title: string; links: NavLink[] }[] = [
+  {
+    title: 'About',
+    links: [
+      { label: 'About Us', href: '/about' },
+      { label: 'Vision & Mission', href: '/vision-mission' },
+      { label: 'Meet The Team', href: '/team' },
+      { label: 'Impact Report', href: `/impact/${impactReport.year}` },
+      { label: 'Contact Us', href: '/contact' },
+    ],
+  },
+  {
+    title: 'Services',
+    links: [
+      ...flattenServices().map((service) => ({ label: service.title, href: service.href })),
+      { label: 'All Services', href: '/services' },
+    ],
+  },
+  {
+    title: 'Get Involved',
+    links: [
+      { label: 'Events', href: EVENTS_PAGE },
+      { label: 'Donate', href: siteConfig.links.donate },
+      { label: 'WhatsApp Channel', href: siteConfig.links.whatsappChannel },
+    ],
   },
 ];
 
