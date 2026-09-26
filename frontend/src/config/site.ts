@@ -29,6 +29,15 @@ export const siteConfig = {
     method: 'MoonsightingCommittee',
     madhab: 'hanafi',
   },
+  /**
+   * Contact details shown in the footer. Optional fields render only when set.
+   * TODO: add the masjid's full street address, phone number and email.
+   */
+  contact: {
+    addressLines: ['Leeds', 'United Kingdom'] as readonly string[],
+    phone: undefined as string | undefined,
+    email: undefined as string | undefined,
+  },
   links: {
     donate: '/donate',
     // TODO: replace with the real WhatsApp channel invite link.

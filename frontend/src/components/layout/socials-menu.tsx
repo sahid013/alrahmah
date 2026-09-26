@@ -9,7 +9,7 @@ import {
 import { siteConfig, type SocialLink } from '@/config/site';
 import { cn } from '@/lib/utils/cn';
 
-const icons: Record<SocialLink['platform'], ComponentType<SVGProps<SVGSVGElement>>> = {
+export const socialIcons: Record<SocialLink['platform'], ComponentType<SVGProps<SVGSVGElement>>> = {
   whatsapp: WhatsAppIcon,
   instagram: InstagramIcon,
   facebook: FacebookIcon,
@@ -35,7 +35,7 @@ export function SocialsMenu({ id, onNavigate }: { id: string; onNavigate: () => 
       </p>
       <ul className="grid grid-cols-6">
         {socials.map((social, i) => {
-          const Icon = icons[social.platform];
+          const Icon = socialIcons[social.platform];
           const inFirstRow = i < firstRow;
           // First row: equal thirds; second row: remaining tiles share the width.
           const span = inFirstRow
