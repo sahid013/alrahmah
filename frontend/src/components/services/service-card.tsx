@@ -7,10 +7,10 @@ import { cn } from '@/lib/utils/cn';
 const FALLBACK_IMAGE = { src: '/images/hero/al-rahmah-centre.webp', alt: 'Al-Rahmah Centre' };
 
 /**
- * Service tile. At rest: tinted media, inset outline and the service name.
- * On hover/focus (see `.service-card` in globals.css): the tint clears, the outline rotates and
- * fades out, the name lifts and fades out, and the title + description rotate in the opposite
- * way over a dark panel. Touch devices show the revealed state.
+ * Service tile. At rest: tinted photo, subtle inset outline and the service name.
+ * On hover/focus (see `.service-card` in globals.css): the outline rotates and fades out, the
+ * name lifts and fades out, and the title + description rotate in over the same tint (no extra
+ * overlay). Touch devices show the revealed state.
  */
 export function ServiceCard({ service, className }: { service: Service; className?: string }) {
   const image = service.image ?? FALLBACK_IMAGE;
@@ -38,7 +38,6 @@ export function ServiceCard({ service, className }: { service: Service; classNam
         {service.title}
       </span>
 
-      <span aria-hidden className="service-card__shade" />
       <span className="service-card__detail">
         <span className="block font-heading text-title-xl leading-tight tracking-heading text-white uppercase">
           {service.title}
