@@ -1,0 +1,543 @@
+@import 'tailwindcss';
+
+/*
+ * Al Rahmah design system — the single source of truth for colours and fonts.
+ * Use these tokens via Tailwind classes (e.g. `bg-primary-500`, `text-neutral-500`,
+ * `font-heading`). Never hardcode hex values or font names in components.
+ * Documented in CODING_GUIDELINES.md §9.
+ */
+
+@theme {
+  /* Only the brand palette below is available — Tailwind's default colours are disabled. */
+  --color-*: initial;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Primary — "Rahmah Indigo" #363287. Brand colour: headings, primary buttons, header. */
+  --color-primary-50: #f3f3f8;
+  --color-primary-100: #e3e2ee;
+  --color-primary-200: #c3c2db;
+  --color-primary-300: #9a98c3;
+  --color-primary-400: #6865a5;
+  --color-primary-500: #363287;
+  --color-primary-600: #2e2a73;
+  --color-primary-700: #26235e;
+  --color-primary-800: #1e1c4a;
+  --color-primary-900: #161436;
+  --color-primary-950: #0e0c22;
+
+  /* Secondary — "Mercy Sky" #25A6DE. Accent: highlights, borders, backgrounds, icons.
+     Not readable as text on white (2.8:1) — use secondary-700 or darker for text/links. */
+  --color-secondary-50: #f2fafd;
+  --color-secondary-100: #e0f3fa;
+  --color-secondary-200: #bee4f5;
+  --color-secondary-300: #92d2ee;
+  --color-secondary-400: #5cbce6;
+  --color-secondary-500: #25a6de;
+  --color-secondary-600: #1f8dbd;
+  --color-secondary-700: #1a749b;
+  --color-secondary-800: #145b7a;
+  --color-secondary-900: #0f4259;
+  --color-secondary-950: #092a38;
+
+  /* Neutral — "Charcoal" #515153. Body text, borders, muted backgrounds. */
+  --color-neutral-50: #f5f5f5;
+  --color-neutral-100: #e7e7e7;
+  --color-neutral-200: #cbcbcb;
+  --color-neutral-300: #a8a8a9;
+  --color-neutral-400: #7c7c7e;
+  --color-neutral-500: #515153;
+  --color-neutral-600: #454547;
+  --color-neutral-700: #39393a;
+  --color-neutral-800: #2d2d2e;
+  --color-neutral-900: #202021;
+  --color-neutral-950: #141415;
+
+  /* Feedback — forms, payment and donation status messages. */
+  --color-success-50: #f0fdf4;
+  --color-success-700: #15803d;
+  --color-warning-50: #fffbeb;
+  --color-warning-700: #b45309;
+  --color-error-50: #fef2f2;
+  --color-error-700: #b91c1c;
+
+  /* Motion — one smooth curve for everything, so movement and fades stay in step. */
+  --ease-smooth: cubic-bezier(0.45, 0, 0.2, 1);
+
+  /* Square corners everywhere: all radius utilities are disabled (rounded-lg etc. don't exist). */
+  --radius-*: initial;
+
+  /* Fonts — Forum for titles, Glacial Indifference for descriptions and labels, Poppins for numbers. */
+  /* Descriptions and body copy: Glacial Indifference. */
+  --font-body: var(--font-glacial), ui-sans-serif, system-ui, sans-serif;
+  /* Buttons, nav and small uppercase labels: Glacial Indifference. */
+  --font-label: var(--font-glacial), ui-sans-serif, system-ui, sans-serif;
+  /* Titles: Forum (single regular weight), all caps. */
+  --font-heading: var(--font-forum), Georgia, 'Times New Roman', serif;
+
+  /* Title size scale: every step is 1.35x the matching body step (text-title-4xl = 1.35 x text-4xl).
+     Titles always use these; tune the whole scale here. */
+  --text-title-sm: 1.1813rem;
+  --text-title-base: 1.35rem;
+  --text-title-lg: 1.5188rem;
+  --text-title-xl: 1.6875rem;
+  --text-title-2xl: 2.025rem;
+  --text-title-3xl: 2.5312rem;
+  --text-title-4xl: 3.0375rem;
+  --text-title-5xl: 4.05rem;
+  --text-title-6xl: 5.0625rem;
+  /* Numbers & interface labels (countdown, times, dates, menu links): Poppins, tabular figures. */
+  --font-ui: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  /* Letter-spacing for all-caps titles. */
+  --tracking-heading: 0.02em;
+  /* Sacramento — script accent lines only (never body text or headings). */
+  --font-script: var(--font-sacramento), cursive;
+  /* PT Sans Narrow — campaign lockups and compact display labels only. */
+  --font-condensed: var(--font-pt-sans-narrow), var(--font-label);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white font-body text-neutral-500;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-normal tracking-heading text-primary-500 uppercase;
+  }
+
+  a {
+    @apply text-secondary-700;
+  }
+
+  ::selection {
+    @apply bg-secondary-200 text-primary-900;
+  }
+}
+
+/* ---------- Hero slideshow ---------- */
+@layer components {
+  /* One timing for every entrance so fade and movement stay synchronised. */
+  :root {
+    /* Shared entrance motion (hero slides and scroll reveals). */
+    --motion-in: 1.1s;
+    --motion-out: 0.3s;
+    --motion-step: 100ms;
+    --motion-shift: 120px;
+    --motion-shift-visual: 160px;
+  }
+
+  /* Outgoing slide fades out completely before the next one begins (no overlap). */
+  .hero-slide {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--motion-out) var(--ease-smooth),
+      visibility 0s linear var(--motion-out);
+  }
+  .hero-slide[data-active='true'] {
+    opacity: 1;
+    visibility: visible;
+    transition: none;
+  }
+
+  /* Elements enter in a fixed rhythm: --i is the element's position in the sequence.
+     After the first slide change, entrances wait for the outgoing fade to finish. */
+  .hero-slide[data-active='true'] :is(.hero-from-left, .hero-from-right) {
+    animation-duration: var(--motion-in);
+    animation-timing-function: var(--ease-smooth);
+    animation-fill-mode: both;
+    animation-delay: calc(var(--i, 0) * var(--motion-step));
+    will-change: transform, opacity;
+  }
+  [data-advanced='true'] .hero-slide[data-active='true'] :is(.hero-from-left, .hero-from-right) {
+    animation-delay: calc(var(--motion-out) + var(--i, 0) * var(--motion-step));
+  }
+  .hero-slide[data-active='true'] .hero-from-left {
+    animation-name: hero-from-left;
+  }
+  .hero-slide[data-active='true'] .hero-from-right {
+    animation-name: hero-from-right;
+  }
+
+  /* Slow settle on the image while its slide is showing. */
+  .hero-slide .hero-drift {
+    transform: scale(1.06);
+  }
+  /* 3s so the zoom-out completes well within a slide's 4.5s on screen. */
+  .hero-slide[data-active='true'] .hero-drift {
+    transform: scale(1);
+    transition: transform 3000ms var(--ease-smooth);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-slide,
+    .hero-slide[data-active='true'] {
+      transition: none;
+    }
+    .hero-slide[data-active='true'] :is(.hero-from-left, .hero-from-right) {
+      animation: none;
+    }
+    .hero-slide .hero-drift,
+    .hero-slide[data-active='true'] .hero-drift {
+      transform: none;
+      transition: none;
+    }
+  }
+}
+
+@keyframes hero-from-left {
+  from {
+    opacity: 0;
+    transform: translate3d(calc(var(--motion-shift) * -1), 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes hero-from-right {
+  from {
+    opacity: 0;
+    transform: translate3d(var(--motion-shift-visual), 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ---------- Scroll reveal (Reveal component) ---------- */
+@layer components {
+  .reveal[data-reveal='armed'] {
+    opacity: 0;
+    transform: translate3d(calc(var(--motion-shift) * -1), 0, 0);
+  }
+  .reveal[data-reveal='in'] {
+    animation: hero-from-left var(--motion-in) var(--ease-smooth)
+      calc(var(--i, 0) * var(--motion-step)) both;
+  }
+}
+
+/* ---------- Service cards (ServiceCard) ---------- */
+@layer components {
+  .service-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 18rem;
+  }
+  .service-card__tint {
+    position: absolute;
+    inset: 0;
+    z-index: -10;
+    background: color-mix(in oklab, var(--color-primary-950) 72%, transparent);
+    transition: opacity 0.7s var(--ease-smooth);
+  }
+  .service-card__frame {
+    position: absolute;
+    inset: 1rem;
+    border: 1px solid color-mix(in oklab, var(--color-white) 22%, transparent);
+    transition:
+      transform 0.8s var(--ease-smooth),
+      opacity 0.6s var(--ease-smooth);
+  }
+  .service-card__name {
+    position: absolute;
+    left: 2rem;
+    right: 2rem;
+    bottom: 2rem;
+    line-height: 1.1;
+    transition:
+      transform 0.6s var(--ease-smooth),
+      opacity 0.5s var(--ease-smooth);
+  }
+  /* Dark panel that sits behind the revealed title + description. */
+  .service-card__shade {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 65%;
+    background: color-mix(in oklab, var(--color-primary-950) 86%, transparent);
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-smooth);
+  }
+  .service-card__detail {
+    position: absolute;
+    left: 2rem;
+    right: 2rem;
+    bottom: 2rem;
+    opacity: 0;
+    transform: rotate(-4deg) translate3d(0, 16px, 0);
+    transform-origin: left bottom;
+    transition:
+      transform 0.8s var(--ease-smooth) 0.1s,
+      opacity 0.6s var(--ease-smooth) 0.1s;
+  }
+
+  /* Revealed state: hover/keyboard focus on pointer devices… */
+  @media (hover: hover) {
+    .service-card:is(:hover, :focus-visible) .service-card__tint {
+      opacity: 0;
+    }
+    .service-card:is(:hover, :focus-visible) .service-card__frame {
+      transform: rotate(4deg) scale(1.06);
+      opacity: 0;
+    }
+    .service-card:is(:hover, :focus-visible) .service-card__name {
+      transform: translate3d(0, -24px, 0);
+      opacity: 0;
+    }
+    .service-card:is(:hover, :focus-visible) .service-card__shade,
+    .service-card:is(:hover, :focus-visible) .service-card__detail {
+      opacity: 1;
+    }
+    .service-card:is(:hover, :focus-visible) .service-card__detail {
+      transform: none;
+    }
+  }
+  /* …and always on touch devices (no hover). */
+  @media (hover: none) {
+    .service-card__frame,
+    .service-card__name {
+      display: none;
+    }
+    .service-card__tint {
+      opacity: 0.4;
+    }
+    .service-card__shade,
+    .service-card__detail {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .service-card:focus-visible {
+    outline: 2px solid var(--color-secondary-400);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .service-card * {
+      transition: none !important;
+    }
+    .service-card:is(:hover, :focus-visible) .service-card__frame,
+    .service-card:is(:hover, :focus-visible) .service-card__name,
+    .service-card__detail {
+      transform: none;
+    }
+  }
+}
+
+/* ---------- Staggered drop-in (StaggerGroup) ---------- */
+@layer components {
+  :root {
+    --stagger-step: 140ms;
+  }
+  [data-stagger='armed'] .stagger-item {
+    opacity: 0;
+    transform: translate3d(0, -28px, 0);
+  }
+  [data-stagger='in'] .stagger-item {
+    animation: drop-in 0.9s var(--ease-smooth) calc(var(--i, 0) * var(--stagger-step)) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-stagger] .stagger-item {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -28px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ---------- Micro-interactions ---------- */
+@layer components {
+  /* Flat colour fills the button from the left on hover and leaves to the right.
+     Each variant sets --btn-fill. */
+  .btn-fill {
+    isolation: isolate;
+  }
+  .btn-fill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--btn-fill);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s var(--ease-smooth);
+  }
+  .btn-fill:hover::before {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* Dropdowns and menus: opacity-only fade (no movement). */
+  .animate-fade:not([hidden]) {
+    animation: fade-in 0.4s var(--ease-smooth) both;
+  }
+
+  /* Popovers fade down into place. */
+  .animate-pop:not([hidden]) {
+    animation: pop-in 0.35s var(--ease-smooth) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-fill::before {
+      transition: none;
+    }
+    .animate-pop:not([hidden]),
+    .animate-fade:not([hidden]),
+    .reveal[data-reveal] {
+      animation: none;
+    }
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Subtle eight-point star lattice used on dark brand surfaces. */
+.bg-islamic-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M40 8 49 31 72 40 49 49 40 72 31 49 8 40 31 31Z'/%3E%3Cpath d='M17.4 17.4 40 26.8 62.6 17.4 53.2 40 62.6 62.6 40 53.2 17.4 62.6 26.8 40Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+}
+
+/* ---------- Split-flap digits (FlipNumber) ---------- */
+@layer components {
+  :root {
+    --flap-duration: 0.5s;
+  }
+  /* The leaf falls (ease-in), lands at 76%, bounces back 2.5° and settles. */
+  .flap-leaf {
+    animation: flap-leaf var(--flap-duration) both;
+    will-change: transform;
+  }
+  /* Flat shades that follow the leaf: over the top half first, then the bottom half. */
+  .flap-cast-top {
+    animation: flap-cast-top var(--flap-duration) linear both;
+  }
+  .flap-cast-bottom {
+    animation: flap-cast-bottom var(--flap-duration) linear both;
+  }
+  .flap-shade-front {
+    animation: flap-shade-front var(--flap-duration) linear both;
+  }
+  .flap-shade-back {
+    animation: flap-shade-back var(--flap-duration) linear both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flap-leaf,
+    .flap-cast-top,
+    .flap-cast-bottom,
+    .flap-shade-front,
+    .flap-shade-back {
+      animation: none;
+    }
+  }
+}
+
+@keyframes flap-leaf {
+  0% {
+    transform: rotateX(0deg);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5);
+  }
+  76% {
+    transform: rotateX(-180deg);
+    animation-timing-function: ease-out;
+  }
+  88% {
+    transform: rotateX(-177.5deg);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: rotateX(-180deg);
+  }
+}
+@keyframes flap-cast-top {
+  0% {
+    opacity: 0.62;
+  }
+  45%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes flap-cast-bottom {
+  0%,
+  45% {
+    opacity: 0;
+  }
+  76%,
+  100% {
+    opacity: 0.8;
+  }
+}
+@keyframes flap-shade-front {
+  0% {
+    opacity: 0;
+  }
+  45%,
+  100% {
+    opacity: 0.5;
+  }
+}
+@keyframes flap-shade-back {
+  0%,
+  45% {
+    opacity: 0.55;
+  }
+  68% {
+    opacity: 0.06;
+  }
+  76%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Prayer times dialog ---------- */
+.prayer-dialog::backdrop {
+  background: color-mix(in oklab, var(--color-primary-950) 88%, transparent);
+  animation: fade-in 0.4s var(--ease-smooth) both;
+}
+
+/* Lock page scroll while any modal dialog is open. */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
