@@ -244,10 +244,10 @@ Paths and names live in `siteConfig` (`config/site.ts`). Reference them from the
 - **Events dropdown:** the `Events` nav item has `panel: 'events'`, so on desktop it renders `EventsMenu` (same frame and fade as `MegaMenu`). That's a light-indigo intro column ("Events & Courses" plus a primary **"View all events"** button) and the **latest 4 events**, each with a small poster preview, title, schedule and tertiary "Learn more". Its `children` (the 4 events plus "View all events") are generated from the events data for the mobile menu, so new events appear in the nav automatically.
 - **Services dropdown:** a standard `MegaMenu` (Funerals, Education, Nikah). Nav links can have nested `children`: in the mega menu, a link with children shows a chevron, and hovering or focusing it swaps the right-hand info column for a light-indigo sub-panel of its pages (Education: Quran Academy, Sunday Weekly Lessons, Sisters' Only Lessons). It has `aria-expanded`/`aria-controls`. In the mobile menu nested pages are indented under their parent. `isActiveItem` checks nested children.
 - **Volunteering** (`/volunteering`, plain nav link between Services and Events): a navy page header (pulled under the transparent header; in `headerOverlayRoutes`), then the volunteer text and image in two columns. "Apply to volunteer" opens the external Google Form (`siteConfig.links.volunteerForm`) in a new tab. The pre-footer's volunteer "Learn more" links here.
-- **Placeholder pages:** routes linked before their content exists use `PlaceholderPage` (`components/ui/placeholder-page.tsx`: eyebrow, title, message, optional back link) with `noindex: true` metadata. Currently: Contact, Vision & Mission, Team, and all `/services/*` pages.
+- **Placeholder pages:** routes linked before their content exists use `PlaceholderPage` (`components/ui/placeholder-page.tsx`: eyebrow, title, message, optional back link) with `noindex: true` metadata. Currently: `/services` and `/services/education`.
 - **Al Rahmah Network dropdown:** the `Al Rahmah Network` nav item has `panel: 'socials'`, so it renders `SocialsMenu`. That's a compact white card (448px) anchored under the item (its `li` is `relative`), with a sky caption and a **2-column grid** of square tiles separated by hairlines. Each tile has a monochrome brand icon (indigo, sky on hover) and the platform name (Forum). Links open in a new tab. The platforms, in order, are **Facebook, YouTube, Instagram, WhatsApp**, from `siteConfig.socials` (also used by the footer icons). **The URLs are still placeholders** (platform home pages) and must be replaced with the masjid's real profiles.
 - **Mobile:** items with children become an expandable group inside the mobile menu.
-- Pages linked from the menu that don't have content yet (Contact, Vision & Mission, Team) are placeholders with `noindex: true` and are left out of `sitemap.ts`. When real content is added, remove `noindex` and add them to the sitemap.
+- Pages linked from the menu that don't have content yet are placeholders with `noindex: true` and are left out of `sitemap.ts`. When real content is added, remove `noindex` and add them to the sitemap.
 
 ### Prayer times
 
@@ -266,6 +266,24 @@ Paths and names live in `siteConfig` (`config/site.ts`). Reference them from the
 ### Greeting section (home, second section)
 
 - `components/home/greeting-section.tsx`: a centred section on `bg-primary-50` with an "Assalamu Alaykum" `h2` (Forum, title scale), the "Peace Be Upon You" script line (`font-script`, `secondary-700` for contrast on the light tint, `text-balance`), the visitors paragraph (max width 4xl, `text-pretty`) and a primary "Learn about us →" button to `/about`. Each line reveals in sequence (`Reveal`).
+
+### About page (`/about`)
+
+- Composed from `PageHero` (`components/ui/page-hero.tsx`: reusable dark indigo title band with the faint star pattern, pulled up under the transparent header, so `/about` is in `headerOverlayRoutes`), then `components/about/`: `AboutIntro` (story paragraphs + highlighted closing statement beside the building cut-out on a `primary-50` panel), `BuildingFloors` (Ground/First Floor as `PatternCard`s + note) and `AboutHighlights` (Services, Brotherhood, Masjid History in three hairline-divided columns with a sky bar).
+- `/vision-mission` is `PageHero` + Our Mission / Our Vision as two `PatternCard`s (`components/ui/pattern-card.tsx`: flat `primary-700`, faint star pattern, centred white Forum title and `primary-100` copy — reuse it for any short statement cards).
+- All copy for both pages lives in `lib/about/data.ts`, ready to come from the dashboard later.
+- `/team` is `PageHero` + one `TeamProfile` (`components/team/team-profile.tsx`) per member, split by hairlines: a square `object-cover` photo (no frame or radius) beside an optional sky role label, the name (`h2`), a sky bar and the bio. Photos alternate left/right on desktop and stack above the text on mobile. Each profile has an anchor (`/team#<id>`). Data in `lib/team/data.ts`; photos in `public/images/team/<id>.webp`.
+
+### Contact page (`/contact`)
+
+- `PageHero` ("Contact Us"), then a two-column section: "Get in touch" with `ContactDetails` (email, address, phone in square `primary-50` icon tiles, then square social buttons) and `ContactForm` below a hairline; `ContactMap` (Google Maps embed, no API key) with a "Get directions" link on the right.
+- Details, map and directions URLs come from `siteConfig.contact` (also used by the footer and the Mosque JSON-LD).
+- `ContactDetails` takes optional `email`, `phone`, `showAddress` and `showSocials`, and `ContactForm` takes `to` and `subject`, so service pages reuse them with their own inbox.
+- **Funerals** (`/services/funerals`): `PageHero` (eyebrow "Services") + "Funeral queries" with `ContactDetails` (email `siteConfig.contact.funeralsEmail` + phone only) and `ContactForm` addressed to that inbox, beside the washing-room photo (`public/images/services/funeral-washing-room.webp`).
+- **Nikah** (`/services/nikah`): `PageHero` ("Nikaah") + "Nikah (Marriage) Services" copy, a primary "Book now" button to `siteConfig.links.nikahBooking` (**currently `/contact` — replace with the booking/certificate form link**) and the civil-ceremony note as a sky-bar statement. The right panel is a patterned indigo placeholder with the rings icon until the certificate photo is supplied.
+- **Quran Academy** (`/services/education/quran-academy`): `PageHero` (eyebrow "Education") + intro copy with a facts strip (`<dl>`, `font-ui` values: 100+ students, ages 5–15, Mon–Thu 5pm–7pm) beside the academy crest (`public/images/services/quran-academy-logo.webp`), then a `primary-50` "Register your interest" section (waiting-list note + `ContactForm` with `messageLabel`/`messagePlaceholder` asking for the child's details).
+- **Sunday Weekly Lessons** and **Sisters' only lessons** (`/services/education/sunday-lessons`, `/sisters-lessons`): `PageHero` (eyebrow "Education") + `LessonIntro` (`components/services/lesson-intro.tsx`: sticky text column with sky label, title, intro and tertiary "See all events & courses", beside the lesson poster at its natural ratio). Sunday reuses `public/images/events/names-of-allaah-poster.webp`; Sisters shows a patterned placeholder until its poster is added (pass `poster`).
+- **The form has no backend yet:** sending opens the visitor's email app with the message pre-filled to the masjid's address. When `/api/v1/contact` exists, replace `onSubmit` in `contact-form.tsx` with `api.post`.
 
 ### Impact section (home, after events)
 

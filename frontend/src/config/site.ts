@@ -10,13 +10,32 @@ export const siteConfig = {
   url: env.siteUrl,
   locale: 'en_GB',
   foundingYear: 2018,
-  address: { locality: 'Leeds', country: 'GB' },
+  address: {
+    street: '6 Sheepscar Way',
+    locality: 'Leeds',
+    postalCode: 'LS7 3JB',
+    country: 'GB',
+  },
   logo: { src: '/brand/Logo.svg', width: 600, height: 149 },
   /** Full logo in white + sky, for the transparent header over dark heroes. */
   logoLight: '/brand/logo-light.svg',
   logoMarkLight: '/brand/logo-mark-light.svg',
   /** Pages whose first section is dark: the header starts transparent over it. */
-  headerOverlayRoutes: ['/', '/donate', '/events', '/volunteering'],
+  headerOverlayRoutes: [
+    '/',
+    '/about',
+    '/contact',
+    '/donate',
+    '/events',
+    '/services/education/quran-academy',
+    '/services/education/sisters-lessons',
+    '/services/education/sunday-lessons',
+    '/services/funerals',
+    '/services/nikah',
+    '/team',
+    '/vision-mission',
+    '/volunteering',
+  ],
   /**
    * Prayer-time calculation settings for the masjid's location.
    * TODO: confirm the calculation method and Asr madhab with the masjid, or replace the
@@ -29,14 +48,18 @@ export const siteConfig = {
     method: 'MoonsightingCommittee',
     madhab: 'hanafi',
   },
-  /**
-   * Contact details shown in the footer. Optional fields render only when set.
-   * TODO: add the masjid's full street address, phone number and email.
-   */
+  /** Contact details shown in the footer and on /contact. Optional fields render only when set. */
   contact: {
-    addressLines: ['Leeds', 'United Kingdom'] as readonly string[],
-    phone: undefined as string | undefined,
-    email: undefined as string | undefined,
+    addressLines: ['6 Sheepscar Way', 'Leeds LS7 3JB'] as readonly string[],
+    phone: '07508 044680' as string | undefined,
+    email: 'alrahmahleeds@gmail.com' as string | undefined,
+    /** Funeral (janazah) queries go to a separate inbox. */
+    funeralsEmail: 'info@alrahmah.org.uk',
+    /** Google Maps embed (no API key needed) and directions link for the address. */
+    mapEmbedUrl:
+      'https://maps.google.com/maps?q=6%20Sheepscar%20Way%2C%20Leeds%20LS7%203JB&z=14&output=embed',
+    directionsUrl:
+      'https://www.google.com/maps/dir/?api=1&destination=6%20Sheepscar%20Way%2C%20Leeds%20LS7%203JB',
   },
   links: {
     donate: '/donate',
@@ -45,6 +68,8 @@ export const siteConfig = {
     /** External Google Form for volunteer applications. */
     volunteerForm:
       'https://docs.google.com/forms/d/e/1FAIpQLSf5V-Dtcq81qOWISDskeZNn5htAAoJboX9Zg7-qurTkz-KZvQ/viewform',
+    // TODO: replace with the nikah booking / certificate form link.
+    nikahBooking: '/contact',
   },
   /**
    * Social channels promoted in the "Follow Us" nav dropdown.

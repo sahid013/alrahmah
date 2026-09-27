@@ -98,8 +98,12 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
             url: siteConfig.url,
             logo: `${siteConfig.url}${siteConfig.logo.src}`,
             foundingDate: String(siteConfig.foundingYear),
+            telephone: siteConfig.contact.phone,
+            email: siteConfig.contact.email,
             address: {
               '@type': 'PostalAddress',
+              streetAddress: siteConfig.address.street,
+              postalCode: siteConfig.address.postalCode,
               addressLocality: siteConfig.address.locality,
               addressCountry: siteConfig.address.country,
             },

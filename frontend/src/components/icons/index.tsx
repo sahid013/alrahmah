@@ -189,6 +189,31 @@ export function CloseIcon(props: IconProps) {
   );
 }
 
+export function MailIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M4 7h24v18H4zM4 7l12 10L28 7" />
+    </svg>
+  );
+}
+
+export function MapPinIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M16 29s9-8.2 9-15a9 9 0 0 0-18 0c0 6.8 9 15 9 15Z" />
+      <circle cx="16" cy="14" r="3.5" />
+    </svg>
+  );
+}
+
+export function PhoneIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M11 4H6a2 2 0 0 0-2 2c0 12.2 9.8 22 22 22a2 2 0 0 0 2-2v-5l-6-2-3 3a16 16 0 0 1-7-7l3-3-2-6Z" />
+    </svg>
+  );
+}
+
 /* ---------- Brand marks (monochrome, currentColor) ---------- */
 
 export function InstagramIcon(props: IconProps) {
