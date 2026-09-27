@@ -21,11 +21,15 @@ const labelClass = 'font-label text-sm font-bold tracking-[0.12em] text-primary-
 export function ContactForm({
   to = siteConfig.contact.email,
   subject = 'Website enquiry',
+  messageLabel = 'Message',
+  messagePlaceholder = 'Message',
 }: {
   /** Address the message goes to. */
   to?: string;
   /** Email subject; the sender's name is appended. */
   subject?: string;
+  messageLabel?: string;
+  messagePlaceholder?: string;
 }) {
   const [opened, setOpened] = useState(false);
 
@@ -68,12 +72,12 @@ export function ContactForm({
         </label>
       </div>
       <label className="block">
-        <span className={labelClass}>Message</span>
+        <span className={labelClass}>{messageLabel}</span>
         <textarea
           name="message"
           required
           rows={6}
-          placeholder="Message"
+          placeholder={messagePlaceholder}
           className={cn(fieldClass, 'resize-y')}
         />
       </label>

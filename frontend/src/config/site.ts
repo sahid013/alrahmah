@@ -27,6 +27,7 @@ export const siteConfig = {
     '/contact',
     '/donate',
     '/events',
+    '/services/education/quran-academy',
     '/services/funerals',
     '/services/nikah',
     '/team',
