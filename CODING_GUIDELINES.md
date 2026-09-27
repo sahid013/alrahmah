@@ -243,10 +243,10 @@ Paths and names live in `siteConfig` (`config/site.ts`). Reference them from the
 - Behaviour: opens on mouse hover, or on click / Enter / Space for touch and keyboard. Closes on mouse leave (short delay), Escape (focus returns to the trigger), outside click, or focus leaving. The links column comes first in the DOM, so Tab reaches the links first. The feature column is placed first visually with `lg:order-first`.
 - **Events dropdown:** the `Events` nav item has `panel: 'events'`, so on desktop it renders `EventsMenu` (same frame and fade as `MegaMenu`). That's a light-indigo intro column ("Events & Courses" plus a primary **"View all events"** button) and the **latest 4 events**, each with a small poster preview, title, schedule and tertiary "Learn more". Its `children` (the 4 events plus "View all events") are generated from the events data for the mobile menu, so new events appear in the nav automatically.
 - **Services dropdown:** a standard `MegaMenu` (Funerals, Education, Nikah). Nav links can have nested `children`: in the mega menu, a link with children shows a chevron, and hovering or focusing it swaps the right-hand info column for a light-indigo sub-panel of its pages (Education: Quran Academy, Sunday Weekly Lessons, Sisters' Only Lessons). It has `aria-expanded`/`aria-controls`. In the mobile menu nested pages are indented under their parent. `isActiveItem` checks nested children.
-- **Placeholder pages:** routes linked before their content exists use `PlaceholderPage` (`components/ui/placeholder-page.tsx`: eyebrow, title, message, optional back link) with `noindex: true` metadata. Currently: Contact, Vision & Mission, Team, and all `/services/*` pages.
+- **Placeholder pages:** routes linked before their content exists use `PlaceholderPage` (`components/ui/placeholder-page.tsx`: eyebrow, title, message, optional back link) with `noindex: true` metadata. Currently: Vision & Mission, Team, and all `/services/*` pages.
 - **Follow Us dropdown:** the `Follow Us` nav item has `panel: 'socials'`, so it renders `SocialsMenu`. That's a compact white card (576px) anchored under the item (its `li` is `relative`), with a sky caption and square tiles separated by hairlines: 3 on the first row, the rest sharing the second. Each tile has a monochrome brand icon (indigo, sky on hover), and the platform name (Forum); no action labels. The tile tints `primary-50` on hover. Links open in a new tab. Data comes from `siteConfig.socials`, and the layout adapts to however many entries remain. **The URLs are currently placeholders** (platform home pages) and must be replaced with the masjid's real profiles. Brand marks may keep their native shapes (e.g. Instagram's rounded square); the square-corner rule applies to UI.
 - **Mobile:** items with children become an expandable group inside the mobile menu.
-- Pages linked from the menu that don't have content yet (Contact, Vision & Mission, Team) are placeholders with `noindex: true` and are left out of `sitemap.ts`. When real content is added, remove `noindex` and add them to the sitemap.
+- Pages linked from the menu that don't have content yet (Vision & Mission, Team) are placeholders with `noindex: true` and are left out of `sitemap.ts`. When real content is added, remove `noindex` and add them to the sitemap.
 
 ### Prayer times
 
@@ -270,6 +270,12 @@ Paths and names live in `siteConfig` (`config/site.ts`). Reference them from the
 
 - Composed from `PageHero` (`components/ui/page-hero.tsx`: reusable dark indigo title band with the faint star pattern, pulled up under the transparent header, so `/about` is in `headerOverlayRoutes`), then `components/about/`: `AboutIntro` (story paragraphs + highlighted closing statement beside the building cut-out on a `primary-50` panel), `BuildingFloors` (Ground/First Floor on patterned `primary-700` cards + note) and `AboutHighlights` (Services, Brotherhood, Masjid History in three hairline-divided columns with a sky bar).
 - All copy lives in `lib/about/data.ts`, ready to come from the dashboard later.
+
+### Contact page (`/contact`)
+
+- `PageHero` ("Contact Us"), then a two-column section: "Get in touch" with `ContactDetails` (email, address, phone in square `primary-50` icon tiles, then square social buttons) and `ContactForm` below a hairline; `ContactMap` (Google Maps embed, no API key) with a "Get directions" link on the right.
+- Details, map and directions URLs come from `siteConfig.contact` (also used by the footer and the Mosque JSON-LD).
+- **The form has no backend yet:** sending opens the visitor's email app with the message pre-filled to the masjid's address. When `/api/v1/contact` exists, replace `onSubmit` in `contact-form.tsx` with `api.post`.
 
 ### Impact section (home, after events)
 
