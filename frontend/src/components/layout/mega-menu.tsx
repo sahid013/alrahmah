@@ -3,13 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import {
-  ArrowRightIcon,
-  ChevronIcon,
-  HeartIcon,
-  MosqueIcon,
-  WhatsAppIcon,
-} from '@/components/icons';
+import { ArrowRightIcon, ChevronIcon, HeartIcon, WhatsAppIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { isActiveItem, isActivePath, type NavLink } from '@/config/navigation';
 import { siteConfig } from '@/config/site';
@@ -141,7 +135,14 @@ export function MegaMenu({ id, label, links, pathname, onNavigate }: MegaMenuPro
       ) : (
         /* …otherwise masjid info */
         <div className="flex flex-col bg-primary-50 p-6 lg:col-span-4 lg:p-10">
-          <MosqueIcon className="h-14 w-16 text-primary-500" />
+          {/* White-background artwork; multiply blends it into the tinted panel. */}
+          <Image
+            src="/images/icons/al-rahmah-centre-building.webp"
+            alt=""
+            width={1254}
+            height={1254}
+            className="size-20 mix-blend-multiply"
+          />
           <p className="mt-6 font-heading text-title-2xl font-normal tracking-heading text-primary-900">
             {siteConfig.name}
           </p>
