@@ -7,7 +7,15 @@ import { siteConfig } from '@/config/site';
 export const revalidate = 3600;
 
 /** Add every public page here. Dynamic content (e.g. articles) can be fetched from the API. */
-const staticRoutes = ['/', '/about', '/contact', '/donate', '/vision-mission', EVENTS_PAGE];
+const staticRoutes = [
+  '/',
+  '/about',
+  '/contact',
+  '/donate',
+  '/team',
+  '/vision-mission',
+  EVENTS_PAGE,
+];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages = [

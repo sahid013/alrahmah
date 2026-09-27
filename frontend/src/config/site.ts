@@ -21,7 +21,15 @@ export const siteConfig = {
   logoLight: '/brand/logo-light.svg',
   logoMarkLight: '/brand/logo-mark-light.svg',
   /** Pages whose first section is dark: the header starts transparent over it. */
-  headerOverlayRoutes: ['/', '/about', '/contact', '/donate', '/events', '/vision-mission'],
+  headerOverlayRoutes: [
+    '/',
+    '/about',
+    '/contact',
+    '/donate',
+    '/events',
+    '/team',
+    '/vision-mission',
+  ],
   /**
    * Prayer-time calculation settings for the masjid's location.
    * TODO: confirm the calculation method and Asr madhab with the masjid, or replace the
