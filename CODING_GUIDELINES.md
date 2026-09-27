@@ -266,6 +266,11 @@ Paths and names live in `siteConfig` (`config/site.ts`). Reference them from the
 
 - `components/home/greeting-section.tsx`: a centred section on `bg-primary-50` with an "Assalamu Alaykum" `h2` (Forum, title scale), the "Peace Be Upon You" script line (`font-script`, `secondary-700` for contrast on the light tint, `text-balance`), the visitors paragraph (max width 4xl, `text-pretty`) and a primary "Learn about us →" button to `/about`. Each line reveals in sequence (`Reveal`).
 
+### About page (`/about`)
+
+- Composed from `PageHero` (`components/ui/page-hero.tsx`: reusable dark indigo title band with the faint star pattern, pulled up under the transparent header, so `/about` is in `headerOverlayRoutes`), then `components/about/`: `AboutIntro` (story paragraphs + highlighted closing statement beside the building cut-out on a `primary-50` panel), `BuildingFloors` (Ground/First Floor on patterned `primary-700` cards + note) and `AboutHighlights` (Services, Brotherhood, Masjid History in three hairline-divided columns with a sky bar).
+- All copy lives in `lib/about/data.ts`, ready to come from the dashboard later.
+
 ### Impact section (home, after events)
 
 - `components/impact/impact-section.tsx`, data in `lib/impact/data.ts` (`ImpactReport`: `year`, `intro`, optional `reportUrl`, `primary` group (left), `secondary` groups (middle, side by side), `featured` group (right panel)). **The figures are currently SAMPLES** and must be replaced with real ones (later from the dashboard).
