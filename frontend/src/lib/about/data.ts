@@ -47,3 +47,16 @@ export const highlights: AboutBlock[] = [
       'The fastest growing masjid in Leeds is Al Rahmah Masjid. Once a Congregational Church, it was bought in 2018 and turned into a mosque. Since its inception our congregation has been ever-growing.',
   },
 ];
+
+/** Shown on /vision-mission. */
+export const visionMission: AboutBlock[] = [
+  {
+    title: 'Our Mission',
+    description: 'Together, we constantly seek to inspire, educate, and serve our neighbourhood.',
+  },
+  {
+    title: 'Our Vision',
+    description:
+      'Our vision is to become a beacon for Leeds, serving the Muslim and local community in Leeds with first-class facilities and leading services.',
+  },
+];
