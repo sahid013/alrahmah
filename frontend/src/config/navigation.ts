@@ -46,6 +46,7 @@ export const buildMainNav = (latestEvents: EventItem[]): NavItem[] => [
     href: '/services',
     children: services.map(toNavLink),
   },
+  { label: 'Volunteering', href: '/volunteering' },
   {
     label: 'Events',
     href: EVENTS_PAGE,
@@ -58,7 +59,7 @@ export const buildMainNav = (latestEvents: EventItem[]): NavItem[] => [
     ],
   },
   {
-    label: 'Follow Us',
+    label: 'Al Rahmah Network',
     href: siteConfig.socials[0].href,
     panel: 'socials',
     children: siteConfig.socials.map((social) => ({ label: social.name, href: social.href })),

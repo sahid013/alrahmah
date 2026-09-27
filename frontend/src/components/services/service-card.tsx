@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/icons';
+import type { CSSProperties } from 'react';
 import type { Service } from '@/lib/services/data';
 import { cn } from '@/lib/utils/cn';
 
@@ -12,11 +13,19 @@ const FALLBACK_IMAGE = { src: '/images/hero/al-rahmah-centre.webp', alt: 'Al-Rah
  * name lifts and fades out, and the title + description rotate in over the same tint (no extra
  * overlay). Touch devices show the revealed state.
  */
-export function ServiceCard({ service, className }: { service: Service; className?: string }) {
+export function ServiceCard({
+  service,
+  className,
+  style,
+}: {
+  service: Service;
+  className?: string;
+  style?: CSSProperties;
+}) {
   const image = service.image ?? FALLBACK_IMAGE;
 
   return (
-    <Link href={service.href} className={cn('service-card group block', className)}>
+    <Link href={service.href} className={cn('service-card group block', className)} style={style}>
       {/* Media: full-bleed photo filling the whole tile. */}
       <div className="service-card__media absolute inset-0 -z-20">
         <Image
@@ -42,7 +51,7 @@ export function ServiceCard({ service, className }: { service: Service; classNam
         <span className="block font-heading text-title-xl leading-tight tracking-heading text-white uppercase">
           {service.title}
         </span>
-        <span className="mt-2 block max-w-lg text-sm leading-relaxed text-primary-100 sm:text-base">
+        <span className="mt-2 block max-w-[350px] text-sm leading-relaxed text-primary-100 sm:text-base">
           {service.summary}
         </span>
         <span className="mt-4 inline-flex items-center gap-2 border border-white/40 px-4 py-2 font-label text-xs font-bold tracking-[0.12em] text-white uppercase">

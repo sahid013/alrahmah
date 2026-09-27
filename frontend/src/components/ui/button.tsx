@@ -3,7 +3,14 @@ import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 type Variant =
-  'primary' | 'secondary' | 'outline' | 'outline-light' | 'ghost' | 'tertiary' | 'tertiary-light';
+  | 'primary'
+  | 'secondary'
+  | 'outline'
+  | 'outline-light'
+  | 'ghost'
+  | 'white'
+  | 'tertiary'
+  | 'tertiary-light';
 type Size = 'xs' | 'sm' | 'md' | 'lg';
 
 const variants: Record<Variant, string> = {
@@ -15,6 +22,8 @@ const variants: Record<Variant, string> = {
   'outline-light':
     'border border-white/40 text-white hover:border-white hover:text-primary-900 [--btn-fill:var(--color-white)]',
   ghost: 'text-primary-500 [--btn-fill:var(--color-primary-50)]',
+  /** Solid white on dark backgrounds. */
+  white: 'bg-white text-primary-900 [--btn-fill:var(--color-secondary-100)]',
   /** Text-only action: no outline or fill; colour change on hover. */
   tertiary: 'text-primary-500 hover:text-secondary-700',
   /** Text-only action for dark backgrounds. */

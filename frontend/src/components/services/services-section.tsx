@@ -1,28 +1,32 @@
+import type { CSSProperties } from 'react';
+import { ArrowRightIcon } from '@/components/icons';
+import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { StaggerGroup } from '@/components/ui/stagger-group';
 import { flattenServices, type Service } from '@/lib/services/data';
 import { ServiceCard } from './service-card';
 
 /**
- * Grid positions (desktop, 3 columns × 2 rows): two cards stacked in the left column; on the
- * right, two cards side by side with one wide card below. Extra services fall back to single cells.
+ * Grid positions (desktop, 6-column grid × 2 rows): three equal cards on the first row, two
+ * equal cards on the second. Extra services fall back to single cells.
  */
 const LAYOUT = [
-  'lg:col-start-1 lg:row-start-1', // Funerals — left, top
-  'lg:col-start-1 lg:row-start-2', // Nikah — left, bottom
-  'lg:col-start-2 lg:row-start-1', // Sunday lessons — right, top
-  'lg:col-start-3 lg:row-start-1', // Sisters' lessons — right, top
-  'sm:col-span-2 lg:col-start-2 lg:row-start-2', // Quran Academy — right, wide below
+  'lg:col-span-2', // Funerals
+  'lg:col-span-2', // Sunday lessons
+  'lg:col-span-2', // Sisters' lessons
+  'lg:col-span-3', // Nikah
+  'sm:col-span-2 lg:col-span-3', // Quran Academy
 ];
 
 /** Home-page mosaic of the masjid's services (same list as the navbar "Services" menu). */
 export function ServicesSection({ items = flattenServices() }: { items?: Service[] }) {
-  // Order to suit the grid: left column first, the wide card last.
+  // Order to suit the grid: three on the first row, two on the second.
   const order = [
     'Funerals',
-    'Nikah (Marriage)',
     'Sunday Weekly Lessons',
     'Sisters’ Only Lessons',
+    'Nikah (Marriage)',
     'Al-Rahmah Quran Academy',
   ];
   const sorted = [...items].sort(
@@ -47,12 +51,24 @@ export function ServicesSection({ items = flattenServices() }: { items?: Service
             From life’s milestones to lifelong learning, the masjid is here to serve you and your
             family.
           </p>
+          <ButtonLink href="/services" variant="outline-light" size="sm" className="mt-8">
+            All services
+            <ArrowRightIcon className="size-4" />
+          </ButtonLink>
         </Reveal>
-        <div className="grid auto-rows-[18rem] gap-4 sm:grid-cols-2 lg:auto-rows-[20rem] lg:grid-cols-3">
-          {sorted.map((service, i) => (
-            <ServiceCard key={service.href} service={service} className={LAYOUT[i] ?? ''} />
-          ))}
-        </div>
+        {/* Cards drop in from above, one after another (same motion as events and impact). */}
+        <StaggerGroup>
+          <div className="grid auto-rows-[18rem] gap-4 sm:grid-cols-2 lg:auto-rows-[20rem] lg:grid-cols-6">
+            {sorted.map((service, i) => (
+              <ServiceCard
+                key={service.href}
+                service={service}
+                className={`stagger-item ${LAYOUT[i] ?? ''}`}
+                style={{ '--i': i } as CSSProperties}
+              />
+            ))}
+          </div>
+        </StaggerGroup>
       </Container>
     </section>
   );

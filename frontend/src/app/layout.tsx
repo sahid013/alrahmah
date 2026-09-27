@@ -3,6 +3,7 @@ import { Forum, Poppins, PT_Sans_Narrow, Sacramento } from 'next/font/google';
 import localFont from 'next/font/local';
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
+import { PreFooter } from '@/components/layout/pre-footer';
 import { PrayerTimesDock } from '@/components/prayer/prayer-times-dock';
 import { PrayerTimesProvider } from '@/components/prayer/prayer-times-provider';
 import { JsonLd } from '@/components/seo/json-ld';
@@ -115,6 +116,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
           <main id="main" className="flex-1">
             {children}
           </main>
+          <PreFooter />
           <Footer />
           <PrayerTimesDock />
         </PrayerTimesProvider>

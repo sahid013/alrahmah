@@ -16,7 +16,7 @@ export const siteConfig = {
   logoLight: '/brand/logo-light.svg',
   logoMarkLight: '/brand/logo-mark-light.svg',
   /** Pages whose first section is dark: the header starts transparent over it. */
-  headerOverlayRoutes: ['/', '/donate', '/events'],
+  headerOverlayRoutes: ['/', '/donate', '/events', '/volunteering'],
   /**
    * Prayer-time calculation settings for the masjid's location.
    * TODO: confirm the calculation method and Asr madhab with the masjid, or replace the
@@ -42,6 +42,9 @@ export const siteConfig = {
     donate: '/donate',
     // TODO: replace with the real WhatsApp channel invite link.
     whatsappChannel: 'https://whatsapp.com/channel/',
+    /** External Google Form for volunteer applications. */
+    volunteerForm:
+      'https://docs.google.com/forms/d/e/1FAIpQLSf5V-Dtcq81qOWISDskeZNn5htAAoJboX9Zg7-qurTkz-KZvQ/viewform',
   },
   /**
    * Social channels promoted in the "Follow Us" nav dropdown.
@@ -49,31 +52,10 @@ export const siteConfig = {
    * masjid doesn't use — the dropdown adapts to however many remain).
    */
   socials: [
-    {
-      platform: 'whatsapp',
-      name: 'WhatsApp',
-
-      href: 'https://whatsapp.com/channel/',
-    },
-    {
-      platform: 'instagram',
-      name: 'Instagram',
-
-      href: 'https://www.instagram.com/',
-    },
-    {
-      platform: 'facebook',
-      name: 'Facebook',
-
-      href: 'https://www.facebook.com/',
-    },
-    {
-      platform: 'youtube',
-      name: 'YouTube',
-
-      href: 'https://www.youtube.com/',
-    },
-    { platform: 'tiktok', name: 'TikTok', href: 'https://www.tiktok.com/' },
+    { platform: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/' },
+    { platform: 'youtube', name: 'YouTube', href: 'https://www.youtube.com/' },
+    { platform: 'instagram', name: 'Instagram', href: 'https://www.instagram.com/' },
+    { platform: 'whatsapp', name: 'WhatsApp', href: 'https://whatsapp.com/channel/' },
   ],
 } as const;
 

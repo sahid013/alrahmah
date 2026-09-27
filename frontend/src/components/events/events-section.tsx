@@ -1,7 +1,9 @@
 import { ArrowRightIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
+import type { CSSProperties } from 'react';
 import { Reveal } from '@/components/ui/reveal';
+import { StaggerGroup } from '@/components/ui/stagger-group';
 import { EventPosterCard } from './event-poster-card';
 import { EVENTS_PAGE, type EventItem } from '@/lib/events';
 
@@ -36,13 +38,16 @@ export function EventsSection({ events: upcoming }: { events: EventItem[] }) {
           </Reveal>
         </div>
 
-        <ul className="mt-12 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {upcoming.map((event, i) => (
-            <Reveal as="li" key={event.id} order={i}>
-              <EventPosterCard event={event} />
-            </Reveal>
-          ))}
-        </ul>
+        {/* Cards drop in from above, one after another (same motion as the impact figures). */}
+        <StaggerGroup>
+          <ul className="mt-12 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {upcoming.map((event, i) => (
+              <li key={event.id} className="stagger-item" style={{ '--i': i } as CSSProperties}>
+                <EventPosterCard event={event} />
+              </li>
+            ))}
+          </ul>
+        </StaggerGroup>
       </Container>
     </section>
   );
