@@ -27,6 +27,8 @@ export const siteConfig = {
     '/contact',
     '/donate',
     '/events',
+    '/services/funerals',
+    '/services/nikah',
     '/team',
     '/vision-mission',
   ],
@@ -47,6 +49,8 @@ export const siteConfig = {
     addressLines: ['6 Sheepscar Way', 'Leeds LS7 3JB'] as readonly string[],
     phone: '07508 044680' as string | undefined,
     email: 'alrahmahleeds@gmail.com' as string | undefined,
+    /** Funeral (janazah) queries go to a separate inbox. */
+    funeralsEmail: 'info@alrahmah.org.uk',
     /** Google Maps embed (no API key needed) and directions link for the address. */
     mapEmbedUrl:
       'https://maps.google.com/maps?q=6%20Sheepscar%20Way%2C%20Leeds%20LS7%203JB&z=14&output=embed',
@@ -57,6 +61,8 @@ export const siteConfig = {
     donate: '/donate',
     // TODO: replace with the real WhatsApp channel invite link.
     whatsappChannel: 'https://whatsapp.com/channel/',
+    // TODO: replace with the nikah booking / certificate form link.
+    nikahBooking: '/contact',
   },
   /**
    * Social channels promoted in the "Follow Us" nav dropdown.

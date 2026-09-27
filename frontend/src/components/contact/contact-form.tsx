@@ -18,7 +18,15 @@ const labelClass = 'font-label text-sm font-bold tracking-[0.12em] text-primary-
  * visitor's email app with the message filled in, addressed to the masjid.
  * TODO: POST to `/api/v1/contact` via `api.post` once the backend endpoint exists.
  */
-export function ContactForm() {
+export function ContactForm({
+  to = siteConfig.contact.email,
+  subject = 'Website enquiry',
+}: {
+  /** Address the message goes to. */
+  to?: string;
+  /** Email subject; the sender's name is appended. */
+  subject?: string;
+}) {
   const [opened, setOpened] = useState(false);
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -27,9 +35,9 @@ export function ContactForm() {
     const name = String(form.get('name') ?? '').trim();
     const email = String(form.get('email') ?? '').trim();
     const message = String(form.get('message') ?? '').trim();
-    const subject = `Website enquiry from ${name}`;
+    const fullSubject = `${subject} from ${name}`;
     const body = `${message}\n\n${name}\n${email}`;
-    window.location.href = `mailto:${siteConfig.contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${to}?subject=${encodeURIComponent(fullSubject)}&body=${encodeURIComponent(body)}`;
     setOpened(true);
   };
 
@@ -75,7 +83,7 @@ export function ContactForm() {
       </Button>
       <p aria-live="polite" className="text-base text-neutral-500">
         {opened &&
-          `Your email app should open with your message. If it doesn't, email us at ${siteConfig.contact.email}.`}
+          `Your email app should open with your message. If it doesn't, email us at ${to}.`}
       </p>
     </form>
   );

@@ -12,6 +12,8 @@ const staticRoutes = [
   '/about',
   '/contact',
   '/donate',
+  '/services/funerals',
+  '/services/nikah',
   '/team',
   '/vision-mission',
   EVENTS_PAGE,
