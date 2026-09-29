@@ -4,7 +4,7 @@ import localFont from 'next/font/local';
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
 import { PreFooter } from '@/components/layout/pre-footer';
-import { PrayerTimesDock } from '@/components/prayer/prayer-times-dock';
+import { PrayerBadge } from '@/components/prayer/prayer-badge';
 import { PrayerTimesProvider } from '@/components/prayer/prayer-times-provider';
 import { JsonLd } from '@/components/seo/json-ld';
 import { siteConfig } from '@/config/site';
@@ -122,7 +122,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
           </main>
           <PreFooter />
           <Footer />
-          <PrayerTimesDock />
+          <PrayerBadge />
         </PrayerTimesProvider>
       </body>
     </html>

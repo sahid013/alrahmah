@@ -20,6 +20,9 @@ export const siteConfig = {
   /** Full logo in white + sky, for the transparent header over dark heroes. */
   logoLight: '/brand/logo-light.svg',
   logoMarkLight: '/brand/logo-mark-light.svg',
+  /** Emblem in brand colours (light backgrounds) and mono navy (on light blue). */
+  logoMark: '/brand/logo-mark.svg',
+  logoMarkDark: '/brand/logo-mark-dark.svg',
   /** Pages whose first section is dark: the header starts transparent over it. */
   headerOverlayRoutes: [
     '/',

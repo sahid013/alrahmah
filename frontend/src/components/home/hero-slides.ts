@@ -6,7 +6,7 @@ import { siteConfig } from '@/config/site';
  */
 export interface HeroSlide {
   id: string;
-  /** Short label for the slide tabs, e.g. "Welcome". */
+  /** Short label for the slide tracker, e.g. "Welcome". */
   label: string;
   eyebrow: string;
   title: string;
@@ -15,7 +15,8 @@ export interface HeroSlide {
   note?: string;
   primaryCta: { label: string; href: string; icon?: 'whatsapp' | 'heart' };
   secondaryCta?: { label: string; href: string };
-  visual: 'welcome' | 'appeal';
+  /** Full-bleed background photo. */
+  background: { src: string; alt: string };
 }
 
 export const heroSlides: HeroSlide[] = [
@@ -33,7 +34,11 @@ export const heroSlides: HeroSlide[] = [
       icon: 'whatsapp',
     },
     secondaryCta: { label: 'About the masjid', href: '/about' },
-    visual: 'welcome',
+    // TODO: replace with a dedicated hero photo (wide, at least 2400px).
+    background: {
+      src: '/images/services/Al rahman quran academy.webp',
+      alt: 'Al-Rahmah Faith Centre at sunset, with families arriving',
+    },
   },
   {
     id: 'appeal',
@@ -44,6 +49,10 @@ export const heroSlides: HeroSlide[] = [
     body: ['We have outgrown our current premises. Help us move to a larger building.'],
     primaryCta: { label: 'Donate now', href: siteConfig.links.donate, icon: 'heart' },
     secondaryCta: { label: 'About the appeal', href: siteConfig.links.donate },
-    visual: 'appeal',
+    // TODO: replace with a dedicated appeal photo (wide, at least 2400px).
+    background: {
+      src: '/images/services/Sunday weekly lesson.webp',
+      alt: 'A full prayer hall during a lesson at the masjid',
+    },
   },
 ];

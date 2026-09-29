@@ -14,7 +14,7 @@ const tones: Record<
   { card: string; label: string; name: string; muted: string; link: string; divider: string }
 > = {
   light: {
-    card: 'bg-secondary-500/10 hover:bg-secondary-500/15',
+    card: 'bg-secondary-500/10 backdrop-blur-md hover:bg-secondary-500/15',
     label: 'text-neutral-400',
     name: 'text-primary-500',
     muted: 'text-neutral-400',
@@ -22,7 +22,7 @@ const tones: Record<
     divider: 'bg-neutral-200',
   },
   dark: {
-    card: 'bg-secondary-500/10 hover:bg-secondary-500/15',
+    card: 'bg-secondary-500/10 backdrop-blur-md hover:bg-secondary-500/15',
     label: 'text-primary-200',
     name: 'text-white',
     muted: 'text-primary-200',

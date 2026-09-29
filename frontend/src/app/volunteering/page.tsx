@@ -17,7 +17,7 @@ export default function VolunteeringPage() {
   return (
     <>
       {/* Page header: pulled up under the transparent site header. */}
-      <div className="relative isolate -mt-16 overflow-hidden bg-primary-900 pt-[calc(4rem+4rem)] pb-16 text-white lg:-mt-[4.5rem] lg:pt-[calc(4.5rem+5rem)] lg:pb-20">
+      <div className="relative isolate -mt-16 overflow-hidden bg-primary-900 pt-[calc(4rem+4rem)] pb-16 text-white lg:-mt-[8.5rem] lg:pt-[calc(8.5rem+5rem)] lg:pb-20">
         <div aria-hidden className="bg-islamic-pattern absolute inset-0 -z-10 opacity-[0.05]" />
         <Container>
           <p className="font-label text-xs font-bold tracking-[0.3em] text-secondary-300 uppercase sm:text-sm">

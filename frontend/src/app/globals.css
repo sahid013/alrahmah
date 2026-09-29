@@ -321,6 +321,48 @@
   }
 }
 
+/* ---------- Home hero: background scrim + tracker ring ---------- */
+@layer components {
+  /* Requested exception to "no gradient lighting": a readability scrim over the hero photo,
+     solid navy on the left fading to transparent on the right. */
+  .hero-scrim {
+    background: linear-gradient(
+      90deg,
+      var(--color-primary-950) 0%,
+      color-mix(in oklab, var(--color-primary-950) 80%, transparent) 35%,
+      transparent 100%
+    );
+  }
+  /* Below lg the text spans the full width, so darken evenly instead. */
+  @media (width < 64rem) {
+    .hero-scrim {
+      background: color-mix(in oklab, var(--color-primary-950) 72%, transparent);
+    }
+  }
+  /* Tracker progress ring: strokes from empty to full over the slide duration. */
+  .hero-ring {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: hero-ring var(--slide-duration, 6500ms) linear forwards;
+  }
+  .hero-ring[data-paused='true'] {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* No autoplay: show the ring full and static. */
+    .hero-ring {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+  }
+}
+
+@keyframes hero-ring {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* ---------- Staggered drop-in (StaggerGroup) ---------- */
 @layer components {
   :root {
@@ -513,6 +555,27 @@
   76%,
   100% {
     opacity: 0;
+  }
+}
+
+/* Deliberate exception to square corners: the round prayer-times badge only. */
+.shape-round {
+  border-radius: 9999px;
+}
+
+/* Continuously rotating ring text on the prayer badge. Stops for reduced motion. */
+.animate-ring {
+  transform-origin: center;
+  animation: ring-spin 20s linear infinite;
+}
+@keyframes ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-ring {
+    animation: none;
   }
 }
 

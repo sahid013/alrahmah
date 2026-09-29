@@ -135,13 +135,12 @@ export function MegaMenu({ id, label, links, pathname, onNavigate }: MegaMenuPro
       ) : (
         /* …otherwise masjid info */
         <div className="flex flex-col bg-primary-50 p-6 lg:col-span-4 lg:p-10">
-          {/* White-background artwork; multiply blends it into the tinted panel. */}
           <Image
-            src="/images/icons/al-rahmah-centre-building.webp"
+            src={siteConfig.logoMark}
             alt=""
-            width={1254}
-            height={1254}
-            className="size-20 mix-blend-multiply"
+            width={168}
+            height={134}
+            className="h-16 w-auto"
           />
           <p className="mt-6 font-heading text-title-2xl font-normal tracking-heading text-primary-900">
             {siteConfig.name}
