@@ -41,9 +41,8 @@ describe('event data', () => {
 
   it('filters by search and category', async () => {
     expect((await listEvents({ search: 'allaah' })).map((e) => e.id)).toEqual(['names-of-allaah']);
-    expect((await listEvents({ category: 'community' })).map((e) => e.id)).toEqual([
-      'your-masjid-our-community',
-    ]);
+    expect(await listEvents({ category: 'community' })).toEqual([]);
+    expect((await listEvents({ category: 'course' })).length).toBeGreaterThan(0);
     expect(await listEvents({ limit: 2 })).toHaveLength(2);
   });
 });

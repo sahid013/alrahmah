@@ -40,7 +40,7 @@ export function EventsSection({ events: upcoming }: { events: EventItem[] }) {
 
         {/* Cards drop in from above, one after another (same motion as the impact figures). */}
         <StaggerGroup>
-          <ul className="mt-12 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-12 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {upcoming.map((event, i) => (
               <li key={event.id} className="stagger-item" style={{ '--i': i } as CSSProperties}>
                 <EventPosterCard event={event} />

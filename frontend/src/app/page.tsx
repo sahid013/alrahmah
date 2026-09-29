@@ -26,7 +26,7 @@ export default async function HomePage() {
       <HeroSlideshow slides={heroSlides} events={events} />
 
       <GreetingSection />
-      <EventsSection events={events.slice(0, 4)} />
+      <EventsSection events={events.slice(0, 3)} />
       <ImpactSection report={impactReport} />
       <ServicesSection />
     </>

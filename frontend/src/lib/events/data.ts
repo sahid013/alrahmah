@@ -6,23 +6,6 @@ import type { EventItem } from './types';
  */
 export const seedEvents: EventItem[] = [
   {
-    id: 'your-masjid-our-community',
-    category: 'community',
-    title: 'Your Masjid Our Community',
-    schedule: { kind: 'once', date: '2026-05-10', time: '12pm' },
-    scheduleLabel: 'Sunday 10th May 2026',
-    summary:
-      'Join us to learn more about our plans for the new Masjid. If you wish to attend please fill in the form below',
-    description:
-      'Join us for a relaxed afternoon to connect and spend time together as a community. We’ll be sharing plans for our new Masjid and the steps ahead with your support to make it a reality. Brothers and sisters are welcome.',
-    image: {
-      src: '/images/events/your-masjid-our-community-poster.webp',
-      width: 1000,
-      height: 1404,
-      alt: 'Your Masjid Our Community poster — Sunday 10th May, 12pm, brothers and sisters welcome',
-    },
-  },
-  {
     id: 'seerah-of-muhammad',
     category: 'course',
     title: 'Seerah of Muhammad ﷺ',
