@@ -28,7 +28,7 @@ export const siteConfig = {
     '/',
     '/about',
     '/contact',
-    '/donate',
+    '/appeal',
     '/events',
     '/services/education/quran-academy',
     '/services/education/sisters-lessons',
@@ -65,7 +65,13 @@ export const siteConfig = {
       'https://www.google.com/maps/dir/?api=1&destination=6%20Sheepscar%20Way%2C%20Leeds%20LS7%203JB',
   },
   links: {
-    donate: '/donate',
+    /** The masjid's appeal summary page; site-wide "Donate" buttons point here. */
+    donate: '/appeal',
+    appeal: '/appeal',
+    /** Official "Make Space for Rahmah" appeal website (full details). */
+    appealWebsite: 'https://makespaceforrahmah.com/',
+    /** Official online donation page for the appeal. */
+    appealDonate: 'https://fundraising.alrahmah.org.uk/makespace',
     // TODO: replace with the real WhatsApp channel invite link.
     whatsappChannel: 'https://whatsapp.com/channel/',
     /** External Google Form for volunteer applications. */

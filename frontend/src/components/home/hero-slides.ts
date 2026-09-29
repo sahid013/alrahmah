@@ -45,14 +45,13 @@ export const heroSlides: HeroSlide[] = [
     label: 'Our Appeal',
     eyebrow: 'Our Appeal',
     title: 'Make Space for Rahmah',
-    // Full appeal text lives on /donate.
+    // Summary lives on /appeal; full details on the appeal website.
     body: ['We have outgrown our current premises. Help us move to a larger building.'],
-    primaryCta: { label: 'Donate now', href: siteConfig.links.donate, icon: 'heart' },
-    secondaryCta: { label: 'About the appeal', href: siteConfig.links.donate },
-    // TODO: replace with a dedicated appeal photo (wide, at least 2400px).
+    primaryCta: { label: 'Donate now', href: siteConfig.links.appealDonate, icon: 'heart' },
+    secondaryCta: { label: 'About the appeal', href: siteConfig.links.appeal },
     background: {
-      src: '/images/services/Sunday weekly lesson.webp',
-      alt: 'A full prayer hall during a lesson at the masjid',
+      src: '/images/hero/new-mosque.webp',
+      alt: 'Aerial view of the property proposed as Al-Rahmah Masjid’s new home',
     },
   },
 ];

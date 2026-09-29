@@ -11,7 +11,7 @@ const staticRoutes = [
   '/',
   '/about',
   '/contact',
-  '/donate',
+  '/appeal',
   '/services/education/quran-academy',
   '/services/education/sisters-lessons',
   '/services/education/sunday-lessons',
