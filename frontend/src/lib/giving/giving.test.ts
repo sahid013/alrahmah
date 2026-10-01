@@ -54,10 +54,10 @@ describe('donation request', () => {
     expect(errorsOf({ ...valid, donor: { ...donor, postcode: '7221' } })['donor.postcode']).toMatch(
       /UK postcode/,
     );
-    const abroad = { ...donor, country: 'other', postcode: '7221', countryName: 'Bangladesh' };
+    const abroad = { ...donor, country: 'BD', postcode: '7221' };
     expect(errorsOf({ ...valid, donor: abroad })).toEqual({});
     expect(
-      errorsOf({ ...valid, donor: { ...abroad, countryName: '' } })['donor.countryName'],
+      errorsOf({ ...valid, donor: { ...donor, country: 'XX' } })['donor.country'],
     ).toBeDefined();
   });
 
@@ -100,5 +100,15 @@ describe('giving helpers', () => {
     expect(houseFromAddress('6 Sheepscar Way')).toBe('6');
     expect(houseFromAddress('12A High Street\nLeeds')).toBe('12A');
     expect(houseFromAddress('Rose Cottage, Mill Lane')).toBe('Rose Cottage');
+  });
+});
+
+describe('countries', () => {
+  it('lists the United Kingdom first, then A–Z, with English names', async () => {
+    const { COUNTRY_OPTIONS, countryName } = await import('./countries');
+    expect(COUNTRY_OPTIONS[0]).toEqual(['GB', 'United Kingdom']);
+    expect(COUNTRY_OPTIONS[1]![1]).toBe('Afghanistan');
+    expect(countryName('BD')).toBe('Bangladesh');
+    expect(COUNTRY_OPTIONS.length).toBeGreaterThan(200);
   });
 });

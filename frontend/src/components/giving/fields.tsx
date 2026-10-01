@@ -51,14 +51,20 @@ export function GiveField({
   );
 }
 
+/** Every single-line control (inputs, selects, choice tiles, "Other amount") is 48px tall. */
+export const controlHeight = 'h-12';
+
 export const GiveInput = ({ className, ...props }: ComponentProps<'input'>) => (
-  <input className={cn(fieldClass, className)} {...props} />
+  <input className={cn(fieldClass, controlHeight, 'py-0', className)} {...props} />
 );
 export const GiveTextarea = ({ className, ...props }: ComponentProps<'textarea'>) => (
   <textarea className={cn(fieldClass, 'min-h-24 resize-y', className)} {...props} />
 );
 export const GiveSelect = ({ className, ...props }: ComponentProps<'select'>) => (
-  <select className={cn(fieldClass, 'pr-10 [&>option]:bg-primary-900', className)} {...props} />
+  <select
+    className={cn(fieldClass, controlHeight, 'py-0 pr-10 [&>option]:bg-primary-900', className)}
+    {...props}
+  />
 );
 
 /** Square toggle tile (frequency, preset amounts). Selected = sky with dark text. */
@@ -72,7 +78,7 @@ export function Choice({
       type="button"
       aria-pressed={selected}
       className={cn(
-        'h-14 border font-ui text-lg font-semibold tabular-nums transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-400',
+        'h-12 border font-ui text-lg font-semibold tabular-nums transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-400',
         selected
           ? 'border-secondary-500 bg-secondary-500 text-primary-950'
           : 'border-white/15 bg-white/5 text-white hover:border-secondary-400',

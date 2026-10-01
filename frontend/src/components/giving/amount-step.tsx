@@ -98,7 +98,7 @@ export function AmountStep({
           <span className="sr-only">Other amount in pounds</span>
           <span
             className={cn(
-              'flex h-14 items-center border bg-white/5 transition-colors focus-within:border-secondary-400 focus-within:outline-2 focus-within:outline-secondary-400',
+              'flex h-12 items-center border bg-white/5 transition-colors focus-within:border-secondary-400 focus-within:outline-2 focus-within:outline-secondary-400',
               !isPreset && value.amountText
                 ? 'border-secondary-400'
                 : 'border-white/15 hover:border-white/30',

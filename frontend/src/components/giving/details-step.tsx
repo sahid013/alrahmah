@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { siteConfig } from '@/config/site';
+import { COUNTRY_OPTIONS, UK } from '@/lib/giving/countries';
 import {
-  COUNTRIES,
   DONOR_TYPE_LABELS,
   DONOR_TYPES,
   formatGbp,
@@ -37,7 +37,7 @@ export function DetailsStep({
   onGiftAid: (declared: boolean) => void;
   onConsent: (consent: boolean) => void;
 }) {
-  const err = (k: TextKey) => errors[`donor.${k}`];
+  const err = (k: keyof Donor) => errors[`donor.${k}`];
   /** Props for a donor text input: value, change handler, error state. */
   const text = (key: TextKey, required = true) => ({
     value: donor[key] ?? '',
@@ -46,7 +46,7 @@ export function DetailsStep({
     onChange: (e: { target: { value: string } }) =>
       onDonor({ [key]: required ? e.target.value : e.target.value || undefined }),
   });
-  const uk = donor.country === 'GB';
+  const uk = donor.country === UK;
   const personal = donor.type === 'personal';
   const bonus = giftAidBonus(amount);
 
@@ -95,20 +95,16 @@ export function DetailsStep({
           <GiveTextarea autoComplete="street-address" rows={3} {...text('address')} />
         </GiveField>
 
-        <GiveField label="Country" required>
+        <GiveField label="Country" required error={err('country')}>
           <GiveSelect
             autoComplete="country"
             value={donor.country}
-            onChange={(e) =>
-              onDonor({
-                country: e.target.value as Donor['country'],
-                ...(e.target.value === 'GB' && { countryName: undefined }),
-              })
-            }
+            aria-invalid={!!err('country')}
+            onChange={(e) => onDonor({ country: e.target.value })}
           >
-            {Object.entries(COUNTRIES).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
+            {COUNTRY_OPTIONS.map(([code, name]) => (
+              <option key={code} value={code}>
+                {name}
               </option>
             ))}
           </GiveSelect>
@@ -124,11 +120,6 @@ export function DetailsStep({
           />
         </GiveField>
 
-        {!uk && (
-          <GiveField label="Country name" required error={err('countryName')}>
-            <GiveInput autoComplete="country-name" {...text('countryName')} />
-          </GiveField>
-        )}
         <GiveField label="Town / City" required error={err('city')}>
           <GiveInput autoComplete="address-level2" {...text('city')} />
         </GiveField>

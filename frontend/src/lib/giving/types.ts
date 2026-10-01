@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { COUNTRY_CODES, UK } from './countries';
 
 /**
  * Public donation form contract. The browser sends a `DonationRequest` to the backend, which
@@ -43,7 +44,6 @@ export const DONOR_TYPE_LABELS: Record<DonorType, string> = {
   personal: 'Personal',
   organisation: 'Corporate / Group',
 };
-export const COUNTRIES = { GB: 'United Kingdom', other: 'Other' } as const;
 
 const donorFields = z.object({
   type: z.enum(DONOR_TYPES),
@@ -52,9 +52,8 @@ const donorFields = z.object({
   firstName: z.string().trim().min(1, 'Enter your first name').max(60),
   lastName: z.string().trim().min(1, 'Enter your last name').max(60),
   address: z.string().trim().min(1, 'Enter your address').max(300),
-  country: z.enum(['GB', 'other']),
-  /** Required when `country` is `other`. */
-  countryName: z.string().trim().max(60).optional(),
+  /** ISO 3166-1 alpha-2 code, e.g. GB. */
+  country: z.string().refine((c) => COUNTRY_CODES.has(c), 'Choose your country'),
   postcode: z.string().trim().min(1, 'Enter your postcode').max(12),
   city: z.string().trim().min(1, 'Enter your town or city').max(60),
   /** County (UK, optional) or state / province (elsewhere). */
@@ -73,9 +72,7 @@ export const donorSchema = donorFields.superRefine((d, ctx) => {
       path: ['organisation'],
       message: 'Enter the organisation name',
     });
-  if (d.country === 'other' && !d.countryName)
-    ctx.addIssue({ code: 'custom', path: ['countryName'], message: 'Enter your country' });
-  if (d.country === 'GB' && !UK_POSTCODE.test(d.postcode))
+  if (d.country === UK && !UK_POSTCODE.test(d.postcode))
     ctx.addIssue({ code: 'custom', path: ['postcode'], message: 'Enter a full UK postcode' });
 });
 export type Donor = z.infer<typeof donorSchema>;

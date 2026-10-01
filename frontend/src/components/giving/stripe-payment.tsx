@@ -75,22 +75,19 @@ export function StripePayment({
   const options = useMemo(
     () => ({
       clientSecret,
-      // Prefill the billing address from the Details step (UK donors; elsewhere Stripe asks for
-      // the country itself). The email is already set on the session server-side
-      // (customer_email), so it is not repeated.
-      ...(request.donor.country === 'GB' && {
-        defaultValues: {
-          billingAddress: {
-            name: `${request.donor.firstName} ${request.donor.lastName}`,
-            address: {
-              country: 'GB',
-              line1: request.donor.address.split('\n')[0] ?? null,
-              city: request.donor.city,
-              postal_code: request.donor.postcode,
-            },
+      // Prefill the billing address from the Details step. The email is already set on the
+      // session server-side (customer_email), so it is not repeated.
+      defaultValues: {
+        billingAddress: {
+          name: `${request.donor.firstName} ${request.donor.lastName}`,
+          address: {
+            country: request.donor.country,
+            line1: request.donor.address.split('\n')[0] ?? null,
+            city: request.donor.city,
+            postal_code: request.donor.postcode,
           },
         },
-      }),
+      },
       elementsOptions: {
         appearance,
         fonts: [

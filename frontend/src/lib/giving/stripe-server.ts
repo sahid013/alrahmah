@@ -1,6 +1,7 @@
 import 'server-only';
 import Stripe from 'stripe';
 import { loadDonations } from '@/lib/donations/repository';
+import { countryName } from './countries';
 import { donationRequestSchema, houseFromAddress, type DonationRequest } from './types';
 
 /**
@@ -40,7 +41,7 @@ function donationMetadata(r: DonationRequest, campaignTitle: string): Stripe.Met
     donor_city: d.city,
     donor_region: d.region ?? '',
     donor_postcode: d.postcode,
-    donor_country: d.country === 'GB' ? 'United Kingdom' : (d.countryName ?? ''),
+    donor_country: countryName(d.country),
     marketing_consent: r.marketingConsent ? 'yes' : 'no',
     gift_aid: giftAid ? 'yes' : 'no',
     // HMRC schedule columns: house name or number + postcode.

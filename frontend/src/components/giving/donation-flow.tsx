@@ -6,6 +6,7 @@ import { ArrowRightIcon, ChevronIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import type { DonationProgram } from '@/lib/donations/types';
+import { UK } from '@/lib/giving/countries';
 import { checkoutHref, DEFAULT_CAUSE } from '@/lib/giving/links';
 import { paymentsMode, previewPay } from '@/lib/giving/payments';
 import {
@@ -79,7 +80,7 @@ export function DonationFlow({
     donor: {
       ...donor,
       email: donor.email.trim(),
-      postcode: donor.country === 'GB' ? normalisePostcode(donor.postcode) : donor.postcode.trim(),
+      postcode: donor.country === UK ? normalisePostcode(donor.postcode) : donor.postcode.trim(),
     },
     giftAid: { declared: giftAid && donor.type === 'personal' },
     marketingConsent,

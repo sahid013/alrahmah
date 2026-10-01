@@ -18,7 +18,7 @@ export function DonatePanel() {
       />
       <div aria-hidden className="absolute inset-0 -z-10 bg-primary-950/85" />
 
-      <div className="mx-auto max-w-md lg:sticky lg:top-44">
+      <div className="mx-auto max-w-md">
         <h1 className="text-title-3xl leading-none text-white sm:text-title-4xl">
           {content.title}
         </h1>
