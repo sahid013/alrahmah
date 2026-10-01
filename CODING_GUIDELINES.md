@@ -307,7 +307,7 @@ Paths and names live in `siteConfig` (`config/site.ts`). Reference them from the
 - **Tracker** (`DonationTracker`, reusable): always stores `current` and `target`. `display` chooses how it reads: `amount` ("£3,200 raised of £10,000"), `percent` ("20% funded") or `donors` ("18 of 30 donors"). An optional `label` overrides the text. It's a flat square bar (sky on neutral, navy-tone variant on dark) with `role="progressbar"`, turns indigo with "Target reached" when complete, and fills from empty as the cards drop in.
 - **`DonationCard`** (reusable): a bordered white card with a square poster (slight zoom on hover), Forum title, optional price, summary, optional tracker and a full-width primary button. `DonationsOverview` is the optional page-level tracker panel on navy.
 - **Page:** `PageHero`, a featured appeal banner (to `/appeal`), the overview panel, then a 4/3/2/1-column grid of cards with the staggered drop-in.
-- **Before launch:** the tracker figures and the overview are **samples** (never publish made-up totals), and most `cta.href`s point to the fundraising platform's home page. Only Jummah Giving and My Masjid use the links printed on their posters. Posters live in `public/images/donations/<id>-poster.webp` (600px square; Daily Iftar's is 300px). Keep only the files the site uses in that folder.
+- **Before launch:** the tracker figures and the overview are **samples** (never publish made-up totals). Card buttons open the on-site donation page `/give/<id>` (see Giving). Posters live in `public/images/donations/<id>-poster.webp` (600px square; Daily Iftar's is 300px). Keep only the files the site uses in that folder.
 
 ### Events & courses
 
@@ -351,6 +351,63 @@ src/lib/events/
 - **Event pages** (`/events/[id]`): poster, schedule, title, speaker and description, statically generated from the repository (`dynamicParams = false`) and listed in the sitemap.
 - Schedule text everywhere uses `eventScheduleText(event)`: the client's exact `scheduleLabel`, or the formatted schedule. Summaries are the client's wording.
 - **Posters** live in `public/images/events/<id>-poster.webp`: optimised copies (1000px wide) of the supplied originals. Record each poster's `width`/`height` in the data.
+
+### Giving (`/give`, `/give/<campaign>`)
+
+- **On-site donation flow** (no redirect to a Stripe page), in four steps with a square-marker progress line (`Stepper`):
+  1. **Amount:** One-off / Weekly / Monthly; preset tiles (£10 / £25 / £50 / £100, plus the campaign's suggested amount) or "Other amount"; the cause (`<select>` of programmes; changing it updates the URL).
+  2. **Details:** title, name, email (receipt), optional phone, and the **Gift Aid** box (shows the +25% value, HMRC enduring declaration; when ticked, house name/number and a UK postcode are required).
+  3. **Payment:** summary, then the area where Stripe's Payment Element mounts (`data-stripe-payment-element`).
+  4. **Thank you:** "Jazakum Allahu khairan", reference and summary.
+- **Layout:** two columns from `lg` (navy `CampaignPanel` with poster, summary, tracker and assurances on the left; white form on the right); stacked on mobile. Focus moves to each step's heading (`#step-title`) and the form scrolls into view.
+- **Code:** `lib/giving/types.ts` (zod `DonationRequest` = what the server accepts, `giftAidBonus`, `normalisePostcode`, presets and limits £1–£25,000; tests in `giving.test.ts`). Components live in `components/giving/` (`DonationFlow` plus one file per step). Every donation card's button links to its page via `checkoutHref(id)` (`lib/giving/links.ts`; the dashboard sets the same link). The `/give` pages are `noindex` until live payments are switched on.
+- **Stripe** (sandbox `stripe-pink-window`, provisioned via the Vercel Marketplace integration; keys in Vercel env for all environments, pulled locally with `vercel env pull`):
+  - `lib/giving/stripe-server.ts` (server-only): `createDonationSession` re-validates the request and the campaign, then creates a **Checkout Session with `ui_mode: 'elements'`**: `payment` mode for one-off gifts, `subscription` mode (`price_data` with `recurring` week/month) for regular giving. Donor, campaign and Gift Aid details go in `metadata` on the session and on its PaymentIntent/Subscription. Uses `customer_email` and `integration_identifier`. Never pass `payment_method_types` (Stripe picks methods dynamically) or `submit_type` (not allowed with `elements`), and don't pass an email or return URL from the browser (both are set on the session).
+  - `POST /api/giving/session` returns `{ clientSecret }`. `components/giving/stripe-payment.tsx` renders Stripe's **Payment Element** (`CheckoutElementsProvider` from `@stripe/react-stripe-js/checkout`, styled with square corners and brand colours, billing country defaulted to GB) with its own "Donate £X" button. It calls `checkout.confirm({ redirect: 'if_required' })` and shows the Thank you step on success. Redirect-based bank checks return to `/give/complete?session_id=…`, which reads the session status from Stripe.
+  - `POST /api/stripe/webhook` verifies every event's signature with `STRIPE_WEBHOOK_SECRET`, then maps it with `toDonationEvent` (`lib/giving/fulfilment.ts`): `checkout.session.completed` / `async_payment_succeeded` (only when not `unpaid`), `async_payment_failed`, `invoice.paid` (renewals: `billing_reason = subscription_cycle`), `invoice.payment_failed`, `charge.refunded`, `customer.subscription.deleted`. **Fulfilment happens here, never on the thank-you page.** `recordDonationEvent` currently logs ids and amounts only (no personal data); the Supabase step upserts `donations` rows keyed by the payment reference.
+  - `paymentsMode` (`lib/giving/payments.ts`) is `stripe` when `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is set; otherwise the flow runs in preview (no payment taken, "Complete test donation").
+  - **Local testing:** `stripe listen --api-key "$STRIPE_SECRET_KEY" --forward-to localhost:3000/api/stripe/webhook`, and run the dev server with that `whsec_…` as `STRIPE_WEBHOOK_SECRET`. Test cards: `4242 4242 4242 4242` (success), `4000 0025 0000 3155` (bank authentication), `4000 0000 0000 9995` (declined); any future expiry and CVC.
+  - **Deployed site:** add a webhook endpoint in the Stripe Dashboard → `https://<domain>/api/stripe/webhook` with the events above, and put its signing secret in Vercel as `STRIPE_WEBHOOK_SECRET` (sensitive).
+  - **Before live payments:** claim the sandbox into the masjid's Stripe account (`vercel integration resource claim stripe-pink-window`) and complete Stripe's go-live checklist. Use a restricted key (`rk_…`, only Checkout Sessions/Customers/Products/Prices write) instead of `sk_`. Store Gift Aid declarations in the database (not only Stripe metadata), add a Content-Security-Policy allowing `https://*.stripe.com` (script/frame/connect), turn on Stripe email receipts, offer the Customer Portal so donors can cancel regular gifts, and remove `noindex` from `/give`. No tax is collected on donations, so `automatic_tax` stays off.
+
+
+
+Public pages live in the `app/(site)/` route group, whose layout adds the site chrome (`SiteChrome`: header, pre-footer, footer, prayer badge). `app/dashboard/layout.tsx` only provides the data API. It is `noindex`, disallowed in `robots.ts`, and rendered per request (`connection()`) because screens depend on "today".
+
+- **Routes:** `app/dashboard/login` (sign-in, no shell) and `app/dashboard/(panel)/…` (every signed-in screen). The panel layout wraps pages in `AuthGate` (requires an `aal2` session, otherwise redirects to `/dashboard/login?next=…`) and `DashboardShell` (navy sidebar with nav, "View website", signed-in user and Sign out; the top bar appears below `lg` only, for the menu button).
+- **Sign-in:** email + password, then two-step verification with an authenticator app (TOTP), required for everyone. First sign-in shows a QR code and key to set up the app; later sign-ins ask for the 6-digit code. `next` redirects are restricted to `/dashboard…`. The page background is `primary-900` with the star pattern at 0.1% opacity.
+- **Settings (`/dashboard/settings`):** admins see Users (role, two-step status, last sign-in, Reset 2FA, Remove; you can't remove or demote yourself, and there's always one admin) and **Add a user** (name, email, role, generated temporary password shown once with "Copy sign-in details"). Everyone sees My account and Change password (≥ 10 characters). Roles: `admin` (everything, including users), `editor` (content and donations).
+- **Contracts:** `lib/dashboard/auth/types.ts` (zod `DashboardUser`, `NewUser`, `Session` with `aal1`/`aal2`) and `totp.ts` (RFC 6238, tested against the RFC vectors). `DashboardApi.auth` and `DashboardApi.users` describe the flows. Comments in `api.ts` map each call to Supabase (`signInWithPassword`, `mfa.enroll` / `mfa.challengeAndVerify`, `auth.admin.*` from a service-role route, `profiles` table for name and role).
+- **⚠ Preview only:** `lib/dashboard/auth/local-auth.ts` keeps accounts in this browser's localStorage (preview login `admin@example.com` / `preview-admin`; not shown in the UI). It is **not security**. Before launch: create the Supabase project, implement `auth`/`users` with it, enforce `aal2` server-side in `proxy.ts` for `/dashboard/(panel)` routes, and protect data with RLS by role.
+
+```
+src/lib/dashboard/
+├── types.ts        ← zod contracts: PrayerDay, Campaign (extends donationProgramSchema), Donation, DonationQuery
+├── api.ts          ← DashboardApi interface: the ONLY thing screens talk to
+├── local-api.ts    ← preview implementation (localStorage + generated sample donations)
+├── sample-data.ts  ← deterministic fictional donors/donations (@example.com)
+├── queries.ts      ← pure: filterDonations, summariseDonors, donationTotals, taxYear
+├── campaigns.ts    ← pure: slugify, newCampaign, moveId, raisedByCampaign
+├── prayer.ts       ← pure: calculatedDay, copyDayTo, sameTimes, validateDay
+├── csv.ts          ← toCsv (RFC 4180 + formula-injection guard), downloadCsv, column sets
+└── dashboard.test.ts
+src/components/dashboard/
+├── dashboard-api-provider.tsx ← THE swap point + useDashboardApi / useDashboardQuery
+├── dashboard-shell.tsx        ← DASHBOARD_NAV (add a module = add an entry + a route)
+├── ui.tsx                     ← PageHeader, Panel, StatCard, Badge, Field/Input/Select/Textarea, th/td, iconButton, gbp, shortDate
+└── prayer/ campaigns/ donations/ donors/ overview/   ← one folder per module
+```
+
+- **Connecting the backend:** write a Supabase/HTTP implementation of `DashboardApi` and return it from `DashboardApiProvider`; no screen changes. Keep the zod parse at the boundary. The pure query and CSV functions describe exactly what the backend must return (mirror `filterDonations` as SQL).
+- **Screens never import `local-api.ts` or `sample-data.ts`.** Data loads through `useDashboardQuery((api) => …, deps)`, which keeps the last data while refreshing.
+- **Prayer times:** only edited days are stored (`PrayerDay` overrides); every other day falls back to `calculatedDay`. The editor is a month calendar (‹ ›, Today, Go to date, arrow keys ±1/±7 days) beside a day editor (adhan + jama'ah per prayer, Jumu'ah times on Fridays, note). It validates order with `validateDay`, blocks saving on errors, asks before discarding unsaved edits, and can revert a day to calculated times. (`DashboardApi.prayer.saveDays` remains for bulk imports, e.g. a printed Ramadan timetable.) When the backend exists, `lib/prayer-times.ts` should read these overrides, so the public site shows them.
+- **Campaigns** are the public donation programmes plus `status` (active/draft/archived) and `order`. Reorder the list by dragging a row's grip handle (pointer events, so mouse and touch both work; arrow keys on a focused handle move it one place). The new order shows immediately and is saved in one `campaigns.reorder(ids)` call. The editor shows a live `DonationCard` preview, and the slug (`id`) is made from the title and fixed after creation. Posters are uploaded with `ImageUpload` (`components/dashboard/image-upload.tsx`: drag-and-drop or choose, JPG/PNG/WebP ≤ 10 MB, resized in the browser to 800px WebP by `lib/dashboard/resize-image.ts`) through `DashboardApi.media.uploadImage`. The preview implementation stores the image inline; the backend uploads it to Supabase Storage and returns its URL. There is no button-link field: `prepareCampaign` always sets `cta.href` to `checkoutHref(slug)` (`/give/<slug>`).
+- **Donations / donors:** filterable table with CSV export of exactly what's filtered. The donors page has tax-year presets (6 April–5 April) and three exports: all donations, donor list, and the HMRC Gift Aid schedule (column order of HMRC's claim spreadsheet). Exports contain personal data, so treat downloaded files accordingly.
+- **Stripe (later), automatic per campaign:**
+  - On campaign create/update, the backend creates or updates a Stripe **Product** (`metadata.campaign_id`, name, image, `active` = status is active) and stores `campaign.stripe.productId`. Archiving or deleting deactivates it. The dashboard shows this read-only in the Payments panel.
+  - `/give/<slug>` (to build) shows the donation form (amount, one-off/monthly, Gift Aid declaration and address), then the backend creates a **Checkout Session** for that product (`mode: payment` or `subscription`, `price_data` for the chosen amount, metadata: campaign id and Gift Aid). One stable link per campaign; never hand-edited.
+  - The `checkout.session.completed` / `invoice.paid` / `charge.refunded` webhooks write `donations` rows (`paymentRef` = PaymentIntent/Invoice id), so donations, donors and the Gift Aid export fill in automatically. Card data never touches this app.
+- Tables sit in `relative overflow-x-auto` wrappers (the `relative` stops `sr-only` children from widening the page on mobile).
 
 ### Components using the system
 

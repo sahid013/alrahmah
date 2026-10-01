@@ -290,3 +290,105 @@ export function PeopleIcon(props: IconProps) {
     </svg>
   );
 }
+
+/* ---------- Dashboard ---------- */
+
+export function GridIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M5 5h9v9H5zM18 5h9v9h-9zM5 18h9v9H5zM18 18h9v9h-9z" />
+    </svg>
+  );
+}
+
+export function ClockIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <circle cx="16" cy="16" r="11" />
+      <path d="M16 9v7l5 3" />
+    </svg>
+  );
+}
+
+export function ReceiptIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M8 4h16v24l-4-2-4 2-4-2-4 2zM12 11h8M12 16h8M12 21h5" />
+    </svg>
+  );
+}
+
+export function DownloadIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M16 5v15M10 14l6 6 6-6M6 26h20" />
+    </svg>
+  );
+}
+
+export function PlusIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M16 6v20M6 16h20" />
+    </svg>
+  );
+}
+
+export function PencilIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M21 6l5 5L12 25H7v-5zM18 9l5 5" />
+    </svg>
+  );
+}
+
+export function TrashIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M6 9h20M13 9V5h6v4M9 9l1 18h12l1-18M14 14v8M18 14v8" />
+    </svg>
+  );
+}
+
+export function SearchIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <circle cx="14" cy="14" r="8" />
+      <path d="M20 20l7 7" />
+    </svg>
+  );
+}
+
+export function ExternalIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M18 6h8v8M26 6L14 18M22 18v8H6V10h8" />
+    </svg>
+  );
+}
+
+/** Drag handle: two columns of three square dots. */
+export function GripIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" width={24} height={24} {...base} {...props}>
+      <path d="M8 4h3v3H8zM13 4h3v3h-3zM8 10.5h3v3H8zM13 10.5h3v3h-3zM8 17h3v3H8zM13 17h3v3h-3z" />
+    </svg>
+  );
+}
+
+export function GearIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M13.5 4h5l.8 3.4 2.3 1.3 3.3-1 2.5 4.3-2.5 2.4v2.6l2.5 2.4-2.5 4.3-3.3-1-2.3 1.3-.8 3.4h-5l-.8-3.4-2.3-1.3-3.3 1L4.4 19.4 6.9 17v-2.6L4.4 12l2.5-4.3 3.3 1 2.3-1.3z" />
+      <circle cx="16" cy="16" r="3.5" />
+    </svg>
+  );
+}
+
+export function LogoutIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M13 6H6v20h7M20 10l6 6-6 6M26 16H12" />
+    </svg>
+  );
+}

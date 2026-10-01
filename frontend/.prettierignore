@@ -1,3 +1,6 @@
 .next
 node_modules
 next-env.d.ts
+
+# Vendor agent skills (installed by the Vercel Stripe integration)
+.agents

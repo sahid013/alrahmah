@@ -1,14 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Forum, Poppins, PT_Sans_Narrow, Sacramento } from 'next/font/google';
 import localFont from 'next/font/local';
-import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
-import { PreFooter } from '@/components/layout/pre-footer';
-import { PrayerBadge } from '@/components/prayer/prayer-badge';
-import { PrayerTimesProvider } from '@/components/prayer/prayer-times-provider';
 import { JsonLd } from '@/components/seo/json-ld';
 import { siteConfig } from '@/config/site';
-import { listEvents } from '@/lib/events/repository';
 import './globals.css';
 
 /** Titles. */
@@ -79,9 +73,8 @@ export const viewport: Viewport = {
   themeColor: '#363287',
 };
 
-export default async function RootLayout({ children }: LayoutProps<'/'>) {
-  const latestEvents = await listEvents({ limit: 4 });
-
+/** Shared HTML shell (fonts, metadata, structured data). Site and dashboard add their own chrome. */
+export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
@@ -109,21 +102,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
             },
           }}
         />
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:bg-white focus:p-2"
-        >
-          Skip to content
-        </a>
-        <PrayerTimesProvider>
-          <Header latestEvents={latestEvents} />
-          <main id="main" className="flex-1">
-            {children}
-          </main>
-          <PreFooter />
-          <Footer />
-          <PrayerBadge />
-        </PrayerTimesProvider>
+        {children}
       </body>
     </html>
   );

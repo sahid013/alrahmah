@@ -1,15 +1,15 @@
+import { checkoutHref } from '@/lib/giving/links';
 import type { DonationsData } from './types';
 
 /**
  * Local seed data, read by `repository.ts` until the dashboard exists.
  *
  * TODO before launch:
- *  - `cta.href`: confirm each programme's real donation link. Only Jummah Giving and My Masjid
- *    links come from the posters; the rest point to the fundraising platform's home page.
+ *  - Donate buttons go to the on-site donation page (`/give/<id>`), which takes no payment until
+ *    Stripe is connected (see lib/giving/payments.ts).
  *  - TRACKER FIGURES ARE SAMPLES to show the design. Replace with real numbers (or remove the
  *    `tracker` / `overview`) — never publish made-up totals.
  */
-const FUNDRAISING = 'https://fundraising.alrahmah.org.uk/';
 
 export const seedDonations: DonationsData = {
   overview: {
@@ -27,7 +27,7 @@ export const seedDonations: DonationsData = {
         src: '/images/donations/masjid-renovations-poster.webp',
         alt: 'Renovation work inside the masjid',
       },
-      cta: { label: 'Donate', href: FUNDRAISING },
+      cta: { label: 'Donate', href: checkoutHref('masjid-renovations') },
       tracker: { display: 'amount', current: 3200, target: 10000 },
     },
     {
@@ -39,7 +39,7 @@ export const seedDonations: DonationsData = {
         src: '/images/donations/daily-iftar-poster.webp',
         alt: 'Donate toward Daily Iftar at the Masjid poster',
       },
-      cta: { label: 'Donate', href: FUNDRAISING },
+      cta: { label: 'Donate', href: checkoutHref('daily-iftar') },
       tracker: { display: 'donors', current: 18, target: 30 },
     },
     {
@@ -50,7 +50,7 @@ export const seedDonations: DonationsData = {
         src: '/images/donations/jummah-giving-poster.webp',
         alt: 'Every Friday with Jummah Giving poster',
       },
-      cta: { label: 'Select options', href: 'https://alrahmah.org.uk/jummahgiving' },
+      cta: { label: 'Donate', href: checkoutHref('jummah-giving') },
     },
     {
       id: 'my-masjid',
@@ -61,7 +61,7 @@ export const seedDonations: DonationsData = {
         alt: 'My Masjid monthly giving poster',
       },
       price: { amount: 20, period: 'month' },
-      cta: { label: 'Sign up now', href: 'https://www.alrahmah.org.uk/mymasjid' },
+      cta: { label: 'Sign up now', href: checkoutHref('my-masjid') },
       tracker: { display: 'donors', current: 64, target: 100 },
     },
     {
@@ -70,7 +70,7 @@ export const seedDonations: DonationsData = {
       summary: 'Donate any amount on a monthly basis through our automated subscription option.',
       image: { src: '/images/donations/regular-giving-poster.webp', alt: 'Regular Giving poster' },
       price: { amount: 10, period: 'month' },
-      cta: { label: 'Sign up now', href: FUNDRAISING },
+      cta: { label: 'Sign up now', href: checkoutHref('regular-giving') },
     },
     {
       id: 'general-sadaqah',
@@ -80,14 +80,14 @@ export const seedDonations: DonationsData = {
         src: '/images/donations/general-sadaqah-poster.webp',
         alt: 'General Sadaqah poster',
       },
-      cta: { label: 'Donate', href: FUNDRAISING },
+      cta: { label: 'Donate', href: checkoutHref('general-sadaqah') },
     },
     {
       id: 'zakaah',
       title: 'Zakaah',
       summary: 'Pay your Zakaah through the masjid and fulfil this pillar of Islam.',
       image: { src: '/images/donations/zakaah-poster.webp', alt: 'Pay your Zakaah poster' },
-      cta: { label: 'Donate', href: FUNDRAISING },
+      cta: { label: 'Donate', href: checkoutHref('zakaah') },
     },
   ],
 };
