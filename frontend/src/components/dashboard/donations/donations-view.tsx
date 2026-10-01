@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import { ChevronIcon, DownloadIcon, SearchIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { donationColumns, downloadCsv, toCsv } from '@/lib/dashboard/csv';
-import { donationTotals } from '@/lib/dashboard/queries';
-import type { DonationQuery } from '@/lib/dashboard/types';
+import { donationTotals, sourceOf } from '@/lib/dashboard/queries';
+import type { Donation, DonationQuery } from '@/lib/dashboard/types';
 import { useDashboardQuery } from '../dashboard-api-provider';
 import {
   EmptyState,
@@ -18,7 +18,9 @@ import {
   Select,
   StatCard,
 } from '../ui';
+import { DonationDetail } from './donation-detail';
 import { DonationTable } from './donation-rows';
+import { TotalsPanels } from './totals-panels';
 
 const PAGE_SIZE = 25;
 
@@ -36,6 +38,10 @@ export function DonationsView() {
     (api) => api.donations.list(query),
     [query],
   );
+  // Source options come from every donation, not just the filtered ones.
+  const { data: all = [] } = useDashboardQuery((api) => api.donations.list(), []);
+  const sources = useMemo(() => [...new Set(all.map(sourceOf))].sort(), [all]);
+  const [selected, setSelected] = useState<Donation>();
 
   const totals = useMemo(() => donationTotals(donations ?? []), [donations]);
   const pages = Math.max(1, Math.ceil((donations?.length ?? 0) / PAGE_SIZE));
@@ -51,13 +57,13 @@ export function DonationsView() {
   return (
     <div className="space-y-6">
       <Panel>
-        <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-5">
-          <Field label="Search" className="sm:col-span-2 lg:col-span-5">
+        <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+          <Field label="Search" className="sm:col-span-2 lg:col-span-4">
             <div className="relative">
               <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
               <Input
                 type="search"
-                placeholder="Name, email or payment ref"
+                placeholder="Name, organisation, email, phone, postcode or payment ref"
                 className="pl-9"
                 value={query.search ?? ''}
                 onChange={(e) => update({ search: e.target.value || undefined })}
@@ -101,6 +107,45 @@ export function DonationsView() {
               <option value="false">No Gift Aid</option>
             </Select>
           </Field>
+          <Field label="Donor type">
+            <Select
+              value={query.donorType ?? ''}
+              onChange={(e) =>
+                update({ donorType: (e.target.value || undefined) as DonationQuery['donorType'] })
+              }
+            >
+              <option value="">All donors</option>
+              <option value="personal">Personal</option>
+              <option value="organisation">Corporate / Group</option>
+            </Select>
+          </Field>
+          <Field label="Marketing consent">
+            <Select
+              value={query.marketingConsent === undefined ? '' : String(query.marketingConsent)}
+              onChange={(e) =>
+                update({
+                  marketingConsent: e.target.value === '' ? undefined : e.target.value === 'true',
+                })
+              }
+            >
+              <option value="">Any</option>
+              <option value="true">Opted in</option>
+              <option value="false">Not opted in</option>
+            </Select>
+          </Field>
+          <Field label="Source">
+            <Select
+              value={query.source ?? ''}
+              onChange={(e) => update({ source: e.target.value || undefined })}
+            >
+              <option value="">All sources</option>
+              {sources.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </Select>
+          </Field>
           <Field label="From">
             <Input
               type="date"
@@ -122,14 +167,16 @@ export function DonationsView() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Total received" value={gbp(totals.total)} hint="Excludes refunds" />
-        <StatCard label="Donations" value={String(totals.count)} />
-        <StatCard label="Recurring" value={gbp(totals.recurring)} />
+        <StatCard label="Donations" value={String(totals.count)} hint="Successful payments" />
+        <StatCard label="Recurring" value={gbp(totals.recurring)} hint="From regular gifts" />
         <StatCard
           label="Gift Aid value"
           value={gbp(totals.giftAidValue)}
           hint="25% of eligible gifts"
         />
       </div>
+
+      {donations && <TotalsPanels donations={donations} campaigns={campaigns} />}
 
       <Panel
         title={donations ? `${donations.length} donations` : 'Donations'}
@@ -146,7 +193,7 @@ export function DonationsView() {
           <EmptyState>No donations match these filters.</EmptyState>
         ) : (
           <>
-            <DonationTable donations={rows} campaigns={campaigns} />
+            <DonationTable donations={rows} campaigns={campaigns} onSelect={setSelected} />
             <div className="flex items-center justify-end gap-3 px-5 py-3 text-sm text-neutral-500">
               <span className="font-ui tabular-nums">
                 Page {page + 1} of {pages}
@@ -173,6 +220,12 @@ export function DonationsView() {
           </>
         )}
       </Panel>
+
+      <DonationDetail
+        donation={selected}
+        campaigns={campaigns}
+        onClose={() => setSelected(undefined)}
+      />
     </div>
   );
 }

@@ -392,3 +392,12 @@ export function LogoutIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** Repeat / recurring arrows (regular giving). */
+export function RepeatIcon(props: IconProps) {
+  return (
+    <svg {...lineIcon} {...base} {...props}>
+      <path d="M6 14v-2a4 4 0 0 1 4-4h16M22 4l4 4-4 4M26 18v2a4 4 0 0 1-4 4H6M10 28l-4-4 4-4" />
+    </svg>
+  );
+}

@@ -45,7 +45,8 @@ export const DONOR_TYPE_LABELS: Record<DonorType, string> = {
   organisation: 'Corporate / Group',
 };
 
-const donorFields = z.object({
+/** Donor fields as collected by the donation form (also the dashboard's donor record). */
+export const donorFields = z.object({
   type: z.enum(DONOR_TYPES),
   /** Company, mosque committee, school or group name (Corporate / Group only). */
   organisation: z.string().trim().max(100).optional(),

@@ -14,6 +14,7 @@ import {
   LogoutIcon,
   MenuIcon,
   ReceiptIcon,
+  RepeatIcon,
 } from '@/components/icons';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils/cn';
@@ -31,6 +32,7 @@ export const DASHBOARD_NAV: NavEntry[] = [
   { label: 'Prayer times', href: '/dashboard/prayer-times', icon: ClockIcon },
   { label: 'Campaigns', href: '/dashboard/campaigns', icon: HeartIcon },
   { label: 'Donations', href: '/dashboard/donations', icon: ReceiptIcon },
+  { label: 'Regular giving', href: '/dashboard/regular-giving', icon: RepeatIcon },
   { label: 'Donors & exports', href: '/dashboard/donors', icon: DownloadIcon },
   { label: 'Settings', href: '/dashboard/settings', icon: GearIcon },
 ];

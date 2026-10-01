@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { checkoutHref, moveId, prepareCampaign, raisedByCampaign, slugify } from './campaigns';
-import { toCsv } from './csv';
+import { isGiftAidClaimable, toCsv } from './csv';
 import { calculatedDay, copyDayTo, isFriday, sameTimes, validateDay } from './prayer';
-import { donationTotals, filterDonations, summariseDonors, taxYear } from './queries';
+import {
+  donationTotals,
+  filterDonations,
+  monthlyValue,
+  summariseDonors,
+  summariseRegularGifts,
+  taxYear,
+  totalsBy,
+} from './queries';
 import { sampleCampaigns, sampleDonations } from './sample-data';
 import { campaignSchema, donationSchema, prayerDaySchema } from './types';
 
@@ -125,5 +133,74 @@ describe('prepareCampaign', () => {
     expect(prepareCampaign(c).cta.href).toBe(checkoutHref(c.id));
     expect(checkoutHref('daily-iftar')).toBe('/donate/daily-iftar');
     expect(campaignSchema.safeParse(prepareCampaign(c)).success).toBe(true);
+  });
+});
+
+describe('donor data (frontend contract)', () => {
+  it('only gives Gift Aid to individual UK donors in the sample', () => {
+    for (const d of donations.filter((x) => x.giftAid)) {
+      expect(d.donor.type).toBe('personal');
+      expect(d.donor.country).toBe('GB');
+      expect(d.giftAidDeclaredAt).toBeDefined();
+    }
+  });
+
+  it('filters by donor type, consent and source', () => {
+    const orgs = filterDonations(donations, { donorType: 'organisation' });
+    expect(orgs.length).toBeGreaterThan(0);
+    expect(orgs.every((d) => d.donor.type === 'organisation')).toBe(true);
+    const opted = filterDonations(donations, { marketingConsent: true });
+    expect(opted.every((d) => d.marketingConsent)).toBe(true);
+    const direct = filterDonations(donations, { source: 'direct' });
+    expect(direct.every((d) => !d.source)).toBe(true);
+  });
+
+  it('summarises regular gifts with a status and payment history', () => {
+    const gifts = summariseRegularGifts(donations);
+    expect(gifts.length).toBeGreaterThan(0);
+    for (const g of gifts) {
+      expect(g.payments).toBeGreaterThan(0);
+      expect(g.startedAt <= g.lastPaymentAt).toBe(true);
+    }
+    expect(new Set(gifts.map((g) => g.status)).size).toBeGreaterThan(1);
+    expect(monthlyValue({ amount: 12, frequency: 'weekly' })).toBe(52);
+  });
+
+  it('totals recurring income in pounds and groups totals by campaign', () => {
+    const totals = donationTotals(donations);
+    const recurringSum = donations
+      .filter((d) => d.status === 'succeeded' && d.type === 'recurring')
+      .reduce((n, d) => n + d.amount, 0);
+    expect(totals.recurring).toBe(recurringSum);
+    const byCampaign = totalsBy(donations, (d) => d.campaignId);
+    expect(byCampaign.reduce((n, r) => n + r.total, 0)).toBe(totals.total);
+  });
+
+  it('keeps organisations out of the Gift Aid schedule', () => {
+    const fake = { ...donations[0]!, giftAid: true, status: 'succeeded' as const };
+    expect(isGiftAidClaimable({ ...fake, donor: { ...fake.donor, type: 'personal' } })).toBe(true);
+    expect(isGiftAidClaimable({ ...fake, donor: { ...fake.donor, type: 'organisation' } })).toBe(
+      false,
+    );
+  });
+});
+
+describe('exports', () => {
+  it('produce one complete row per record for every export', async () => {
+    const csv = await import('./csv');
+    const campaigns = sampleCampaigns();
+    const donors = summariseDonors(donations);
+    const sets: [string, unknown[], { header: string }[]][] = [
+      ['donations', donations, csv.donationColumns(campaigns)],
+      ['donors', donors, csv.donorColumns],
+      ['contacts', donors.filter((d) => d.marketingConsent), csv.contactColumns],
+      ['regular', summariseRegularGifts(donations), csv.regularGiftColumns(campaigns)],
+      ['gift aid', donations.filter(csv.isGiftAidClaimable), csv.giftAidColumns],
+    ];
+    for (const [, rows, columns] of sets) {
+      const out = csv.toCsv(rows as never[], columns as never);
+      expect(out.split('\r\n')).toHaveLength(rows.length + 1);
+      expect(out).not.toMatch(/undefined|NaN|\[object/);
+    }
   });
 });

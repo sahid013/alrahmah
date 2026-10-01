@@ -4,14 +4,18 @@ import { useMemo, useState } from 'react';
 import { DownloadIcon, SearchIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
+  contactColumns,
   donationColumns,
   donorColumns,
   downloadCsv,
   giftAidColumns,
+  isGiftAidClaimable,
   toCsv,
 } from '@/lib/dashboard/csv';
 import { summariseDonors, taxYear } from '@/lib/dashboard/queries';
+import { SUBSCRIPTION_STATUS_LABELS } from '@/lib/dashboard/types';
 import { todayAtMasjid } from '@/lib/events/calendar';
+import { countryName, UK } from '@/lib/giving/countries';
 import { addDaysIso } from '@/lib/events/schedule';
 import { cn } from '@/lib/utils/cn';
 import { useDashboardQuery } from '../dashboard-api-provider';
@@ -22,7 +26,10 @@ interface Range {
   to?: string;
 }
 
-/** Donor list for a period plus the three exports (donations, donors, HMRC Gift Aid schedule). */
+/**
+ * Donor list for a period plus the exports: donations, donors, opted-in contacts and the HMRC
+ * Gift Aid schedule.
+ */
 export function DonorsView() {
   const today = todayAtMasjid();
   const presets: { label: string; range: Range }[] = [
@@ -42,29 +49,42 @@ export function DonorsView() {
 
   const donors = useMemo(() => summariseDonors(donations ?? []), [donations]);
   const shown = donors.filter((d) =>
-    `${d.name} ${d.email} ${d.postcode ?? ''}`.toLowerCase().includes(search.trim().toLowerCase()),
+    [d.name, d.organisation, d.email, d.phone, d.postcode, d.city]
+      .join(' ')
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
   );
-  const giftAid = (donations ?? []).filter((d) => d.giftAid);
+  // HMRC: individuals only, succeeded payments with a declaration.
+  const giftAid = (donations ?? []).filter(isGiftAidClaimable);
+  const contacts = donors.filter((d) => d.marketingConsent);
   const suffix = `${range.from ?? 'start'}_to_${range.to ?? today}`;
 
   const exports = [
     {
       title: 'All donations',
-      description: 'One row per successful payment, with donor, campaign and Gift Aid status.',
+      description:
+        'One row per successful payment: donor details, campaign, Gift Aid, consent and source.',
       count: donations?.length ?? 0,
       run: () =>
         downloadCsv(`donations_${suffix}.csv`, toCsv(donations ?? [], donationColumns(campaigns))),
     },
     {
       title: 'Donor list',
-      description: 'One row per donor: contact details, number of gifts and total given.',
+      description: 'One row per donor: contact details, gifts, total, regular giving and consent.',
       count: donors.length,
       run: () => downloadCsv(`donors_${suffix}.csv`, toCsv(donors, donorColumns)),
     },
     {
+      title: 'Opted-in contacts',
+      description:
+        'Donors who agreed to email updates (their latest choice), for the mailing list.',
+      count: contacts.length,
+      run: () => downloadCsv(`contacts-opted-in_${suffix}.csv`, toCsv(contacts, contactColumns)),
+    },
+    {
       title: 'Gift Aid schedule',
       description:
-        "Eligible donations in HMRC's schedule column order, ready to paste into the claim spreadsheet.",
+        "Claimable donations (individuals only) in HMRC's schedule column order, ready to paste into the claim spreadsheet.",
       count: giftAid.length,
       run: () => downloadCsv(`gift-aid_${suffix}.csv`, toCsv(giftAid, giftAidColumns)),
     },
@@ -114,7 +134,7 @@ export function DonorsView() {
         </div>
       </Panel>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
         {exports.map((x) => (
           <section key={x.title} className="flex flex-col border border-neutral-200 bg-white p-5">
             <h2 className="font-heading text-title-lg tracking-heading text-primary-900 uppercase">
@@ -145,7 +165,7 @@ export function DonorsView() {
             <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
             <Input
               type="search"
-              placeholder="Search donors"
+              placeholder="Name, organisation, email, phone"
               className="py-1.5 pl-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -159,14 +179,15 @@ export function DonorsView() {
           <EmptyState>No donors in this period.</EmptyState>
         ) : (
           <div className="relative overflow-x-auto">
-            <table className="w-full min-w-[48rem]">
+            <table className="w-full min-w-[58rem]">
               <thead>
                 <tr>
                   <th className={th}>Donor</th>
-                  <th className={th}>Postcode</th>
+                  <th className={th}>Location</th>
                   <th className={th}>Gifts</th>
                   <th className={th}>Last gift</th>
                   <th className={th}>Status</th>
+                  <th className={th}>First source</th>
                   <th className={`${th} text-right`}>Total</th>
                 </tr>
               </thead>
@@ -175,6 +196,9 @@ export function DonorsView() {
                   <tr key={d.id} className="hover:bg-primary-50/50">
                     <td className={td}>
                       <span className="block font-bold text-primary-900">{d.name}</span>
+                      {d.organisation && (
+                        <span className="block text-xs text-neutral-600">{d.organisation}</span>
+                      )}
                       <a
                         href={`mailto:${d.email}`}
                         className="text-xs text-secondary-700 hover:underline"
@@ -182,17 +206,31 @@ export function DonorsView() {
                         {d.email}
                       </a>
                     </td>
-                    <td className={`${td} font-ui`}>{d.postcode ?? '—'}</td>
+                    <td className={td}>
+                      <span className="block">{d.city}</span>
+                      <span className="block font-ui text-xs">
+                        {d.country === UK ? d.postcode : countryName(d.country)}
+                      </span>
+                    </td>
                     <td className={`${td} font-ui tabular-nums`}>{d.donations}</td>
                     <td className={`${td} font-ui whitespace-nowrap tabular-nums`}>
                       {shortDate(d.lastGift)}
                     </td>
                     <td className={td}>
                       <span className="flex flex-wrap gap-1.5">
-                        {d.recurring && <Badge tone="sky">Regular</Badge>}
+                        {d.recurringStatus && (
+                          <Badge tone={d.recurringStatus === 'active' ? 'sky' : 'warning'}>
+                            {d.recurringStatus === 'active'
+                              ? 'Regular'
+                              : `Regular · ${SUBSCRIPTION_STATUS_LABELS[d.recurringStatus]}`}
+                          </Badge>
+                        )}
+                        {d.type === 'organisation' && <Badge>Corporate</Badge>}
                         {d.giftAid && <Badge tone="indigo">Gift Aid</Badge>}
+                        {d.marketingConsent && <Badge tone="success">Opted in</Badge>}
                       </span>
                     </td>
+                    <td className={`${td} text-xs`}>{d.firstSource}</td>
                     <td
                       className={`${td} text-right font-ui font-semibold text-primary-900 tabular-nums`}
                     >

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { donationProgramSchema } from '@/lib/donations/types';
+import { donorFields } from '@/lib/giving/types';
 
 /**
  * Dashboard data contracts — shared by the UI and (later) the Supabase / backend API.
@@ -64,6 +65,28 @@ export type Campaign = z.infer<typeof campaignSchema>;
 
 /* ---------- Donations ---------- */
 
+/** Where a donation came from (UTM tags captured on arrival; no tags = direct). */
+export const sourceSchema = z.object({
+  utmSource: z.string().optional(),
+  utmMedium: z.string().optional(),
+  utmCampaign: z.string().optional(),
+  referrer: z.string().optional(),
+  landingPage: z.string().optional(),
+});
+export type DonationSource = z.infer<typeof sourceSchema>;
+
+export const SUBSCRIPTION_STATUSES = ['active', 'past_due', 'cancelled'] as const;
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
+export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
+  active: 'Active',
+  past_due: 'Payment failed',
+  cancelled: 'Cancelled',
+};
+
+/**
+ * One payment. The donor fields are exactly what the donation form collects (`donorFields`),
+ * so the website, Stripe metadata, the database and the dashboard share one shape.
+ */
 export const donationSchema = z.object({
   id: z.string(),
   /** ISO timestamp. */
@@ -76,16 +99,14 @@ export const donationSchema = z.object({
   campaignId: z.string(),
   status: z.enum(['succeeded', 'refunded']),
   giftAid: z.boolean(),
-  donor: z.object({
-    id: z.string(),
-    title: z.string().optional(),
-    firstName: z.string(),
-    lastName: z.string(),
-    email: z.email(),
-    phone: z.string().optional(),
-    houseNameOrNumber: z.string().optional(),
-    postcode: z.string().optional(),
-  }),
+  /** When the donor made their Gift Aid declaration (ISO). */
+  giftAidDeclaredAt: z.string().optional(),
+  donor: donorFields.extend({ id: z.string() }),
+  /** Opted in to email updates when giving this donation. */
+  marketingConsent: z.boolean(),
+  /** Recurring gifts: the Stripe subscription and its current status. */
+  subscription: z.object({ id: z.string(), status: z.enum(SUBSCRIPTION_STATUSES) }).optional(),
+  source: sourceSchema.optional(),
   /** Stripe PaymentIntent / Invoice id once payments are live. */
   paymentRef: z.string().optional(),
 });
@@ -99,6 +120,10 @@ export interface DonationQuery {
   type?: DonationType;
   giftAid?: boolean;
   status?: Donation['status'];
-  /** Matches donor name, email or payment reference. */
+  donorType?: Donation['donor']['type'];
+  marketingConsent?: boolean;
+  /** `utmSource` value, or 'direct' for donations without one. */
+  source?: string;
+  /** Matches donor name, organisation, email, phone, postcode or payment reference. */
   search?: string;
 }
