@@ -307,7 +307,7 @@ Paths and names live in `siteConfig` (`config/site.ts`). Reference them from the
 - **Tracker** (`DonationTracker`, reusable): always stores `current` and `target`. `display` chooses how it reads: `amount` ("£3,200 raised of £10,000"), `percent` ("20% funded") or `donors` ("18 of 30 donors"). An optional `label` overrides the text. It's a flat square bar (sky on neutral, navy-tone variant on dark) with `role="progressbar"`, turns indigo with "Target reached" when complete, and fills from empty as the cards drop in.
 - **`DonationCard`** (reusable): a bordered white card with a square poster (slight zoom on hover), Forum title, optional price, summary, optional tracker and a full-width primary button. `DonationsOverview` is the optional page-level tracker panel on navy.
 - **Page:** `PageHero`, a featured appeal banner (to `/appeal`), the overview panel, then a 4/3/2/1-column grid of cards with the staggered drop-in.
-- **Before launch:** the tracker figures and the overview are **samples** (never publish made-up totals), and most `cta.href`s point to the fundraising platform's home page. Only Jummah Giving and My Masjid use the links printed on their posters. Posters are 600px square web copies (`<id>-poster.webp`) of the client's files in `public/images/donations/`; Daily Iftar's original is only 300px.
+- **Before launch:** the tracker figures and the overview are **samples** (never publish made-up totals), and most `cta.href`s point to the fundraising platform's home page. Only Jummah Giving and My Masjid use the links printed on their posters. Posters live in `public/images/donations/<id>-poster.webp` (600px square; Daily Iftar's is 300px). Keep only the files the site uses in that folder.
 
 ### Events & courses
 
