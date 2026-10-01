@@ -10,20 +10,20 @@ export async function generateStaticParams() {
   return programs.map((p) => ({ slug: p.id }));
 }
 
-export async function generateMetadata({ params }: PageProps<'/give/[slug]'>) {
+export async function generateMetadata({ params }: PageProps<'/donate/[slug]'>) {
   const { slug } = await params;
   const { programs } = await loadDonations();
   const program = programs.find((p) => p.id === slug);
   return buildMetadata({
     title: program ? `Donate to ${program.title}` : 'Donate',
     description: program?.summary,
-    path: `/give/${slug}`,
+    path: `/donate/${slug}`,
     // TODO: remove once Stripe payments are live (preview takes no payment).
     noindex: true,
   });
 }
 
-export default async function GivePage({ params }: PageProps<'/give/[slug]'>) {
+export default async function DonateCampaignPage({ params }: PageProps<'/donate/[slug]'>) {
   const { slug } = await params;
   const { programs } = await loadDonations();
   if (!programs.some((p) => p.id === slug)) notFound();

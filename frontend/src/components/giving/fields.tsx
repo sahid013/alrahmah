@@ -1,13 +1,20 @@
 import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '@/lib/utils/cn';
 
-/** Public form styles (same as the contact form): square, flat, brand focus ring. */
+/**
+ * Donation form controls, dark theme (the page sits on navy). Square, flat, sky focus ring.
+ * The form wrapper sets `color-scheme: dark` so native selects/checkboxes render dark too.
+ */
 export const fieldClass =
-  'block w-full border border-neutral-300 bg-white px-4 py-3 text-lg text-primary-900 placeholder:text-neutral-400 transition-colors duration-300 hover:border-primary-300 focus:border-primary-500 focus:outline-2 focus:outline-offset-0 focus:outline-secondary-500 aria-invalid:border-error-700';
+  'block w-full border border-white/15 bg-white/5 px-4 py-3 text-lg text-white placeholder:text-primary-200/60 transition-colors duration-300 hover:border-white/30 focus:border-secondary-400 focus:outline-2 focus:outline-offset-0 focus:outline-secondary-400 aria-invalid:border-error-300';
+
+export const labelClass =
+  'mb-2 block font-label text-sm font-bold tracking-[0.12em] text-white uppercase';
 
 export function GiveField({
   label,
   optional,
+  required,
   error,
   hint,
   children,
@@ -15,6 +22,8 @@ export function GiveField({
 }: {
   label: string;
   optional?: boolean;
+  /** Shows a required marker after the label (screen readers get `aria-required` on the input). */
+  required?: boolean;
   error?: string;
   hint?: string;
   children: ReactNode;
@@ -22,17 +31,22 @@ export function GiveField({
 }) {
   return (
     <label className={cn('block', className)}>
-      <span className="mb-2 block font-label text-sm font-bold tracking-[0.12em] text-primary-900 uppercase">
+      <span className={labelClass}>
         {label}
+        {required && (
+          <span aria-hidden className="ml-1 text-error-300">
+            *
+          </span>
+        )}
         {optional && (
-          <span className="ml-2 font-body text-xs tracking-normal text-neutral-400 normal-case">
+          <span className="ml-2 font-body text-xs tracking-normal text-primary-200 normal-case">
             (optional)
           </span>
         )}
       </span>
       {children}
-      {hint && !error && <span className="mt-1.5 block text-sm text-neutral-500">{hint}</span>}
-      {error && <span className="mt-1.5 block text-sm text-error-700">{error}</span>}
+      {hint && !error && <span className="mt-1.5 block text-sm text-primary-200">{hint}</span>}
+      {error && <span className="mt-1.5 block text-sm text-error-300">{error}</span>}
     </label>
   );
 }
@@ -40,11 +54,14 @@ export function GiveField({
 export const GiveInput = ({ className, ...props }: ComponentProps<'input'>) => (
   <input className={cn(fieldClass, className)} {...props} />
 );
+export const GiveTextarea = ({ className, ...props }: ComponentProps<'textarea'>) => (
+  <textarea className={cn(fieldClass, 'min-h-24 resize-y', className)} {...props} />
+);
 export const GiveSelect = ({ className, ...props }: ComponentProps<'select'>) => (
-  <select className={cn(fieldClass, 'pr-10', className)} {...props} />
+  <select className={cn(fieldClass, 'pr-10 [&>option]:bg-primary-900', className)} {...props} />
 );
 
-/** Square toggle tile (frequency, preset amounts). */
+/** Square toggle tile (frequency, preset amounts). Selected = sky with dark text. */
 export function Choice({
   selected,
   className,
@@ -55,10 +72,10 @@ export function Choice({
       type="button"
       aria-pressed={selected}
       className={cn(
-        'h-14 border font-ui text-lg font-semibold tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-500',
+        'h-14 border font-ui text-lg font-semibold tabular-nums transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-400',
         selected
-          ? 'border-primary-500 bg-primary-500 text-white'
-          : 'border-neutral-300 bg-white text-primary-900 hover:border-primary-500 hover:bg-primary-50',
+          ? 'border-secondary-500 bg-secondary-500 text-primary-950'
+          : 'border-white/15 bg-white/5 text-white hover:border-secondary-400',
         className,
       )}
       {...props}
@@ -70,8 +87,15 @@ export const StepTitle = ({ children, id }: { children: ReactNode; id: string })
   <h2
     id={id}
     tabIndex={-1}
-    className="text-title-2xl leading-none text-primary-900 outline-none sm:text-title-3xl"
+    className="text-title-2xl leading-none text-white outline-none sm:text-title-3xl"
   >
     {children}
   </h2>
+);
+
+/** Error box for dark surfaces. */
+export const ErrorBox = ({ children }: { children: ReactNode }) => (
+  <p role="alert" className="border-l-4 border-error-300 bg-error-700/20 px-4 py-3 text-error-300">
+    {children}
+  </p>
 );

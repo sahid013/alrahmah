@@ -66,8 +66,10 @@ export const siteConfig = {
       'https://www.google.com/maps/dir/?api=1&destination=6%20Sheepscar%20Way%2C%20Leeds%20LS7%203JB',
   },
   links: {
-    /** Donation programmes page; site-wide "Donate" buttons point here. */
-    donate: '/donations',
+    /** On-site donation flow; site-wide "Donate" buttons point here. */
+    donate: '/donate',
+    /** Donation programmes page (all causes). */
+    donations: '/donations',
     appeal: '/appeal',
     /** Official "Make Space for Rahmah" appeal website (full details). */
     appealWebsite: 'https://makespaceforrahmah.com/',

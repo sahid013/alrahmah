@@ -32,11 +32,13 @@ export const donationProgramSchema = z.object({
   title: z.string().min(1),
   /** One or two sentences under the title. */
   summary: z.string().optional(),
-  /** Square poster (cards show it 1:1). */
-  image: z.object({
-    src: z.string().min(1),
-    alt: z.string().min(1),
-  }),
+  /** Optional square poster (cards show it 1:1). Causes currently have none. */
+  image: z
+    .object({
+      src: z.string().min(1),
+      alt: z.string().min(1),
+    })
+    .optional(),
   /** Suggested / subscription amount, when the programme has one. */
   price: priceSchema.optional(),
   /** Where the button goes (donation platform, subscription page or an internal page). */

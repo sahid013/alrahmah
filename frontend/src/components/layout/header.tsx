@@ -19,8 +19,9 @@ import { NavLinks } from './nav-links';
 /**
  * Site header. Desktop (lg+): logo on the left; on the right a utility row (next salah + Donate)
  * above the nav, which keeps its dropdowns. Below lg: logo, Donate and the menu button.
- * Transparent over dark heroes (see `siteConfig.headerOverlayRoutes`) until the page scrolls;
- * slides out of view when scrolling down and back in when scrolling up.
+ * Always dark: transparent over dark heroes (see `siteConfig.headerOverlayRoutes`) until the page
+ * scrolls, solid navy everywhere else (never white). Slides out of view when scrolling down and
+ * back in when scrolling up.
  */
 export function Header({ latestEvents }: { latestEvents: EventItem[] }) {
   const nav = buildMainNav(latestEvents);
@@ -33,14 +34,8 @@ export function Header({ latestEvents }: { latestEvents: EventItem[] }) {
   const concealed = hidden && !menuOpen;
 
   const donate = (
-    <ButtonLink
-      href={siteConfig.links.donate}
-      size="sm"
-      variant={transparent ? 'secondary' : 'primary'}
-    >
-      <HeartIcon
-        className={cn('size-4', transparent ? 'text-primary-900' : 'text-secondary-300')}
-      />
+    <ButtonLink href={siteConfig.links.donate} size="sm" variant="secondary">
+      <HeartIcon className="size-4 text-primary-900" />
       Donate
     </ButtonLink>
   );
@@ -50,55 +45,41 @@ export function Header({ latestEvents }: { latestEvents: EventItem[] }) {
       data-transparent={transparent}
       className={cn(
         'sticky top-0 z-50 border-b transition-[translate,background-color,border-color] duration-500 ease-(--ease-smooth) motion-reduce:transition-none',
-        transparent ? 'border-white/10 bg-transparent' : 'border-neutral-200 bg-white',
+        transparent ? 'border-white/10 bg-transparent' : 'border-white/10 bg-primary-900',
         concealed ? '-translate-y-full' : 'translate-y-0',
       )}
     >
       <Container className="relative flex h-16 items-center justify-between gap-6 lg:h-[8.5rem] lg:items-stretch">
         <Link
           href="/"
-          className="relative shrink-0 self-center transition-opacity duration-300 hover:opacity-80"
+          className="shrink-0 self-center transition-opacity duration-300 hover:opacity-80"
           aria-label={`${siteConfig.name} — home`}
         >
           <Image
-            src={siteConfig.logo.src}
+            src={siteConfig.logoLight}
             alt={siteConfig.legalName}
             width={siteConfig.logo.width}
             height={siteConfig.logo.height}
             priority
-            className={cn(
-              'h-9 w-auto transition-opacity duration-500 lg:h-16',
-              transparent && 'opacity-0',
-            )}
-          />
-          <Image
-            src={siteConfig.logoLight}
-            alt=""
-            width={siteConfig.logo.width}
-            height={siteConfig.logo.height}
-            priority
-            className={cn(
-              'absolute inset-0 h-9 w-auto transition-opacity duration-500 lg:h-16',
-              !transparent && 'opacity-0',
-            )}
+            className="h-9 w-auto lg:h-16"
           />
         </Link>
 
         {/* Desktop: utility row above the nav, both right-aligned. */}
         <div className="hidden flex-col items-end justify-between pt-3 lg:flex">
           <div className="flex items-center gap-4">
-            <NextSalah tone={transparent ? 'dark' : 'light'} className="text-[1.1rem]" />
+            <NextSalah tone="dark" className="text-[1.1rem]" />
             {donate}
           </div>
           <nav aria-label="Main" className="flex h-12">
-            <NavLinks nav={nav} light={transparent} />
+            <NavLinks nav={nav} light />
           </nav>
         </div>
 
         {/* Mobile / tablet */}
         <div className="flex items-center gap-3 lg:hidden">
           {donate}
-          <MobileNav nav={nav} open={menuOpen} onOpenChange={setMenuOpen} light={transparent} />
+          <MobileNav nav={nav} open={menuOpen} onOpenChange={setMenuOpen} light />
         </div>
       </Container>
     </header>

@@ -1,7 +1,6 @@
 import type { DashboardApi } from './api';
 import { createLocalAuth } from './auth/local-auth';
 import { filterDonations } from './queries';
-import { blobToDataUrl, checkImageFile, resizeImage } from './resize-image';
 import { sampleCampaigns, sampleDonations } from './sample-data';
 import { campaignSchema, prayerDaySchema, type Campaign, type PrayerDay } from './types';
 
@@ -10,7 +9,7 @@ import { campaignSchema, prayerDaySchema, type Campaign, type PrayerDay } from '
  * serves generated sample donations. Not for production — swap for the Supabase/backend
  * implementation when it exists. Client-side only.
  */
-const KEY = 'alrahmah.dashboard.v1';
+const KEY = 'alrahmah.dashboard.v2'; // v2: causes reduced to three, no posters
 
 interface Store {
   prayer: Record<string, PrayerDay>;
@@ -118,13 +117,6 @@ export function createLocalDashboardApi(): DashboardApi {
     donations: {
       async list(query) {
         return settle(filterDonations(donations, query));
-      },
-    },
-    media: {
-      // Preview only: images are kept inline (as data URLs) with the record in this browser.
-      async uploadImage(file) {
-        checkImageFile(file);
-        return blobToDataUrl(await resizeImage(file));
       },
     },
   };

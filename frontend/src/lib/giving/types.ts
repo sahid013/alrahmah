@@ -16,7 +16,6 @@ export const FREQUENCY_LABELS: Record<Frequency, string> = {
 export const PRESET_AMOUNTS = [10, 25, 50, 100] as const;
 export const MIN_AMOUNT = 1;
 export const MAX_AMOUNT = 25_000;
-export const TITLES = ['Mr', 'Mrs', 'Miss', 'Ms', 'Dr'] as const;
 
 /** Full UK postcode, e.g. "LS7 3JB" (any spacing/case). */
 const UK_POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
@@ -38,38 +37,85 @@ export const amountSchema = z.object({
     ),
 });
 
-export const donorSchema = z.object({
-  title: z.enum(TITLES).optional(),
+export const DONOR_TYPES = ['personal', 'organisation'] as const;
+export type DonorType = (typeof DONOR_TYPES)[number];
+export const DONOR_TYPE_LABELS: Record<DonorType, string> = {
+  personal: 'Personal',
+  organisation: 'Corporate / Group',
+};
+export const COUNTRIES = { GB: 'United Kingdom', other: 'Other' } as const;
+
+const donorFields = z.object({
+  type: z.enum(DONOR_TYPES),
+  /** Company, mosque committee, school or group name (Corporate / Group only). */
+  organisation: z.string().trim().max(100).optional(),
   firstName: z.string().trim().min(1, 'Enter your first name').max(60),
   lastName: z.string().trim().min(1, 'Enter your last name').max(60),
+  address: z.string().trim().min(1, 'Enter your address').max(300),
+  country: z.enum(['GB', 'other']),
+  /** Required when `country` is `other`. */
+  countryName: z.string().trim().max(60).optional(),
+  postcode: z.string().trim().min(1, 'Enter your postcode').max(12),
+  city: z.string().trim().min(1, 'Enter your town or city').max(60),
+  /** County (UK, optional) or state / province (elsewhere). */
+  region: z.string().trim().max(60).optional(),
   email: z.email('Enter a valid email address'),
-  phone: z.string().trim().max(30).optional(),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+?[\d\s()-]{7,20}$/, 'Enter a valid phone number'),
 });
 
-export const giftAidSchema = z
-  .object({
-    declared: z.boolean(),
-    houseNameOrNumber: z.string().trim().max(60).optional(),
-    postcode: z.string().trim().optional(),
-  })
-  .superRefine((g, ctx) => {
-    if (!g.declared) return;
-    if (!g.houseNameOrNumber)
-      ctx.addIssue({
-        code: 'custom',
-        path: ['houseNameOrNumber'],
-        message: 'Enter your house name or number',
-      });
-    if (!g.postcode || !UK_POSTCODE.test(g.postcode))
-      ctx.addIssue({ code: 'custom', path: ['postcode'], message: 'Enter a full UK postcode' });
-  });
+export const donorSchema = donorFields.superRefine((d, ctx) => {
+  if (d.type === 'organisation' && !d.organisation)
+    ctx.addIssue({
+      code: 'custom',
+      path: ['organisation'],
+      message: 'Enter the organisation name',
+    });
+  if (d.country === 'other' && !d.countryName)
+    ctx.addIssue({ code: 'custom', path: ['countryName'], message: 'Enter your country' });
+  if (d.country === 'GB' && !UK_POSTCODE.test(d.postcode))
+    ctx.addIssue({ code: 'custom', path: ['postcode'], message: 'Enter a full UK postcode' });
+});
+export type Donor = z.infer<typeof donorSchema>;
 
-export const donationRequestSchema = amountSchema.extend({
+/** Gift Aid uses the donor's address (HMRC needs house name/number and postcode). */
+export const giftAidSchema = z.object({ declared: z.boolean() });
+
+const detailsShape = {
   donor: donorSchema,
   giftAid: giftAidSchema,
-});
+  /** Opt-in to email updates (unticked by default, separate from the donation). */
+  marketingConsent: z.boolean(),
+};
+
+/** Gift Aid is for individual UK taxpayers only, not companies or groups. */
+const checkGiftAid = (
+  r: { donor: { type: DonorType }; giftAid: { declared: boolean } },
+  ctx: z.RefinementCtx,
+) => {
+  if (r.giftAid.declared && r.donor.type !== 'personal')
+    ctx.addIssue({
+      code: 'custom',
+      path: ['giftAid', 'declared'],
+      message: 'Gift Aid can only be added to personal donations',
+    });
+};
+
+/** Step 2 (Details) on its own. */
+export const detailsSchema = z.object(detailsShape).superRefine(checkGiftAid);
+
+export const donationRequestSchema = amountSchema.extend(detailsShape).superRefine(checkGiftAid);
 export type DonationRequest = z.infer<typeof donationRequestSchema>;
 export type AmountStep = z.infer<typeof amountSchema>;
+
+/** "House name or number" for the HMRC Gift Aid schedule: the first part of the address. */
+export function houseFromAddress(address: string): string {
+  const first = address.split(/[\n,]/)[0]!.trim();
+  // "6 Sheepscar Way" → "6", "12A High St" → "12A"; otherwise it's a house name ("Rose Cottage").
+  return first.match(/^\d+[a-z]?\b/i)?.[0] ?? first.slice(0, 40);
+}
 
 /** Gift Aid adds 25p for every £1 (basic-rate tax reclaimed from HMRC). */
 export const giftAidBonus = (amount: number) => Math.round(amount * 25) / 100;

@@ -1,8 +1,17 @@
-import { cn } from '@/lib/utils/cn';
+'use client';
+
+import { motion } from 'motion/react';
 
 export const STEPS = ['Amount', 'Details', 'Payment', 'Thank you'] as const;
 
-/** Progress line with square markers. Completed steps are buttons (go back); later ones aren't. */
+const spring = { type: 'spring', stiffness: 260, damping: 32 } as const;
+
+/**
+ * Progress line with square markers (dark theme). The sky line fills between markers and the
+ * active outline glides to the current step (framer-motion; reduced motion via MotionConfig).
+ * Only the current step's label shows.
+ * Completed steps are buttons for going back.
+ */
 export function Stepper({
   current,
   onSelect,
@@ -10,62 +19,82 @@ export function Stepper({
   current: number;
   onSelect: (step: number) => void;
 }) {
+  const last = STEPS.length - 1;
+
   return (
-    <ol className="grid grid-cols-4" aria-label="Donation steps">
-      {STEPS.map((label, i) => {
-        const done = i < current;
-        const active = i === current;
-        const canGoBack = done && current < STEPS.length - 1;
-        const marker = (
-          <>
-            <span className="relative flex h-5 items-center">
-              {/* Connector to the next step. */}
-              {i < STEPS.length - 1 && (
-                <span
+    <div className="relative">
+      {/* Track between the first and last marker centres (columns are equal width). */}
+      <div
+        aria-hidden
+        className="absolute top-2.5 h-px bg-white/15"
+        style={{ left: `${50 / STEPS.length}%`, right: `${50 / STEPS.length}%` }}
+      >
+        <motion.div
+          className="h-full origin-left bg-secondary-400"
+          initial={false}
+          animate={{ scaleX: current / last }}
+          transition={spring}
+        />
+      </div>
+
+      <ol className="relative grid grid-cols-4" aria-label="Donation steps">
+        {STEPS.map((label, i) => {
+          const done = i < current;
+          const active = i === current;
+          const canGoBack = done && current < last;
+          const marker = (
+            <>
+              <span className="relative mx-auto flex size-5 items-center justify-center">
+                <motion.span
                   aria-hidden
-                  className={cn(
-                    'absolute top-1/2 left-1/2 h-px w-full -translate-y-1/2',
-                    done ? 'bg-secondary-500' : 'bg-neutral-300',
-                  )}
+                  initial={false}
+                  animate={{
+                    backgroundColor: done || active ? '#25a6de' : '#161436',
+                    borderColor: done || active ? '#25a6de' : 'rgba(255,255,255,0.3)',
+                    scale: active ? 1 : 0.7,
+                  }}
+                  transition={spring}
+                  className="size-3.5 border-2"
                 />
-              )}
-              <span
-                aria-hidden
-                className={cn(
-                  'relative mx-auto flex size-4 items-center justify-center border-2 transition-colors',
-                  active && 'size-5 border-primary-500 bg-white',
-                  done && 'border-secondary-500 bg-secondary-500',
-                  !active && !done && 'border-neutral-300 bg-white',
+                {active && (
+                  <motion.span
+                    aria-hidden
+                    layoutId="active-step"
+                    transition={spring}
+                    className="absolute inset-0 border-2 border-secondary-400"
+                  />
                 )}
-              />
-            </span>
-            <span
-              className={cn(
-                'mt-3 block font-label text-[0.65rem] font-bold tracking-[0.15em] uppercase sm:text-xs',
-                active ? 'text-primary-900' : done ? 'text-secondary-700' : 'text-neutral-400',
-              )}
-            >
-              {label}
-            </span>
-          </>
-        );
-        return (
-          <li key={label} className="text-center" aria-current={active ? 'step' : undefined}>
-            {canGoBack ? (
-              <button
-                type="button"
-                onClick={() => onSelect(i)}
-                className="block w-full hover:opacity-80"
-                aria-label={`Back to ${label}`}
+              </span>
+              {/* Only the active step's label is visible; the others stay in the accessibility
+                  tree (opacity only) and keep their space so nothing shifts. */}
+              <motion.span
+                initial={false}
+                animate={{ opacity: active ? 1 : 0, y: active ? 0 : -4 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-3 block font-label text-[0.65rem] font-bold tracking-[0.15em] text-white uppercase sm:text-xs"
               >
-                {marker}
-              </button>
-            ) : (
-              <div>{marker}</div>
-            )}
-          </li>
-        );
-      })}
-    </ol>
+                {label}
+              </motion.span>
+            </>
+          );
+          return (
+            <li key={label} className="text-center" aria-current={active ? 'step' : undefined}>
+              {canGoBack ? (
+                <button
+                  type="button"
+                  onClick={() => onSelect(i)}
+                  className="block w-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-secondary-400"
+                  aria-label={`Back to ${label}`}
+                >
+                  {marker}
+                </button>
+              ) : (
+                <div>{marker}</div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }

@@ -39,7 +39,7 @@ function MobileLink({
       className={cn(
         'block py-2.5 pl-4 font-ui font-medium tracking-heading',
         small ? 'text-sm' : 'text-base',
-        current ? 'text-primary-500' : 'text-primary-900 hover:text-primary-500',
+        current ? 'text-secondary-300' : 'text-white hover:text-secondary-300',
       )}
     >
       {link.label}
@@ -59,7 +59,7 @@ function MobileGroup({ item, onNavigate }: { item: NavItem; onNavigate: () => vo
         onClick={() => setExpanded((e) => !e)}
         aria-expanded={expanded}
         aria-controls={groupId}
-        className={cn(rowClass, 'text-neutral-600 hover:text-primary-500')}
+        className={cn(rowClass, 'text-primary-100 hover:text-white')}
       >
         {item.label}
         <ChevronIcon
@@ -80,7 +80,7 @@ function MobileGroup({ item, onNavigate }: { item: NavItem; onNavigate: () => vo
           <li key={child.href}>
             <MobileLink link={child} pathname={pathname} onNavigate={onNavigate} />
             {child.children && (
-              <ul className="ml-4 border-l border-neutral-200">
+              <ul className="ml-4 border-l border-white/15">
                 {child.children.map((grandchild) => (
                   <li key={grandchild.href}>
                     <MobileLink
@@ -121,10 +121,10 @@ export function MobileNav({ nav, open, onOpenChange, light = false }: MobileNavP
       <div
         id="mobile-menu"
         hidden={!open}
-        className="animate-fade absolute inset-x-0 top-full border-b border-neutral-200 bg-white"
+        className="animate-fade absolute inset-x-0 top-full border-b border-white/10 bg-primary-900"
       >
         <nav aria-label="Mobile" className="px-4 pt-2 pb-6">
-          <ul className="divide-y divide-neutral-100">
+          <ul className="divide-y divide-white/10">
             {nav.map((item) =>
               item.children?.length ? (
                 <MobileGroup key={item.href} item={item} onNavigate={close} />
@@ -133,7 +133,7 @@ export function MobileNav({ nav, open, onOpenChange, light = false }: MobileNavP
                   <Link
                     href={item.href}
                     onClick={close}
-                    className={cn(rowClass, 'text-neutral-600 hover:text-primary-500')}
+                    className={cn(rowClass, 'text-primary-100 hover:text-white')}
                   >
                     {item.label}
                   </Link>

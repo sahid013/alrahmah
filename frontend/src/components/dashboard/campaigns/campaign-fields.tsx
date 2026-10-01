@@ -1,12 +1,11 @@
 import type { Campaign } from '@/lib/dashboard/types';
 import type { DonationTracker } from '@/lib/donations/types';
 import { checkoutHref } from '@/lib/dashboard/campaigns';
-import { ImageUpload } from '../image-upload';
 import { Badge, Field, Input, Panel, Select, Textarea } from '../ui';
 
 const num = (value: string) => (value === '' ? Number.NaN : Number(value));
 
-/** The campaign form's fields, grouped into panels. Errors are keyed by zod path ("image.src"). */
+/** The campaign form's fields, grouped into panels. Errors are keyed by zod path ("cta.label"). */
 export function CampaignFields({
   draft,
   errors,
@@ -68,28 +67,6 @@ export function CampaignFields({
             <Textarea
               value={draft.summary ?? ''}
               onChange={(e) => onChange({ summary: e.target.value || undefined })}
-            />
-          </Field>
-        </div>
-      </Panel>
-
-      <Panel title="Poster">
-        <div className="space-y-5 p-5">
-          <ImageUpload
-            label="Poster image"
-            hint="Square works best (shown 1:1). JPG, PNG or WebP, up to 10 MB — resized automatically."
-            value={draft.image.src}
-            error={errors['image.src']}
-            onChange={(src) => onChange({ image: { ...draft.image, src } })}
-          />
-          <Field
-            label="Alt text"
-            hint="Describe the poster for screen readers."
-            error={errors['image.alt']}
-          >
-            <Input
-              value={draft.image.alt}
-              onChange={(e) => onChange({ image: { ...draft.image, alt: e.target.value } })}
             />
           </Field>
         </div>

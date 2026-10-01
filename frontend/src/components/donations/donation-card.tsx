@@ -10,7 +10,7 @@ import { DonationTracker } from './donation-tracker';
 const isExternal = (href: string) => /^https?:\/\//.test(href);
 
 /**
- * Reusable donation programme card: square poster, title, optional price, summary, optional
+ * Reusable donation programme card: optional square poster, title, optional price, summary, optional
  * tracker and a full-width call to action. Everything comes from the programme data, so cards
  * can be added, removed or reordered from the dashboard without code changes.
  */
@@ -35,15 +35,17 @@ export function DonationCard({
       )}
       style={style}
     >
-      <div className="relative aspect-square overflow-hidden bg-primary-50">
-        <Image
-          src={program.image.src}
-          alt={program.image.alt}
-          fill
-          sizes="(min-width: 1280px) 22rem, (min-width: 640px) 45vw, 100vw"
-          className="object-cover transition-transform duration-700 ease-(--ease-smooth) group-hover:scale-[1.03]"
-        />
-      </div>
+      {program.image && (
+        <div className="relative aspect-square overflow-hidden bg-primary-50">
+          <Image
+            src={program.image.src}
+            alt={program.image.alt}
+            fill
+            sizes="(min-width: 1280px) 22rem, (min-width: 640px) 45vw, 100vw"
+            className="object-cover transition-transform duration-700 ease-(--ease-smooth) group-hover:scale-[1.03]"
+          />
+        </div>
+      )}
       <div className="flex flex-1 flex-col p-6">
         <h3
           id={`${program.id}-title`}

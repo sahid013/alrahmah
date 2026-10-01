@@ -1,7 +1,7 @@
 import 'server-only';
 import Stripe from 'stripe';
 import { loadDonations } from '@/lib/donations/repository';
-import { donationRequestSchema, type DonationRequest } from './types';
+import { donationRequestSchema, houseFromAddress, type DonationRequest } from './types';
 
 /**
  * Server-only Stripe access. Keys come from env (provisioned by the Vercel Stripe integration):
@@ -25,18 +25,28 @@ export class DonationInputError extends Error {}
 
 /** Metadata stored on the session and on the PaymentIntent / Subscription it creates. */
 function donationMetadata(r: DonationRequest, campaignTitle: string): Stripe.MetadataParam {
+  const d = r.donor;
+  const giftAid = r.giftAid.declared;
   return {
     campaign_id: r.campaignId,
     campaign_title: campaignTitle,
     frequency: r.frequency,
-    donor_title: r.donor.title ?? '',
-    donor_first_name: r.donor.firstName,
-    donor_last_name: r.donor.lastName,
-    donor_phone: r.donor.phone ?? '',
-    gift_aid: r.giftAid.declared ? 'yes' : 'no',
-    gift_aid_house: r.giftAid.declared ? (r.giftAid.houseNameOrNumber ?? '') : '',
-    gift_aid_postcode: r.giftAid.declared ? (r.giftAid.postcode ?? '') : '',
-    gift_aid_declared_at: r.giftAid.declared ? new Date().toISOString() : '',
+    donor_type: d.type,
+    donor_organisation: d.organisation ?? '',
+    donor_first_name: d.firstName,
+    donor_last_name: d.lastName,
+    donor_phone: d.phone,
+    donor_address: d.address,
+    donor_city: d.city,
+    donor_region: d.region ?? '',
+    donor_postcode: d.postcode,
+    donor_country: d.country === 'GB' ? 'United Kingdom' : (d.countryName ?? ''),
+    marketing_consent: r.marketingConsent ? 'yes' : 'no',
+    gift_aid: giftAid ? 'yes' : 'no',
+    // HMRC schedule columns: house name or number + postcode.
+    gift_aid_house: giftAid ? houseFromAddress(d.address) : '',
+    gift_aid_postcode: giftAid ? d.postcode : '',
+    gift_aid_declared_at: giftAid ? new Date().toISOString() : '',
   };
 }
 
@@ -89,7 +99,7 @@ export async function createDonationSession(input: unknown, origin: string) {
           customer_creation: 'always',
           payment_intent_data: { metadata, description: `Donation: ${campaign.title}` },
         }),
-    return_url: `${origin}/give/complete?session_id={CHECKOUT_SESSION_ID}`,
+    return_url: `${origin}/donate/complete?session_id={CHECKOUT_SESSION_ID}`,
   });
 
   if (!session.client_secret) throw new Error('Stripe did not return a client secret.');

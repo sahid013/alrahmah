@@ -4,7 +4,7 @@ import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
   title: 'Donate',
-  path: '/give',
+  path: '/donate',
   // TODO: remove once Stripe payments are live (preview takes no payment).
   noindex: true,
 });

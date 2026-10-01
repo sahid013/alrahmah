@@ -9,7 +9,7 @@ import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
   title: 'Thank you',
-  path: '/give/complete',
+  path: '/donate/complete',
   noindex: true,
 });
 
@@ -17,7 +17,7 @@ export const metadata = buildMetadata({
  * Where Stripe returns donors after a redirect-based step (e.g. bank authentication).
  * Shows the session's real status; the donation itself is recorded by the webhook.
  */
-export default async function GiveCompletePage({ searchParams }: PageProps<'/give/complete'>) {
+export default async function DonateCompletePage({ searchParams }: PageProps<'/donate/complete'>) {
   const { session_id } = await searchParams;
   const id =
     typeof session_id === 'string' && session_id.startsWith('cs_') ? session_id : undefined;
@@ -64,7 +64,7 @@ export default async function GiveCompletePage({ searchParams }: PageProps<'/giv
           </div>
         )}
         <div className="mt-10 flex flex-wrap gap-4">
-          <ButtonLink href={siteConfig.links.donate} variant="outline">
+          <ButtonLink href={siteConfig.links.donations} variant="outline">
             {paid ? 'More ways to give' : 'Back to donations'}
             <ArrowRightIcon className="size-4" />
           </ButtonLink>

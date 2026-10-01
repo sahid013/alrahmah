@@ -60,6 +60,8 @@
   --color-warning-50: #fffbeb;
   --color-warning-700: #b45309;
   --color-error-50: #fef2f2;
+  /* Error text on dark (navy) surfaces: 7.9:1 on primary-950. */
+  --color-error-300: #fca5a5;
   --color-error-700: #b91c1c;
 
   /* Motion — one smooth curve for everything, so movement and fades stay in step. */

@@ -1,11 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { GripIcon, PencilIcon, PlusIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
-import { isRenderableImage, moveId, raisedByCampaign } from '@/lib/dashboard/campaigns';
+import { moveId, raisedByCampaign } from '@/lib/dashboard/campaigns';
 import type { Campaign, Donation } from '@/lib/dashboard/types';
 import { trackerLabel } from '@/lib/donations/format';
 import { cn } from '@/lib/utils/cn';
@@ -185,21 +184,9 @@ function SortableCampaigns({
                       <Link
                         href={`/dashboard/campaigns/${c.id}`}
                         draggable={false}
-                        className="flex items-center gap-3 hover:text-primary-500"
+                        className="font-bold text-primary-900 hover:text-primary-500"
                       >
-                        <span className="relative size-12 shrink-0 overflow-hidden bg-primary-50">
-                          {isRenderableImage(c.image.src) && (
-                            <Image
-                              src={c.image.src}
-                              alt=""
-                              fill
-                              sizes="48px"
-                              draggable={false}
-                              className="object-cover"
-                            />
-                          )}
-                        </span>
-                        <span className="font-bold text-primary-900">{c.title}</span>
+                        {c.title}
                       </Link>
                     </td>
                     <td className={td}>

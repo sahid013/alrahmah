@@ -2,37 +2,74 @@ import { describe, expect, it } from 'vitest';
 import {
   amountSchema,
   amountWithFrequency,
+  detailsSchema,
   donationRequestSchema,
   fieldErrors,
   giftAidBonus,
+  houseFromAddress,
   normalisePostcode,
+  type DonationRequest,
 } from './types';
 
-const valid = {
-  campaignId: 'zakaah',
-  frequency: 'one-off' as const,
+const donor: DonationRequest['donor'] = {
+  type: 'personal',
+  firstName: 'Aisha',
+  lastName: 'Rahman',
+  address: '6 Sheepscar Way',
+  country: 'GB',
+  postcode: 'LS7 3JB',
+  city: 'Leeds',
+  email: 'aisha@example.com',
+  phone: '07700 900123',
+};
+const valid: DonationRequest = {
+  campaignId: 'zakaat',
+  frequency: 'one-off',
   amount: 50,
-  donor: { firstName: 'Aisha', lastName: 'Rahman', email: 'aisha@example.com' },
+  donor,
   giftAid: { declared: false },
+  marketingConsent: false,
+};
+const errorsOf = (input: unknown) => {
+  const r = detailsSchema.safeParse(input);
+  return r.success ? {} : fieldErrors(r.error);
 };
 
 describe('donation request', () => {
-  it('accepts a simple one-off donation', () => {
+  it('accepts a complete personal donation', () => {
     expect(donationRequestSchema.safeParse(valid).success).toBe(true);
   });
 
-  it('requires address details only when Gift Aid is declared', () => {
-    const r = donationRequestSchema.safeParse({ ...valid, giftAid: { declared: true } });
-    expect(r.success).toBe(false);
-    expect(Object.keys(fieldErrors(r.error!))).toEqual([
-      'giftAid.houseNameOrNumber',
-      'giftAid.postcode',
-    ]);
-    const ok = donationRequestSchema.safeParse({
+  it('requires the core details', () => {
+    const errors = errorsOf({
       ...valid,
-      giftAid: { declared: true, houseNameOrNumber: '6', postcode: 'ls73jb' },
+      donor: { ...donor, firstName: '', address: '', city: '', email: 'x', phone: '12' },
     });
-    expect(ok.success).toBe(true);
+    expect(Object.keys(errors).sort()).toEqual(
+      ['donor.address', 'donor.city', 'donor.email', 'donor.firstName', 'donor.phone'].sort(),
+    );
+  });
+
+  it('checks UK postcodes but accepts any postcode elsewhere', () => {
+    expect(errorsOf({ ...valid, donor: { ...donor, postcode: '7221' } })['donor.postcode']).toMatch(
+      /UK postcode/,
+    );
+    const abroad = { ...donor, country: 'other', postcode: '7221', countryName: 'Bangladesh' };
+    expect(errorsOf({ ...valid, donor: abroad })).toEqual({});
+    expect(
+      errorsOf({ ...valid, donor: { ...abroad, countryName: '' } })['donor.countryName'],
+    ).toBeDefined();
+  });
+
+  it('needs an organisation name for Corporate / Group and refuses Gift Aid there', () => {
+    const org = { ...donor, type: 'organisation' };
+    expect(errorsOf({ ...valid, donor: org })['donor.organisation']).toBeDefined();
+    const errors = errorsOf({
+      ...valid,
+      donor: { ...org, organisation: 'Leeds Traders' },
+      giftAid: { declared: true },
+    });
+    expect(errors['giftAid.declared']).toMatch(/personal/);
   });
 
   it('validates amounts', () => {
@@ -58,5 +95,10 @@ describe('giving helpers', () => {
   it('normalises postcodes', () => {
     expect(normalisePostcode(' ls73jb ')).toBe('LS7 3JB');
     expect(normalisePostcode('sw1a 1aa')).toBe('SW1A 1AA');
+  });
+  it('finds the house name or number for Gift Aid', () => {
+    expect(houseFromAddress('6 Sheepscar Way')).toBe('6');
+    expect(houseFromAddress('12A High Street\nLeeds')).toBe('12A');
+    expect(houseFromAddress('Rose Cottage, Mill Lane')).toBe('Rose Cottage');
   });
 });

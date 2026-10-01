@@ -57,7 +57,7 @@ export function AmountStep({
       <StepTitle id="step-title">Your donation</StepTitle>
 
       <fieldset>
-        <legend className="mb-3 font-label text-sm font-bold tracking-[0.12em] text-primary-900 uppercase">
+        <legend className="mb-3 font-label text-sm font-bold tracking-[0.12em] text-white uppercase">
           How often
         </legend>
         <div className="grid grid-cols-3 gap-3">
@@ -72,7 +72,7 @@ export function AmountStep({
             </Choice>
           ))}
         </div>
-        <p className="mt-3 text-neutral-500" aria-live="polite">
+        <p className="mt-3 text-primary-200" aria-live="polite">
           {chargeNote[value.frequency](
             Number.isFinite(amount) && amount > 0 ? formatGbp(amount) : 'this amount',
           )}
@@ -80,7 +80,7 @@ export function AmountStep({
       </fieldset>
 
       <fieldset>
-        <legend className="mb-3 font-label text-sm font-bold tracking-[0.12em] text-primary-900 uppercase">
+        <legend className="mb-3 font-label text-sm font-bold tracking-[0.12em] text-white uppercase">
           Amount
         </legend>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -98,23 +98,25 @@ export function AmountStep({
           <span className="sr-only">Other amount in pounds</span>
           <span
             className={cn(
-              'flex h-14 items-center border bg-white transition-colors focus-within:border-primary-500 focus-within:outline-2 focus-within:outline-secondary-500',
-              !isPreset && value.amountText ? 'border-primary-500' : 'border-neutral-300',
-              errors.amount && 'border-error-700',
+              'flex h-14 items-center border bg-white/5 transition-colors focus-within:border-secondary-400 focus-within:outline-2 focus-within:outline-secondary-400',
+              !isPreset && value.amountText
+                ? 'border-secondary-400'
+                : 'border-white/15 hover:border-white/30',
+              errors.amount && 'border-error-300',
             )}
           >
-            <span className="pl-4 font-ui text-lg font-semibold text-neutral-400">£</span>
+            <span className="pl-4 font-ui text-lg font-semibold text-primary-200">£</span>
             <input
               inputMode="decimal"
               placeholder="Other amount"
               aria-invalid={!!errors.amount}
               value={isPreset ? '' : value.amountText}
               onChange={(e) => onChange({ amountText: e.target.value.replace(/[^\d.]/g, '') })}
-              className="h-full w-full bg-transparent px-2 font-ui text-lg font-semibold text-primary-900 tabular-nums outline-none placeholder:font-body placeholder:font-normal placeholder:text-neutral-400"
+              className="h-full w-full bg-transparent px-2 font-ui text-lg font-semibold text-white tabular-nums outline-none placeholder:font-body placeholder:font-normal placeholder:text-primary-200/60"
             />
           </span>
         </label>
-        {errors.amount && <p className="mt-1.5 text-sm text-error-700">{errors.amount}</p>}
+        {errors.amount && <p className="mt-1.5 text-sm text-error-300">{errors.amount}</p>}
       </fieldset>
 
       <GiveField label="Where it goes" error={errors.campaignId}>

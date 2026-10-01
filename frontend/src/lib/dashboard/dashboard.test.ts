@@ -123,7 +123,7 @@ describe('prepareCampaign', () => {
   it('points the donate button at the campaign checkout', () => {
     const c = sampleCampaigns()[0]!;
     expect(prepareCampaign(c).cta.href).toBe(checkoutHref(c.id));
-    expect(checkoutHref('daily-iftar')).toBe('/give/daily-iftar');
+    expect(checkoutHref('daily-iftar')).toBe('/donate/daily-iftar');
     expect(campaignSchema.safeParse(prepareCampaign(c)).success).toBe(true);
   });
 });

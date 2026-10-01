@@ -11,29 +11,40 @@ import { HeartIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { referenceFromSession } from '@/lib/giving/payments';
 import { amountWithFrequency, type DonationRequest } from '@/lib/giving/types';
+import { ErrorBox } from './fields';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '');
 
-/** Stripe's form, styled to match the site: square corners, brand colours, Poppins. */
+/** Stripe's form, styled to match the dark donation page: square corners, brand colours, Poppins. */
 const appearance: Appearance = {
-  theme: 'stripe',
+  theme: 'night',
   variables: {
-    colorPrimary: '#363287',
-    colorText: '#161436',
-    colorTextSecondary: '#515153',
-    colorDanger: '#b91c1c',
-    colorBackground: '#ffffff',
+    colorPrimary: '#25a6de',
+    colorBackground: '#1e1c4a',
+    colorText: '#ffffff',
+    colorTextSecondary: '#c3c2db',
+    colorTextPlaceholder: '#9a98c3',
+    colorDanger: '#fca5a5',
     fontFamily: 'Poppins, system-ui, sans-serif',
     fontSizeBase: '16px',
     borderRadius: '0px',
     spacingUnit: '4px',
   },
   rules: {
-    '.Input': { border: '1px solid #a8a8a9', boxShadow: 'none', padding: '12px 16px' },
-    '.Input:focus': { borderColor: '#363287', boxShadow: '0 0 0 2px #25a6de' },
-    '.Label': { fontWeight: '600', color: '#161436' },
-    '.Tab': { border: '1px solid #a8a8a9', boxShadow: 'none' },
-    '.Tab--selected': { borderColor: '#363287', boxShadow: '0 0 0 1px #363287' },
+    '.Input': {
+      border: '1px solid rgba(255,255,255,0.15)',
+      boxShadow: 'none',
+      padding: '12px 16px',
+    },
+    '.Input:focus': { borderColor: '#5cbce6', boxShadow: '0 0 0 2px #5cbce6' },
+    '.Label': { fontWeight: '600', color: '#ffffff' },
+    '.Tab': {
+      border: '1px solid rgba(255,255,255,0.15)',
+      boxShadow: 'none',
+      backgroundColor: '#1e1c4a',
+    },
+    '.Tab:hover': { borderColor: 'rgba(255,255,255,0.3)' },
+    '.Tab--selected': { borderColor: '#25a6de', boxShadow: '0 0 0 1px #25a6de' },
   },
 };
 
@@ -64,14 +75,22 @@ export function StripePayment({
   const options = useMemo(
     () => ({
       clientSecret,
-      // UK masjid: default the billing country to the UK (Stripe otherwise guesses by IP). The
-      // email is already set on the session server-side (customer_email), so it is not repeated.
-      defaultValues: {
-        billingAddress: {
-          name: `${request.donor.firstName} ${request.donor.lastName}`,
-          address: { country: 'GB', postal_code: request.giftAid.postcode ?? null },
+      // Prefill the billing address from the Details step (UK donors; elsewhere Stripe asks for
+      // the country itself). The email is already set on the session server-side
+      // (customer_email), so it is not repeated.
+      ...(request.donor.country === 'GB' && {
+        defaultValues: {
+          billingAddress: {
+            name: `${request.donor.firstName} ${request.donor.lastName}`,
+            address: {
+              country: 'GB',
+              line1: request.donor.address.split('\n')[0] ?? null,
+              city: request.donor.city,
+              postal_code: request.donor.postcode,
+            },
+          },
         },
-      },
+      }),
       elementsOptions: {
         appearance,
         fonts: [
@@ -107,16 +126,11 @@ function PaymentForm({
     return (
       <div aria-busy="true" className="space-y-3">
         <span className="sr-only">Loading secure payment form…</span>
-        <div className="h-12 animate-pulse bg-neutral-100 motion-reduce:animate-none" />
-        <div className="h-12 animate-pulse bg-neutral-100 motion-reduce:animate-none" />
+        <div className="h-12 animate-pulse bg-white/10 motion-reduce:animate-none" />
+        <div className="h-12 animate-pulse bg-white/10 motion-reduce:animate-none" />
       </div>
     );
-  if (state.type === 'error')
-    return (
-      <p role="alert" className="bg-error-50 px-4 py-3 text-error-700">
-        {state.error.message}
-      </p>
-    );
+  if (state.type === 'error') return <ErrorBox>{state.error.message}</ErrorBox>;
 
   const { checkout } = state;
 
@@ -124,7 +138,7 @@ function PaymentForm({
     setBusy(true);
     setError(undefined);
     try {
-      // Bank checks that need a redirect return to the session's return_url (/give/complete).
+      // Bank checks that need a redirect return to the session's return_url (/donate/complete).
       const result = await checkout.confirm({ redirect: 'if_required' });
       if (result.type === 'error') setError(result.error.message);
       else onPaid(referenceFromSession(result.session.id));
@@ -140,11 +154,7 @@ function PaymentForm({
   return (
     <div className="space-y-6">
       <PaymentElement options={{ layout: 'tabs' }} />
-      {error && (
-        <p role="alert" className="bg-error-50 px-4 py-3 text-error-700">
-          {error}
-        </p>
-      )}
+      {error && <ErrorBox>{error}</ErrorBox>}
       <Button
         type="button"
         size="lg"

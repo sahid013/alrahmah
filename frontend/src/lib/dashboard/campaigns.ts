@@ -17,7 +17,6 @@ export const newCampaign = (order: number): Campaign => ({
   id: '',
   title: '',
   summary: '',
-  image: { src: '', alt: '' },
   cta: { label: 'Donate now', href: '' },
   status: 'draft',
   order,
@@ -28,10 +27,6 @@ export const prepareCampaign = (c: Campaign): Campaign => ({
   ...c,
   cta: { ...c.cta, href: checkoutHref(c.id) },
 });
-
-/** Image sources the dashboard can render now (site files and uploaded previews). */
-export const isRenderableImage = (src: string) =>
-  src.startsWith('/') || src.startsWith('data:image/');
 
 /** Ids in display order with `id` moved to `toIndex` (clamped). */
 export function moveId(ids: string[], id: string, toIndex: number): string[] {

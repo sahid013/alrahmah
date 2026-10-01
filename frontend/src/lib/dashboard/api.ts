@@ -60,11 +60,4 @@ export interface DashboardApi {
   donations: {
     list(query?: DonationQuery): Promise<Donation[]>;
   };
-  media: {
-    /**
-     * Store an image and return the URL to save on the record. Backend: upload to Supabase
-     * Storage (bucket `posters`) and return its public URL (add the host to `images.remotePatterns`).
-     */
-    uploadImage(file: File): Promise<string>;
-  };
 }

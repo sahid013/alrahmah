@@ -6,12 +6,7 @@ import { useState, type FormEvent } from 'react';
 import { ChevronIcon, TrashIcon } from '@/components/icons';
 import { DonationCard } from '@/components/donations/donation-card';
 import { Button } from '@/components/ui/button';
-import {
-  isRenderableImage,
-  newCampaign,
-  prepareCampaign,
-  slugify,
-} from '@/lib/dashboard/campaigns';
+import { newCampaign, prepareCampaign, slugify } from '@/lib/dashboard/campaigns';
 import { CAMPAIGN_STATUSES, campaignSchema, type Campaign } from '@/lib/dashboard/types';
 import { useDashboardApi, useDashboardQuery } from '../dashboard-api-provider';
 import { EmptyState, LoadingRows, PageHeader } from '../ui';
@@ -21,8 +16,6 @@ import { CampaignFields } from './campaign-fields';
 const FRIENDLY_ERRORS: Record<string, string> = {
   id: 'Use lowercase letters, numbers and hyphens only (e.g. daily-iftar)',
   title: 'Give the campaign a title',
-  'image.src': 'Upload a poster image',
-  'image.alt': 'Describe the poster for screen readers',
   'cta.label': 'Add a button label',
 };
 
@@ -128,10 +121,6 @@ function EditorForm({
   const preview = {
     ...draft,
     title: draft.title || 'Campaign title',
-    image: {
-      src: isRenderableImage(draft.image.src) ? draft.image.src : '/brand/logo-mark.svg',
-      alt: draft.image.alt || 'Poster preview',
-    },
     cta: { label: draft.cta.label || 'Donate now', href: '#' },
   };
 
