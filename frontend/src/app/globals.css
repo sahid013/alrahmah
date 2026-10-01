@@ -363,6 +363,27 @@
   }
 }
 
+/* Donation tracker bars fill from empty once their group reveals. */
+[data-stagger='armed'] .donation-fill {
+  transform: scaleX(0);
+}
+[data-stagger='in'] .donation-fill {
+  transform-origin: left;
+  animation: donation-fill 1.4s var(--ease-smooth)
+    calc(var(--i, 0) * var(--stagger-step, 140ms) + 0.4s) both;
+}
+@keyframes donation-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-stagger] .donation-fill {
+    animation: none;
+    transform: none;
+  }
+}
+
 /* ---------- Staggered drop-in (StaggerGroup) ---------- */
 @layer components {
   :root {
