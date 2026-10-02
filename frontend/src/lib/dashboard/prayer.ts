@@ -1,7 +1,10 @@
 import { formatSalahTime, getDayTimetable } from '@/lib/prayer-times';
 import { PRAYER_LABELS, PRAYERS, type PrayerDay, type PrayerKey } from './types';
 
-/** Calculated timetable for an ISO date (masjid time zone), used when no override is stored. */
+/**
+ * Calculated timetable for an ISO date (masjid time zone), used when no override is stored.
+ * Fridays include one Jumu'ah time by default: the Dhuhr time, matching what the website shows.
+ */
 export function calculatedDay(date: string): PrayerDay {
   const t = getDayTimetable(new Date(`${date}T12:00:00Z`));
   const at = (id: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha') =>
@@ -16,6 +19,7 @@ export function calculatedDay(date: string): PrayerDay {
       maghrib: { adhan: at('maghrib') },
       isha: { adhan: at('isha') },
     },
+    ...(isFriday(date) && { jumuah: [at('dhuhr')] }),
   };
 }
 

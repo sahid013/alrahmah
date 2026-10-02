@@ -9,7 +9,6 @@ import {
   summariseDonors,
   summariseRegularGifts,
   taxYear,
-  totalsBy,
 } from './queries';
 import { sampleCampaigns, sampleDonations } from './sample-data';
 import { campaignSchema, donationSchema, prayerDaySchema } from './types';
@@ -166,14 +165,12 @@ describe('donor data (frontend contract)', () => {
     expect(monthlyValue({ amount: 12, frequency: 'weekly' })).toBe(52);
   });
 
-  it('totals recurring income in pounds and groups totals by campaign', () => {
+  it('totals recurring income in pounds', () => {
     const totals = donationTotals(donations);
     const recurringSum = donations
       .filter((d) => d.status === 'succeeded' && d.type === 'recurring')
       .reduce((n, d) => n + d.amount, 0);
     expect(totals.recurring).toBe(recurringSum);
-    const byCampaign = totalsBy(donations, (d) => d.campaignId);
-    expect(byCampaign.reduce((n, r) => n + r.total, 0)).toBe(totals.total);
   });
 
   it('keeps organisations out of the Gift Aid schedule', () => {
@@ -202,5 +199,15 @@ describe('exports', () => {
       expect(out.split('\r\n')).toHaveLength(rows.length + 1);
       expect(out).not.toMatch(/undefined|NaN|\[object/);
     }
+  });
+});
+
+describe("default Jumu'ah", () => {
+  it("gives every Friday one Jumu'ah time (its Dhuhr time) and other days none", () => {
+    const friday = calculatedDay('2026-10-02');
+    expect(isFriday('2026-10-02')).toBe(true);
+    expect(friday.jumuah).toEqual([friday.times.dhuhr.adhan]);
+    expect(calculatedDay('2026-10-03').jumuah).toBeUndefined();
+    expect(validateDay(friday)).toEqual({});
   });
 });

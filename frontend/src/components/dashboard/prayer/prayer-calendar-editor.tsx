@@ -96,8 +96,8 @@ export function PrayerCalendarEditor() {
     setStatus(`Saved ${formatLongDate(asDate(selected))}.`);
   };
 
+  /** Only offered for days with custom times: delete the override. */
   const resetToCalculated = async () => {
-    if (!stored) return setDraft(calculatedDay(selected));
     if (!window.confirm('Remove the custom times for this day and use the calculated times?'))
       return;
     await api.prayer.deleteDay(selected);
@@ -271,10 +271,7 @@ export function PrayerCalendarEditor() {
 
       {/* ---------- Day editor ---------- */}
       <div className="min-[1400px]:sticky min-[1400px]:top-8 min-[1400px]:self-start">
-        <Panel
-          title="Edit day"
-          actions={stored ? <Badge tone="indigo">Custom</Badge> : <Badge>Calculated</Badge>}
-        >
+        <Panel title="Edit day" actions={stored && <Badge tone="indigo">Custom</Badge>}>
           <div className="space-y-6 p-5">
             <div>
               <p className="font-heading text-title-lg tracking-heading text-primary-900 uppercase">
@@ -387,7 +384,10 @@ export function PrayerCalendarEditor() {
                   size="sm"
                   className="mt-2"
                   onClick={() =>
-                    setDraft((d) => ({ ...d, jumuah: [...(d.jumuah ?? []), '13:30'] }))
+                    setDraft((d) => ({
+                      ...d,
+                      jumuah: [...(d.jumuah ?? []), d.times.dhuhr.adhan],
+                    }))
                   }
                 >
                   <PlusIcon className="size-4" />
@@ -419,9 +419,11 @@ export function PrayerCalendarEditor() {
               >
                 Discard changes
               </Button>
-              <Button variant="ghost" onClick={resetToCalculated}>
-                {stored ? 'Use calculated times' : 'Refill calculated'}
-              </Button>
+              {stored && (
+                <Button variant="ghost" onClick={resetToCalculated}>
+                  Use calculated times
+                </Button>
+              )}
             </div>
             {hasErrors ? (
               <p className="text-sm text-error-700">Fix the highlighted times to save.</p>

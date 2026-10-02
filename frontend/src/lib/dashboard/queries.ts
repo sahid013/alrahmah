@@ -189,23 +189,6 @@ export function donationTotals(list: Donation[]): DonationTotals {
   };
 }
 
-/** Succeeded totals grouped by a key (campaign, source…), largest first. */
-export function totalsBy(
-  list: Donation[],
-  key: (d: Donation) => string,
-): { key: string; total: number; count: number }[] {
-  const map = new Map<string, { key: string; total: number; count: number }>();
-  for (const d of list) {
-    if (d.status !== 'succeeded') continue;
-    const k = key(d);
-    const row = map.get(k) ?? { key: k, total: 0, count: 0 };
-    row.total += d.amount;
-    row.count += 1;
-    map.set(k, row);
-  }
-  return [...map.values()].sort((a, b) => b.total - a.total);
-}
-
 /** UK tax year (6 April – 5 April) containing `date`, offset by `back` years. */
 export function taxYear(date: string, back = 0): { from: string; to: string; label: string } {
   const year = Number(date.slice(0, 4));

@@ -20,7 +20,6 @@ import {
 } from '../ui';
 import { DonationDetail } from './donation-detail';
 import { DonationTable } from './donation-rows';
-import { TotalsPanels } from './totals-panels';
 
 const PAGE_SIZE = 25;
 
@@ -175,8 +174,6 @@ export function DonationsView() {
           hint="25% of eligible gifts"
         />
       </div>
-
-      {donations && <TotalsPanels donations={donations} campaigns={campaigns} />}
 
       <Panel
         title={donations ? `${donations.length} donations` : 'Donations'}

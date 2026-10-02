@@ -7,7 +7,6 @@ import { useState, type ComponentType, type ReactNode, type SVGProps } from 'rea
 import {
   ClockIcon,
   DownloadIcon,
-  ExternalIcon,
   GearIcon,
   GridIcon,
   HeartIcon,
@@ -80,15 +79,6 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
       </ul>
-      <div className="border-t border-white/10 p-3">
-        <Link
-          href="/"
-          className="flex items-center gap-3 px-3 py-2.5 font-label text-sm font-bold text-primary-100 hover:text-white"
-        >
-          <ExternalIcon className="size-5" />
-          View website
-        </Link>
-      </div>
       <div className="flex items-center gap-3 border-t border-white/10 px-6 py-4">
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-bold text-white">{session.user.name}</p>
