@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { Session } from '@/lib/dashboard/auth/types';
+import { AUTH_ENABLED, type Session } from '@/lib/dashboard/auth/types';
 import { useDashboardApi } from '../dashboard-api-provider';
 
 interface AuthContextValue {
@@ -19,12 +19,28 @@ export function useDashboardAuth(): AuthContextValue {
   return value;
 }
 
+/** Used while `AUTH_ENABLED` is off. */
+const OPEN_SESSION: Session = {
+  user: {
+    id: 'open-access',
+    name: 'Dashboard',
+    email: '',
+    role: 'admin',
+    mfaEnrolled: false,
+    createdAt: '1970-01-01T00:00:00.000Z',
+  },
+  aal: 'aal2',
+};
+
 export const loginHref = (next?: string) =>
   next && next !== '/dashboard'
     ? `/dashboard/login?next=${encodeURIComponent(next)}`
     : '/dashboard/login';
 
-/** Renders children only for a fully signed-in (password + authenticator) user. */
+/**
+ * Renders children only for a signed-in user (`aal2` session), or for everyone while
+ * `AUTH_ENABLED` is off.
+ */
 export function AuthGate({ children }: { children: ReactNode }) {
   const api = useDashboardApi();
   const router = useRouter();
@@ -37,6 +53,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   }, [api]);
 
   useEffect(() => {
+    if (!AUTH_ENABLED) return;
     let cancelled = false;
     api.auth.getSession().then((s) => {
       if (cancelled) return;
@@ -52,6 +69,14 @@ export function AuthGate({ children }: { children: ReactNode }) {
     await api.auth.signOut();
     router.replace('/dashboard/login');
   }, [api, router]);
+
+  // Sign-in switched off: everyone gets an open preview session.
+  if (!AUTH_ENABLED)
+    return (
+      <AuthContext.Provider value={{ session: OPEN_SESSION, refresh, signOut }}>
+        {children}
+      </AuthContext.Provider>
+    );
 
   if (!session)
     return (

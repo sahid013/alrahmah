@@ -17,6 +17,7 @@ import {
 } from '@/components/icons';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils/cn';
+import { AUTH_ENABLED } from '@/lib/dashboard/auth/types';
 import { useDashboardAuth } from './auth/auth-gate';
 
 interface NavEntry {
@@ -33,7 +34,8 @@ export const DASHBOARD_NAV: NavEntry[] = [
   { label: 'Donations', href: '/dashboard/donations', icon: ReceiptIcon },
   { label: 'Regular giving', href: '/dashboard/regular-giving', icon: RepeatIcon },
   { label: 'Donors & exports', href: '/dashboard/donors', icon: DownloadIcon },
-  { label: 'Settings', href: '/dashboard/settings', icon: GearIcon },
+  // Users & account settings only exist while sign-in is switched on.
+  ...(AUTH_ENABLED ? [{ label: 'Settings', href: '/dashboard/settings', icon: GearIcon }] : []),
 ];
 
 const isActive = (pathname: string, href: string) =>
@@ -79,21 +81,23 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
       </ul>
-      <div className="flex items-center gap-3 border-t border-white/10 px-6 py-4">
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-white">{session.user.name}</p>
-          <p className="truncate text-xs text-primary-200">{session.user.email}</p>
+      {AUTH_ENABLED && (
+        <div className="flex items-center gap-3 border-t border-white/10 px-6 py-4">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-white">{session.user.name}</p>
+            <p className="truncate text-xs text-primary-200">{session.user.email}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            aria-label="Sign out"
+            title="Sign out"
+            className="inline-flex size-10 shrink-0 items-center justify-center text-primary-100 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <LogoutIcon className="size-5" />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          aria-label="Sign out"
-          title="Sign out"
-          className="inline-flex size-10 shrink-0 items-center justify-center text-primary-100 transition-colors hover:bg-white/10 hover:text-white"
-        >
-          <LogoutIcon className="size-5" />
-        </button>
-      </div>
+      )}
     </nav>
   );
 }

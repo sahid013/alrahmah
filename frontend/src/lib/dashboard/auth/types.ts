@@ -29,7 +29,13 @@ export interface Session {
   aal: 'aal1' | 'aal2';
 }
 
-/** What the sign-in screen must show after a correct password. */
+/**
+ * Dashboard sign-in switch. OFF for now (client request): every dashboard page is open without
+ * signing in, the sign-in page redirects to the dashboard, and Settings (users/account) is
+ * hidden. Set to `true` to require sign-in again; the login code is untouched.
+ */
+export const AUTH_ENABLED = false;
+
 /**
  * Two-step verification switch. Off for now (client request); set to `true` to require an
  * authenticator code for every sign-in again. Nothing else needs to change.
