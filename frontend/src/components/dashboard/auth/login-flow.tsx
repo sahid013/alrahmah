@@ -21,7 +21,10 @@ const STEP_TITLES: Record<Step, string> = {
 const safeNext = (next: string | null) =>
   next && next.startsWith('/dashboard') && !next.startsWith('//') ? next : '/dashboard';
 
-/** Password → authenticator code (or first-time authenticator setup) → dashboard. */
+/**
+ * Password → dashboard. When `TWO_FACTOR_REQUIRED` is on: password → authenticator code (or
+ * first-time authenticator setup) → dashboard.
+ */
 export function LoginFlow() {
   const api = useDashboardApi();
   const router = useRouter();
@@ -56,6 +59,7 @@ export function LoginFlow() {
     void run(async () => {
       const result = await api.auth.signIn(email, password);
       setPassword('');
+      if (result === 'signed-in') return router.replace(next);
       if (result === 'mfa-enroll') setEnrollment(await api.auth.enrollTotp());
       setStep(result === 'mfa-enroll' ? 'enroll' : 'verify');
     });

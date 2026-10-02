@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { MIN_PASSWORD, passwordSchema } from '@/lib/dashboard/auth/types';
+import { MIN_PASSWORD, passwordSchema, TWO_FACTOR_REQUIRED } from '@/lib/dashboard/auth/types';
 import { useDashboardAuth } from '../auth/auth-gate';
 import { useDashboardApi } from '../dashboard-api-provider';
 import { Badge, Field, Input, Panel } from '../ui';
@@ -52,10 +52,14 @@ export function AccountPanel() {
           <dd className="text-primary-900">{session.user.email}</dd>
           <dt className="text-neutral-500">Role</dt>
           <dd className="text-primary-900 capitalize">{session.user.role}</dd>
-          <dt className="text-neutral-500">Two-step verification</dt>
-          <dd>
-            <Badge tone="success">On · authenticator app</Badge>
-          </dd>
+          {TWO_FACTOR_REQUIRED && (
+            <>
+              <dt className="text-neutral-500">Two-step verification</dt>
+              <dd>
+                <Badge tone="success">On · authenticator app</Badge>
+              </dd>
+            </>
+          )}
         </dl>
       </Panel>
       <Panel title="Change password">

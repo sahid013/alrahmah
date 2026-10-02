@@ -2,12 +2,17 @@
 
 import { useState } from 'react';
 import { TrashIcon } from '@/components/icons';
-import { ROLES, type DashboardUser, type Role } from '@/lib/dashboard/auth/types';
+import {
+  ROLES,
+  TWO_FACTOR_REQUIRED,
+  type DashboardUser,
+  type Role,
+} from '@/lib/dashboard/auth/types';
 import { useDashboardApi, useDashboardQuery } from '../dashboard-api-provider';
 import { Badge, iconButton, LoadingRows, Panel, Select, shortDate, td, th } from '../ui';
 import { AddUserForm } from './add-user-form';
 
-/** Team accounts: roles, two-step status, reset and remove (admins only). */
+/** Team accounts: roles, two-step status (when required), reset and remove (admins only). */
 export function UsersPanel({ meId }: { meId: string }) {
   const api = useDashboardApi();
   const { data: users, reload } = useDashboardQuery((a) => a.users.list(), []);
@@ -60,7 +65,7 @@ export function UsersPanel({ meId }: { meId: string }) {
                 <tr>
                   <th className={th}>Name</th>
                   <th className={th}>Role</th>
-                  <th className={th}>Two-step</th>
+                  {TWO_FACTOR_REQUIRED && <th className={th}>Two-step</th>}
                   <th className={th}>Last sign-in</th>
                   <th className={th}>
                     <span className="sr-only">Actions</span>
@@ -94,18 +99,20 @@ export function UsersPanel({ meId }: { meId: string }) {
                           ))}
                         </Select>
                       </td>
-                      <td className={td}>
-                        {u.mfaEnrolled ? (
-                          <Badge tone="success">On</Badge>
-                        ) : (
-                          <Badge tone="warning">Set up at next sign-in</Badge>
-                        )}
-                      </td>
+                      {TWO_FACTOR_REQUIRED && (
+                        <td className={td}>
+                          {u.mfaEnrolled ? (
+                            <Badge tone="success">On</Badge>
+                          ) : (
+                            <Badge tone="warning">Set up at next sign-in</Badge>
+                          )}
+                        </td>
+                      )}
                       <td className={`${td} font-ui whitespace-nowrap`}>
                         {u.lastSignInAt ? shortDate(u.lastSignInAt) : 'Never'}
                       </td>
                       <td className={`${td} text-right whitespace-nowrap`}>
-                        {u.mfaEnrolled && (
+                        {TWO_FACTOR_REQUIRED && u.mfaEnrolled && (
                           <button
                             type="button"
                             onClick={() => void resetTwoFactor(u)}

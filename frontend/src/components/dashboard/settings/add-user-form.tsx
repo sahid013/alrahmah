@@ -7,6 +7,7 @@ import {
   newUserSchema,
   ROLE_LABELS,
   ROLES,
+  TWO_FACTOR_REQUIRED,
   type DashboardUser,
   type NewUser,
 } from '@/lib/dashboard/auth/types';
@@ -20,7 +21,7 @@ const blank = (): NewUser => ({
   password: generatePassword(),
 });
 
-/** Create a team account with a temporary password; they set up 2FA at first sign-in. */
+/** Create a team account with a temporary password (plus 2FA setup at first sign-in when required). */
 export function AddUserForm({ onCreated }: { onCreated: () => void }) {
   const api = useDashboardApi();
   const [form, setForm] = useState(blank);
@@ -58,7 +59,7 @@ export function AddUserForm({ onCreated }: { onCreated: () => void }) {
   const copy = async () => {
     if (!created) return;
     await navigator.clipboard.writeText(
-      `Al-Rahmah dashboard\nSign in: ${location.origin}/dashboard/login\nEmail: ${created.user.email}\nTemporary password: ${created.password}\nYou'll be asked to set up an authenticator app when you first sign in.`,
+      `Al-Rahmah dashboard\nSign in: ${location.origin}/dashboard/login\nEmail: ${created.user.email}\nTemporary password: ${created.password}${TWO_FACTOR_REQUIRED ? "\nYou'll be asked to set up an authenticator app when you first sign in." : ''}`,
     );
     setCopied(true);
   };
@@ -78,8 +79,9 @@ export function AddUserForm({ onCreated }: { onCreated: () => void }) {
             <dd className="font-ui break-all text-primary-900 select-all">{created.password}</dd>
           </dl>
           <p className="text-sm text-neutral-500">
-            At first sign-in they&apos;ll scan a QR code with an authenticator app. They can change
-            the password under Settings → My account.
+            {TWO_FACTOR_REQUIRED &&
+              'At first sign-in they’ll scan a QR code with an authenticator app. '}
+            They can change the password under Settings → My account.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button type="button" variant="outline" size="sm" onClick={copy}>

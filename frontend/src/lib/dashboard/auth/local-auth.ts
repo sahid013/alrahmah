@@ -1,7 +1,13 @@
 import QRCode from 'qrcode';
 import type { DashboardApi } from '../api';
 import { generateSecret, otpauthUri, verifyTotp } from './totp';
-import { newUserSchema, passwordSchema, type DashboardUser, type Session } from './types';
+import {
+  newUserSchema,
+  passwordSchema,
+  TWO_FACTOR_REQUIRED,
+  type DashboardUser,
+  type Session,
+} from './types';
 
 /**
  * PREVIEW ONLY — not security. Accounts live in this browser's localStorage so the sign-in,
@@ -115,12 +121,16 @@ export function createLocalAuth(): Pick<DashboardApi, 'auth' | 'users'> {
         const user = store.users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
         if (!user || (await hash(password, user.salt)) !== user.passwordHash)
           return fail('Email or password is incorrect.');
+        // With two-step off, the password alone completes sign-in (full `aal2` session).
+        const done = !TWO_FACTOR_REQUIRED;
         store.session = {
           userId: user.id,
-          aal: 'aal1',
+          aal: done ? 'aal2' : 'aal1',
           expiresAt: Date.now() + SESSION_HOURS * 3.6e6,
         };
+        if (done) user.lastSignInAt = now();
         write(store);
+        if (done) return settle('signed-in' as const);
         return settle(user.mfaEnrolled ? 'mfa-verify' : 'mfa-enroll');
       },
 

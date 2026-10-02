@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 /**
  * Dashboard team accounts. Maps to Supabase Auth users plus a `profiles` row (name, role).
- * Two-step verification (authenticator app, TOTP) is required for every account.
+ * Two-step verification (authenticator app, TOTP) is built in; see `TWO_FACTOR_REQUIRED`.
  */
 export const ROLES = ['admin', 'editor'] as const;
 export type Role = (typeof ROLES)[number];
@@ -30,7 +30,14 @@ export interface Session {
 }
 
 /** What the sign-in screen must show after a correct password. */
-export type SignInNext = 'mfa-verify' | 'mfa-enroll';
+/**
+ * Two-step verification switch. Off for now (client request); set to `true` to require an
+ * authenticator code for every sign-in again. Nothing else needs to change.
+ */
+export const TWO_FACTOR_REQUIRED = false;
+
+/** What the sign-in screen does after a correct password. */
+export type SignInNext = 'signed-in' | 'mfa-verify' | 'mfa-enroll';
 
 export interface TotpEnrollment {
   factorId: string;
