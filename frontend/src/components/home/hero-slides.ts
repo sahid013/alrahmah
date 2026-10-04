@@ -34,10 +34,10 @@ export const heroSlides: HeroSlide[] = [
       icon: 'whatsapp',
     },
     secondaryCta: { label: 'About the masjid', href: '/about' },
-    // TODO: replace with a dedicated hero photo (wide, at least 2400px).
+    // Optimised copy of public/images/Common/Al-Rahmah Faith Centre at Night Hero Image.png.
     background: {
-      src: '/images/services/Al rahman quran academy.webp',
-      alt: 'Al-Rahmah Faith Centre at sunset, with families arriving',
+      src: '/images/hero/al-rahmah-centre-night.webp',
+      alt: 'Al-Rahmah Faith Centre at night, with worshippers gathered outside the entrance',
     },
   },
   {
