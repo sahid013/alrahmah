@@ -95,6 +95,8 @@
   --tracking-heading: 0.02em;
   /* Sacramento — script accent lines only (never body text or headings). */
   --font-script: var(--font-sacramento), cursive;
+  /* Arabic text only (Amiri, Naskh). */
+  --font-arabic: var(--font-amiri), 'Noto Naskh Arabic', serif;
   /* PT Sans Narrow — campaign lockups and compact display labels only. */
   --font-condensed: var(--font-pt-sans-narrow), var(--font-label);
 }

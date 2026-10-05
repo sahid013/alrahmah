@@ -178,7 +178,8 @@ Each colour has a `50`–`950` scale (e.g. `bg-primary-50` light tint, `hover:bg
 | Descriptions and body copy | **Glacial Indifference** (400, 400 italic, 700) | `font-body` | Default on `body`; `Text` component |
 | Buttons, nav links, small uppercase labels | **Glacial Indifference** Bold | `font-label` | `Button`/`ButtonLink`, `NavLinks`, eyebrows, captions |
 | Numbers (countdowns, prayer times, event day numbers, badge ring) | **Poppins** (500/600/700) | `font-ui` | Explicitly, with `tabular-nums` for changing numbers |
-| Script accent lines only (e.g. "Peace Be Upon You") | **Sacramento** (400) | `font-script` | `GreetingSection`; decorative `<p>`, never headings or body text |
+| Script accent lines only (e.g. "Jazakum Allahu khairan" on the donate pages) | **Sacramento** (400) | `font-script` | Decorative `<p>`, never headings or body text |
+| Arabic text (e.g. the greeting "السلام عليكم") | **Amiri** (400/700, Arabic subset) | `font-arabic` | Always with `lang="ar"` and `dir="rtl"`; Forum has no Arabic letters |
 
 - Always use `<Heading level={n}>` and `<Text size="lead|body|small|caption">` from `components/ui/typography.tsx` instead of styling raw tags.
 - **All headings are uppercase** Forum at its only weight (400); never add `font-medium`/`font-bold` to titles. Write heading text in normal case in code; CSS handles the caps.
@@ -265,7 +266,10 @@ Paths and names live in `siteConfig` (`config/site.ts`). Reference them from the
 
 ### Greeting section (home, second section)
 
-- `components/home/greeting-section.tsx`: a centred section on `bg-primary-50` with an "Assalamu Alaykum" `h2` (Forum, title scale), the "Peace Be Upon You" script line (`font-script`, `secondary-700` for contrast on the light tint, `text-balance`), the visitors paragraph (max width 4xl, `text-pretty`) and a primary "Learn about us →" button to `/about`. Each line reveals in sequence (`Reveal`).
+- `components/home/greeting-section.tsx` on `bg-primary-50`, in two columns from `lg` (stacked on mobile):
+  - **Left:** the greeting in Arabic first, "السلام عليكم" (`lang="ar"`, `dir="rtl"`, `font-arabic`, primary), then a sky bar, the "Assalamu Alaykum" `h2` (Forum, title scale) and "Peace be upon you" as a small sky label (no script/calligraphy font).
+  - **Right** (top-aligned with the greeting): the client's three paragraphs (established in 2018 / open to visitors / "Join our WhatsApp channel…", where "WhatsApp channel" links to `siteConfig.links.whatsappChannel`) and the primary "Learn about us" button (→ `/about`). No other copy or buttons.
+- Lines reveal in sequence (`Reveal`).
 
 ### About page (`/about`)
 

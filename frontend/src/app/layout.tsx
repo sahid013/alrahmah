@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Forum, Poppins, PT_Sans_Narrow, Sacramento } from 'next/font/google';
+import { Amiri, Forum, Poppins, PT_Sans_Narrow, Sacramento } from 'next/font/google';
 import localFont from 'next/font/local';
 import { JsonLd } from '@/components/seo/json-ld';
 import { siteConfig } from '@/config/site';
@@ -49,6 +49,13 @@ const sacramento = Sacramento({
   weight: '400',
 });
 
+/** Arabic text (e.g. the greeting "السلام عليكم"); the title font has no Arabic glyphs. */
+const amiri = Amiri({
+  variable: '--font-amiri',
+  subsets: ['arabic'],
+  weight: ['400', '700'],
+});
+
 /** Campaign lockups only. */
 const ptSansNarrow = PT_Sans_Narrow({
   variable: '--font-pt-sans-narrow',
@@ -78,7 +85,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
-      className={`${glacial.variable} ${forum.variable} ${poppins.variable} ${ptSansNarrow.variable} ${sacramento.variable} h-full antialiased`}
+      className={`${glacial.variable} ${forum.variable} ${poppins.variable} ${ptSansNarrow.variable} ${sacramento.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <JsonLd

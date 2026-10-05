@@ -2,43 +2,73 @@ import { ArrowRightIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { siteConfig } from '@/config/site';
 
 /**
- * Centred welcome section: salaam title, script translation, short intro and one call to action.
- * Each line reveals from the left in sequence as it scrolls into view.
+ * Welcome section: the greeting in Arabic, then English, beside the masjid introduction and one call
+ * to action. Lines reveal in sequence as the section scrolls into view.
  */
 export function GreetingSection() {
   return (
     <section aria-labelledby="greeting-title" className="bg-primary-50 py-20 sm:py-28 lg:py-32">
-      <Container className="flex flex-col items-center text-center">
-        <Reveal>
-          <h2
-            id="greeting-title"
-            className="text-title-4xl leading-none sm:text-title-5xl lg:text-title-6xl"
-          >
-            Assalamu Alaykum
-          </h2>
-        </Reveal>
-        <Reveal order={1}>
-          {/* Decorative translation in the script accent font (not a heading). */}
-          <p className="-mt-1 font-script text-[2.75rem] leading-tight text-balance text-secondary-700 sm:text-6xl lg:text-7xl">
-            Peace Be Upon You
-          </p>
-        </Reveal>
-        <Reveal order={2}>
-          <p className="mx-auto mt-8 max-w-4xl text-lg leading-relaxed text-pretty text-neutral-600 sm:text-xl">
-            At Al Rahmah Masjid, the doors are open to visitors throughout the year, creating an
-            atmosphere of inclusivity and warmth. Many individuals from diverse backgrounds and
-            beliefs come with a desire to learn more about the mosque and the teachings of the
-            Islamic faith.
-          </p>
-        </Reveal>
-        <Reveal order={3}>
-          <ButtonLink href="/about" size="lg" className="mt-10">
-            Learn about us
-            <ArrowRightIcon />
-          </ButtonLink>
-        </Reveal>
+      <Container className="grid gap-12 lg:grid-cols-[5fr_7fr] lg:items-start lg:gap-20">
+        {/* Greeting: Arabic first, then English. */}
+        <div>
+          <Reveal>
+            <p
+              lang="ar"
+              dir="rtl"
+              className="text-left font-arabic text-6xl leading-[1.6] text-primary-500 sm:text-7xl lg:text-8xl"
+            >
+              السلام عليكم
+            </p>
+          </Reveal>
+          <Reveal order={1}>
+            <span aria-hidden className="mt-4 block h-1 w-16 bg-secondary-500" />
+            <h2 id="greeting-title" className="mt-6 text-title-3xl leading-none sm:text-title-4xl">
+              Assalamu Alaykum
+            </h2>
+            <p className="mt-3 font-label text-sm font-bold tracking-[0.3em] text-secondary-700 uppercase">
+              Peace be upon you
+            </p>
+          </Reveal>
+        </div>
+
+        {/* Introduction and call to action. */}
+        <div>
+          <Reveal order={2}>
+            <div className="max-w-2xl space-y-5 text-lg leading-relaxed text-pretty text-neutral-600 sm:text-xl">
+              <p>
+                Al Rahmah Masjid Leeds, established in 2018, has been serving the Muslim community
+                and the larger society with unwavering dedication. Over the years, it has grown to
+                become one of the fastest-growing mosques in the vibrant city of Leeds.
+              </p>
+              <p>
+                At Al Rahmah Masjid, the doors are open to visitors throughout the year, creating an
+                atmosphere of inclusivity and warmth. Many individuals from diverse backgrounds and
+                beliefs come with a desire to learn more about the mosque and the teachings of the
+                Islamic faith.
+              </p>
+              <p>
+                Join our{' '}
+                <a
+                  href={siteConfig.links.whatsappChannel}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-primary-500 underline underline-offset-4 hover:text-secondary-700"
+                >
+                  WhatsApp channel
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>{' '}
+                for latest announcements and latest prayer times.
+              </p>
+            </div>
+            <ButtonLink href="/about" size="lg" className="mt-10">
+              Learn about us
+              <ArrowRightIcon />
+            </ButtonLink>
+          </Reveal>
+        </div>
       </Container>
     </section>
   );
