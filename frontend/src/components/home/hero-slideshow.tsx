@@ -1,7 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, useState, type CSSProperties, type FocusEvent, type TouchEvent } from 'react';
+import {
+  Fragment,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FocusEvent,
+  type TouchEvent,
+} from 'react';
 import { UpcomingEvents } from '@/components/events/upcoming-events';
 import { ArrowRightIcon, HeartIcon, WhatsAppIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
@@ -146,16 +153,20 @@ export function HeroSlideshow({ slides, events }: { slides: HeroSlide[]; events:
           data-active={i === index}
           className="hero-slide hero-bg absolute inset-0 -z-20"
         >
-          <div className="hero-drift absolute inset-0">
-            <Image
-              src={slide.background.src}
-              alt={slide.background.alt}
-              fill
-              priority={i === 0}
-              sizes="100vw"
-              className="object-cover"
-            />
-          </div>
+          {slide.background ? (
+            <div className="hero-drift absolute inset-0">
+              <Image
+                src={slide.background.src}
+                alt={slide.background.alt}
+                fill
+                priority={i === 0}
+                sizes="100vw"
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <div className="bg-islamic-pattern absolute inset-0 opacity-[0.06]" />
+          )}
         </div>
       ))}
       {/* Dark scrim: 100% on the left fading to 0% on the right (keeps text legible). */}
@@ -177,46 +188,70 @@ export function HeroSlideshow({ slides, events }: { slides: HeroSlide[]; events:
                 aria-label={`${i + 1} of ${slides.length}: ${slide.label}`}
                 data-active={active}
                 inert={!active}
-                className="hero-slide col-start-1 row-start-1 max-w-4xl"
+                className="hero-slide col-start-1 row-start-1 flex items-center gap-12"
               >
-                <p
-                  className="hero-from-left font-label text-xs font-bold tracking-[0.3em] text-secondary-300 uppercase sm:text-sm"
-                  style={step(0)}
-                >
-                  {slide.eyebrow}
-                </p>
-                <Title
-                  className="hero-from-left mt-6 font-heading text-title-4xl leading-[1.05] font-normal tracking-heading text-white uppercase sm:text-title-5xl xl:text-title-6xl"
-                  style={step(1)}
-                >
-                  {slide.title}
-                </Title>
-                <div className="mt-8 max-w-xl space-y-4">
-                  {slide.body.map((paragraph, p) => (
-                    <p
-                      key={paragraph}
-                      className="hero-from-left text-lg leading-relaxed text-balance text-primary-100 sm:text-xl"
-                      style={step(2 + p)}
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-                <div
-                  className="hero-from-left mt-10 flex flex-wrap gap-4"
-                  style={step(3 + slide.body.length)}
-                >
-                  <ButtonLink href={slide.primaryCta.href} variant="secondary" size="lg">
-                    {CtaIcon && <CtaIcon />}
-                    {slide.primaryCta.label}
-                  </ButtonLink>
-                  {slide.secondaryCta && (
-                    <ButtonLink href={slide.secondaryCta.href} variant="outline-light" size="lg">
-                      {slide.secondaryCta.label}
-                      <ArrowRightIcon />
+                <div className="max-w-4xl min-w-0 flex-1">
+                  <p
+                    className="hero-from-left font-label text-xs font-bold tracking-[0.3em] text-secondary-300 uppercase sm:text-sm"
+                    style={step(0)}
+                  >
+                    {slide.eyebrow}
+                  </p>
+                  <Title
+                    className="hero-from-left mt-6 font-heading text-title-4xl leading-[1.05] font-normal tracking-heading text-white uppercase sm:text-title-5xl xl:text-title-6xl"
+                    style={step(1)}
+                  >
+                    {slide.title.split('\n').map((line, l) => (
+                      <Fragment key={l}>
+                        {l > 0 && <br />}
+                        {line}
+                      </Fragment>
+                    ))}
+                  </Title>
+                  <div className="mt-8 max-w-xl space-y-4">
+                    {slide.body.map((paragraph, p) => (
+                      <p
+                        key={paragraph}
+                        className="hero-from-left text-lg leading-relaxed text-balance text-primary-100 sm:text-xl"
+                        style={step(2 + p)}
+                      >
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                  <div
+                    className="hero-from-left mt-10 flex flex-wrap gap-4"
+                    style={step(3 + slide.body.length)}
+                  >
+                    <ButtonLink href={slide.primaryCta.href} variant="secondary" size="lg">
+                      {CtaIcon && <CtaIcon />}
+                      {slide.primaryCta.label}
                     </ButtonLink>
-                  )}
+                    {slide.secondaryCta && (
+                      <ButtonLink href={slide.secondaryCta.href} variant="outline-light" size="lg">
+                        {slide.secondaryCta.label}
+                        <ArrowRightIcon />
+                      </ButtonLink>
+                    )}
+                  </div>
                 </div>
+                {/* Event poster: desktop only, top-aligned with the eyebrow so it stays clear of the
+                    events panel, and kept clear of the slide tracker on the right. */}
+                {slide.poster && (
+                  <div
+                    className="hero-from-right hidden w-[clamp(11rem,14vw,13rem)] shrink-0 self-start border border-white/10 lg:mr-56 lg:block"
+                    style={step(1)}
+                  >
+                    <Image
+                      src={slide.poster.src}
+                      alt={slide.poster.alt}
+                      width={slide.poster.width}
+                      height={slide.poster.height}
+                      sizes="13rem"
+                      className="h-auto w-full"
+                    />
+                  </div>
+                )}
               </div>
             );
           })}

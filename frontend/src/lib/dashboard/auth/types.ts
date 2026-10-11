@@ -30,11 +30,11 @@ export interface Session {
 }
 
 /**
- * Dashboard sign-in switch. OFF for now (client request): every dashboard page is open without
- * signing in, the sign-in page redirects to the dashboard, and Settings (users/account) is
- * hidden. Set to `true` to require sign-in again; the login code is untouched.
+ * Dashboard sign-in switch. ON: every dashboard page requires signing in. Setting it to `false`
+ * opens every dashboard page without signing in, redirects the sign-in page to the dashboard and
+ * hides Settings (users/account). Keep it `true` once real donor data is stored.
  */
-export const AUTH_ENABLED = false;
+export const AUTH_ENABLED = true;
 
 /**
  * Two-step verification switch. Off for now (client request); set to `true` to require an

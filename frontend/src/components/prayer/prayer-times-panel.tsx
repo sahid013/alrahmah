@@ -76,37 +76,37 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
       {/* Countdown */}
       <section
         aria-label="Countdown to next salah"
-        className="flex flex-col items-center justify-center bg-primary-800 px-6 py-12 text-center lg:col-span-4 lg:px-10"
+        className="flex flex-col items-center justify-center bg-primary-800 px-6 py-8 text-center lg:col-span-4 lg:px-10 lg:py-12"
       >
-        <NextIcon className="size-16 text-secondary-400" />
-        <p className="mt-6 text-sm text-primary-200">{formatLongDate(now)}</p>
+        <NextIcon className="size-12 text-secondary-400 lg:size-16" />
+        <p className="mt-4 text-sm text-primary-200 lg:mt-6">{formatLongDate(now)}</p>
         <p className="text-sm text-primary-200">{siteConfig.name}</p>
-        <div className="mt-8 flex gap-4 xl:gap-5" role="timer" aria-live="off">
+        <div className="mt-5 flex gap-4 lg:mt-8 xl:gap-5" role="timer" aria-live="off">
           <CountdownUnit value={hours} label="HRS" />
           <CountdownUnit value={minutes} label="MIN" />
           <CountdownUnit value={seconds} label="SEC" />
         </div>
         {/* Numbers must stay unambiguous: the title font's figures (3 vs 5) are too decorative for times. */}
-        <p className="mt-8 font-ui text-xl font-semibold">
+        <p className="mt-5 font-ui text-xl font-semibold lg:mt-8">
           Until {next.name} at {formatSalahTime(next.time)}
         </p>
         <p className="mt-1 text-primary-200">Current time: {formatSalahTime(now)}</p>
       </section>
 
       {/* Timetable */}
-      <section className="px-6 py-10 sm:px-10 lg:col-span-8 lg:px-12 lg:py-12">
+      <section className="px-5 py-8 sm:px-10 lg:col-span-8 lg:px-10 lg:py-9">
         <p className="font-label text-xs font-bold tracking-[0.3em] text-secondary-300 uppercase">
           Prayer times
         </p>
         <h2
           id="prayer-times-title"
-          className="mt-3 pr-14 font-heading text-title-3xl leading-tight font-normal tracking-heading text-white uppercase sm:text-title-4xl"
+          className="mt-3 pr-14 font-heading text-title-2xl leading-tight font-normal tracking-heading text-white uppercase sm:text-title-4xl"
         >
           {siteConfig.name}, {siteConfig.address.locality}
         </h2>
 
-        <div className="mt-8 flex flex-wrap items-center gap-2">
-          <p className="border border-white/20 px-4 py-2.5 font-label text-sm font-bold tracking-[0.12em] uppercase">
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <p className="border border-white/20 px-3 py-2.5 font-label text-xs font-bold tracking-[0.04em] whitespace-nowrap uppercase sm:px-4 sm:text-sm sm:tracking-[0.12em]">
             {formatLongDate(day.date)}
           </p>
           <button
@@ -139,8 +139,9 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
         </div>
         <p className="mt-3 text-sm text-primary-200">{formatHijriDate(day.date)}</p>
 
+        {/* Two columns: the five salah plus Jumu'ah fill a 2 × 3 grid. */}
         <ul
-          className="mt-8 border-y border-white/10"
+          className="mt-5 grid gap-px border border-white/10 bg-white/10 sm:grid-cols-2"
           aria-label={`Prayer times, ${formatLongDate(day.date)}`}
         >
           {day.salah.map((salah) => {
@@ -150,15 +151,17 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
               <li
                 key={salah.id}
                 className={cn(
-                  'grid grid-cols-[auto_1fr_auto] items-center gap-5 border-b border-l-2 border-b-white/10 px-4 py-4 last:border-b-0 sm:px-6',
-                  isNext ? 'border-l-secondary-400 bg-white/5' : 'border-l-transparent',
+                  'grid grid-cols-[auto_1fr_auto] items-center gap-3 border-l-2 px-4 py-3',
+                  isNext
+                    ? 'border-l-secondary-400 bg-primary-800'
+                    : 'border-l-transparent bg-primary-900',
                 )}
               >
                 <Icon
-                  className={cn('size-7', isNext ? 'text-secondary-400' : 'text-primary-300')}
+                  className={cn('size-6', isNext ? 'text-secondary-400' : 'text-primary-300')}
                 />
                 <div>
-                  <p className="flex items-center gap-3 font-ui text-lg font-medium tracking-heading">
+                  <p className="flex items-center gap-2 font-ui text-base font-medium tracking-heading">
                     {salah.name}
                     {isNext && (
                       <span className="bg-secondary-500 px-2 py-0.5 font-label text-[0.65rem] font-bold tracking-[0.15em] text-primary-950 uppercase">
@@ -167,26 +170,26 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
                     )}
                   </p>
                   {salah.id === 'fajr' && (
-                    <p className="text-sm text-primary-200">
+                    <p className="text-xs text-primary-200">
                       Sunrise {formatSalahTime(day.sunrise)}
                     </p>
                   )}
                 </div>
-                <div className="flex items-center gap-8 text-right">
+                <div className="flex items-center gap-4 text-right">
                   <div>
                     <p className="font-label text-[0.65rem] font-bold tracking-[0.15em] text-primary-300 uppercase">
                       Begins
                     </p>
-                    <p className="font-ui text-2xl font-medium tabular-nums">
+                    <p className="font-ui text-xl font-medium tabular-nums">
                       {formatSalahTime(salah.time)}
                     </p>
                   </div>
                   {hasJamaah && (
-                    <div className="border-l border-white/10 pl-8">
+                    <div className="border-l border-white/10 pl-4">
                       <p className="font-label text-[0.65rem] font-bold tracking-[0.15em] text-secondary-300 uppercase">
                         Jama&apos;ah
                       </p>
-                      <p className="font-ui text-2xl font-medium tabular-nums">
+                      <p className="font-ui text-xl font-medium tabular-nums">
                         {salah.jamaah ? formatSalahTime(salah.jamaah) : '—'}
                       </p>
                     </div>
@@ -195,28 +198,27 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
               </li>
             );
           })}
+          {/* Sixth cell: next Friday's Jumu'ah. */}
+          <li className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-l-2 border-l-transparent bg-primary-950/60 px-4 py-3">
+            <CalendarIcon className="size-6 text-secondary-400" />
+            <div>
+              <p className="font-ui text-base font-medium tracking-heading">Jumu&apos;ah</p>
+              <p className="text-xs text-primary-200">
+                Next Friday · {formatShortDate(friday.date)}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="font-label text-[0.65rem] font-bold tracking-[0.15em] text-primary-300 uppercase">
+                Dhuhr begins
+              </p>
+              <p className="font-ui text-xl font-medium tabular-nums">
+                {formatSalahTime(friday.salah[1]!.time)}
+              </p>
+            </div>
+          </li>
         </ul>
 
-        {/* Next Friday */}
-        <div className="mt-6 flex flex-wrap items-center gap-5 border border-white/10 bg-primary-950/40 px-4 py-4 sm:px-6">
-          <CalendarIcon className="size-7 text-secondary-400" />
-          <div className="flex-1">
-            <p className="font-label text-[0.65rem] font-bold tracking-[0.15em] text-primary-300 uppercase">
-              Next Friday · {formatShortDate(friday.date)}
-            </p>
-            <p className="font-ui text-lg font-medium tracking-heading">Jumu&apos;ah</p>
-          </div>
-          <div className="text-right">
-            <p className="font-label text-[0.65rem] font-bold tracking-[0.15em] text-primary-300 uppercase">
-              Dhuhr begins
-            </p>
-            <p className="font-ui text-2xl font-medium tabular-nums">
-              {formatSalahTime(friday.salah[1]!.time)}
-            </p>
-          </div>
-        </div>
-
-        <p className="mt-6 text-xs text-primary-300">
+        <p className="mt-4 text-xs text-primary-300">
           Calculated start times for {siteConfig.address.locality}. Jama&apos;ah times may differ.
         </p>
       </section>

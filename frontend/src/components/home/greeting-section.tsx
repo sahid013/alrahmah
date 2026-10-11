@@ -12,19 +12,19 @@ export function GreetingSection() {
   return (
     <section aria-labelledby="greeting-title" className="bg-primary-50 py-20 sm:py-28 lg:py-32">
       <Container className="grid gap-12 lg:grid-cols-[5fr_7fr] lg:items-start lg:gap-20">
-        {/* Greeting: Arabic first, then English. */}
-        <div>
+        {/* Greeting: Arabic first, then English; centred, and vertically centred against the text. */}
+        <div className="text-center lg:self-center">
           <Reveal>
             <p
               lang="ar"
               dir="rtl"
-              className="text-left font-arabic text-6xl leading-[1.6] text-primary-500 sm:text-7xl lg:text-8xl"
+              className="text-center font-arabic text-6xl leading-[1.6] text-primary-500 sm:text-7xl lg:text-8xl"
             >
               السلام عليكم
             </p>
           </Reveal>
           <Reveal order={1}>
-            <span aria-hidden className="mt-4 block h-1 w-16 bg-secondary-500" />
+            <span aria-hidden className="mx-auto mt-4 block h-1 w-16 bg-secondary-500" />
             <h2 id="greeting-title" className="mt-6 text-title-3xl leading-none sm:text-title-4xl">
               Assalamu Alaykum
             </h2>

@@ -2,7 +2,7 @@ import { EventsSection } from '@/components/events/events-section';
 import { GreetingSection } from '@/components/home/greeting-section';
 import { ImpactSection } from '@/components/impact/impact-section';
 import { ServicesSection } from '@/components/services/services-section';
-import { heroSlides } from '@/components/home/hero-slides';
+import { buildHeroSlides } from '@/components/home/hero-slides';
 import { HeroSlideshow } from '@/components/home/hero-slideshow';
 import { siteConfig } from '@/config/site';
 import { listEvents } from '@/lib/events/repository';
@@ -23,7 +23,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroSlideshow slides={heroSlides} events={events} />
+      <HeroSlideshow slides={buildHeroSlides(events)} events={events} />
 
       <GreetingSection />
       <EventsSection events={events.slice(0, 3)} />
