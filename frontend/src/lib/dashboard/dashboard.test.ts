@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { checkoutHref, moveId, prepareCampaign, raisedByCampaign, slugify } from './campaigns';
 import { isGiftAidClaimable, toCsv } from './csv';
-import { calculatedDay, copyDayTo, isFriday, sameTimes, validateDay } from './prayer';
+import { timetableDay, copyDayTo, isFriday, sameTimes, validateDay } from './prayer';
 import {
   donationTotals,
   filterDonations,
@@ -72,7 +72,7 @@ describe('csv', () => {
 
 describe('prayer helpers', () => {
   it('builds a valid calculated day and copies it', () => {
-    const day = calculatedDay('2026-10-02');
+    const day = timetableDay('2026-10-02');
     expect(prayerDaySchema.safeParse(day).success).toBe(true);
     const copy = copyDayTo(day, '2026-10-03');
     expect(copy.date).toBe('2026-10-03');
@@ -81,7 +81,7 @@ describe('prayer helpers', () => {
   });
 
   it("validates order and jama'ah times", () => {
-    const day = calculatedDay('2026-10-02');
+    const day = timetableDay('2026-10-02');
     expect(validateDay(day)).toEqual({});
     day.times.asr = { adhan: day.times.dhuhr.adhan, jamaah: '00:01' };
     const errors = validateDay(day);
@@ -204,10 +204,10 @@ describe('exports', () => {
 
 describe("default Jumu'ah", () => {
   it("gives every Friday one Jumu'ah time (its Dhuhr time) and other days none", () => {
-    const friday = calculatedDay('2026-10-02');
+    const friday = timetableDay('2026-10-02');
     expect(isFriday('2026-10-02')).toBe(true);
     expect(friday.jumuah).toEqual([friday.times.dhuhr.adhan]);
-    expect(calculatedDay('2026-10-03').jumuah).toBeUndefined();
+    expect(timetableDay('2026-10-03').jumuah).toBeUndefined();
     expect(validateDay(friday)).toEqual({});
   });
 });

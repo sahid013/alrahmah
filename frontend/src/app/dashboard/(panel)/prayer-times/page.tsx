@@ -9,7 +9,7 @@ export default function PrayerTimesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Prayer times"
-        description="Pick any date to edit its adhan and jama'ah times. Days you haven't edited use the calculated timetable."
+        description="Pick any date to edit its adhan and jama'ah times. Days you haven't edited use the masjid's published timetable."
       />
       <PrayerCalendarEditor />
     </div>

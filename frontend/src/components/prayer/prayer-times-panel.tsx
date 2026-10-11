@@ -160,19 +160,18 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
                 <Icon
                   className={cn('size-6', isNext ? 'text-secondary-400' : 'text-primary-300')}
                 />
-                <div>
-                  <p className="flex items-center gap-2 font-ui text-base font-medium tracking-heading">
-                    {salah.name}
-                    {isNext && (
-                      <span className="bg-secondary-500 px-2 py-0.5 font-label text-[0.65rem] font-bold tracking-[0.15em] text-primary-950 uppercase">
-                        Next
-                      </span>
-                    )}
-                  </p>
+                {/* Name, with sunrise or the "Next" tag underneath so cells stay narrow. */}
+                <div className="min-w-0">
+                  <p className="font-ui text-base font-medium tracking-heading">{salah.name}</p>
                   {salah.id === 'fajr' && (
                     <p className="text-xs text-primary-200">
                       Sunrise {formatSalahTime(day.sunrise)}
                     </p>
+                  )}
+                  {isNext && (
+                    <span className="mt-1 inline-block bg-secondary-500 px-1.5 py-px font-label text-[0.6rem] font-bold tracking-[0.15em] text-primary-950 uppercase">
+                      Next
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-4 text-right">
@@ -219,7 +218,9 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
         </ul>
 
         <p className="mt-4 text-xs text-primary-300">
-          Calculated start times for {siteConfig.address.locality}. Jama&apos;ah times may differ.
+          {day.source === 'published'
+            ? `From ${siteConfig.name}'s ${day.date.getFullYear()} prayer timetable.`
+            : `Calculated start times for ${siteConfig.address.locality}. Jama'ah times may differ.`}
         </p>
       </section>
     </div>

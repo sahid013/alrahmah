@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/icons';
-import { calculatedDay } from '@/lib/dashboard/prayer';
+import { timetableDay } from '@/lib/dashboard/prayer';
 import { donationTotals, summariseDonors } from '@/lib/dashboard/queries';
 import { hasJamaah, PRAYER_LABELS, PRAYERS } from '@/lib/dashboard/types';
 import { todayAtMasjid } from '@/lib/events/calendar';
@@ -43,7 +43,7 @@ export function DashboardOverview() {
 
   const totals = donationTotals(data.donations);
   const donors = summariseDonors(data.donations);
-  const prayer = data.prayer ?? calculatedDay(today);
+  const prayer = data.prayer ?? timetableDay(today);
 
   return (
     <div className="space-y-6">

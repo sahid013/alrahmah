@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { ChevronIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { calculatedDay, isFriday, sameTimes, validateDay } from '@/lib/dashboard/prayer';
+import { timetableDay, isFriday, sameTimes, validateDay } from '@/lib/dashboard/prayer';
 import {
   hasJamaah,
   PRAYER_LABELS,
@@ -24,7 +24,7 @@ const GRID_PRAYERS: PrayerKey[] = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
 /**
  * Calendar editor for the published prayer timetable. Days without a stored override show the
- * calculated times; editing a day stores an override. Saves go through `DashboardApi`.
+ * published timetable (or calculated times for years without one); editing a day stores an override. Saves go through `DashboardApi`.
  */
 export function PrayerCalendarEditor() {
   const api = useDashboardApi();
@@ -43,15 +43,15 @@ export function PrayerCalendarEditor() {
   const byDate = useMemo(() => new Map((loadedDays ?? []).map((d) => [d.date, d])), [loadedDays]);
 
   const stored = byDate.get(selected);
-  const [draft, setDraft] = useState<PrayerDay>(() => calculatedDay(selected));
-  const baseline = stored ?? calculatedDay(selected);
+  const [draft, setDraft] = useState<PrayerDay>(() => timetableDay(selected));
+  const baseline = stored ?? timetableDay(selected);
   const dirty = !sameTimes(draft, baseline);
   const errors = validateDay(draft);
   const hasErrors = Object.keys(errors).length > 0;
 
   // Load the selected day (or its newly saved version) into the editor. Adjusting state during
   // render, not in an effect, avoids a flash of the previous day's times.
-  const loadedKey = `${selected}|${stored?.updatedAt ?? 'calculated'}`;
+  const loadedKey = `${selected}|${stored?.updatedAt ?? 'timetable'}`;
   const [loaded, setLoaded] = useState(loadedKey);
   if (loaded !== loadedKey) {
     setLoaded(loadedKey);
@@ -98,11 +98,11 @@ export function PrayerCalendarEditor() {
 
   /** Only offered for days with custom times: delete the override. */
   const resetToCalculated = async () => {
-    if (!window.confirm('Remove the custom times for this day and use the calculated times?'))
+    if (!window.confirm('Remove the custom times for this day and go back to the timetable?'))
       return;
     await api.prayer.deleteDay(selected);
     reload();
-    setStatus('Reverted to calculated times.');
+    setStatus('Back to the timetable times.');
   };
 
   // First load only; month changes keep the previous grid visible while fetching.
@@ -158,7 +158,7 @@ export function PrayerCalendarEditor() {
           </span>
           <span className="flex items-center gap-1.5">
             <span className="font-ui text-neutral-400">00:00</span>
-            Calculated (grey)
+            Timetable (grey)
           </span>
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 bg-secondary-500" />
@@ -192,7 +192,7 @@ export function PrayerCalendarEditor() {
               <div key={week[0]!.date} role="row" className="grid grid-cols-7">
                 {week.map((day) => {
                   const custom = byDate.get(day.date);
-                  const shown = custom ?? calculatedDay(day.date);
+                  const shown = custom ?? timetableDay(day.date);
                   const active = day.date === selected;
                   return (
                     <div
@@ -206,7 +206,7 @@ export function PrayerCalendarEditor() {
                         data-date={day.date}
                         tabIndex={active ? 0 : -1}
                         onClick={() => select(day.date)}
-                        aria-label={`${formatLongDate(asDate(day.date))}${custom ? ', custom times' : ', calculated times'}`}
+                        aria-label={`${formatLongDate(asDate(day.date))}${custom ? ', custom times' : ', timetable times'}`}
                         className={cn(
                           'relative flex h-full min-h-32 w-full flex-col p-2 text-left transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-secondary-500',
                           !day.inMonth && 'bg-neutral-50 opacity-60',
@@ -421,7 +421,7 @@ export function PrayerCalendarEditor() {
               </Button>
               {stored && (
                 <Button variant="ghost" onClick={resetToCalculated}>
-                  Use calculated times
+                  Use timetable times
                 </Button>
               )}
             </div>
