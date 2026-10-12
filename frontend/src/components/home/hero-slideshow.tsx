@@ -100,6 +100,7 @@ function SlideTracker({
   );
 }
 
+/** Desktop hero (lg+). Below `lg` the home page shows `HeroMobile` instead. */
 export function HeroSlideshow({ slides, events }: { slides: HeroSlide[]; events: EventItem[] }) {
   const [index, setIndex] = useState(0);
   const [advanced, setAdvanced] = useState(false);
@@ -137,7 +138,7 @@ export function HeroSlideshow({ slides, events }: { slides: HeroSlide[]; events:
       data-advanced={advanced}
       style={{ '--slide-duration': `${SLIDE_DURATION_MS}ms` } as CSSProperties}
       // Pulled up under the transparent header; top padding adds the header height back.
-      className="relative isolate -mt-16 flex min-h-[95svh] flex-col overflow-hidden bg-primary-950 text-white lg:-mt-[8.5rem]"
+      className="relative isolate -mt-16 hidden min-h-[95svh] flex-col overflow-hidden bg-primary-950 text-white lg:-mt-[8.5rem] lg:flex"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -151,7 +152,7 @@ export function HeroSlideshow({ slides, events }: { slides: HeroSlide[]; events:
           key={slide.id}
           aria-hidden={i !== index}
           data-active={i === index}
-          className="hero-slide hero-bg absolute inset-0 -z-20"
+          className="hero-slide hero-bg absolute inset-0"
         >
           {slide.background ? (
             <div className="hero-drift absolute inset-0">

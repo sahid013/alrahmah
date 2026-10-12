@@ -134,7 +134,10 @@
   :root {
     /* Shared entrance motion (hero slides and scroll reveals). */
     --motion-in: 1.1s;
-    --motion-out: 0.3s;
+    --motion-out: 0.6s;
+    /* Hero only: slower text entrance and background crossfade on slide change. */
+    --motion-hero-in: 1.5s;
+    --motion-crossfade: 1.6s;
     --motion-step: 100ms;
     --motion-shift: 120px;
     --motion-shift-visual: 160px;
@@ -157,7 +160,7 @@
   /* Elements enter in a fixed rhythm: --i is the element's position in the sequence.
      After the first slide change, entrances wait for the outgoing fade to finish. */
   .hero-slide[data-active='true'] :is(.hero-from-left, .hero-from-right) {
-    animation-duration: var(--motion-in);
+    animation-duration: var(--motion-hero-in);
     animation-timing-function: var(--ease-smooth);
     animation-fill-mode: both;
     animation-delay: calc(var(--i, 0) * var(--motion-step));
@@ -166,6 +169,19 @@
   [data-advanced='true'] .hero-slide[data-active='true'] :is(.hero-from-left, .hero-from-right) {
     animation-delay: calc(var(--motion-out) + var(--i, 0) * var(--motion-step));
   }
+  /* Backgrounds crossfade: the incoming photo fades in on top while the outgoing one stays
+     fully visible underneath, then hides once it's covered (no dip to the dark backdrop). */
+  .hero-bg {
+    z-index: -20;
+    transition:
+      opacity 0s linear var(--motion-crossfade),
+      visibility 0s linear var(--motion-crossfade);
+  }
+  .hero-slide.hero-bg[data-active='true'] {
+    z-index: -19;
+    transition: opacity var(--motion-crossfade) var(--ease-smooth);
+  }
+
   .hero-slide[data-active='true'] .hero-from-left {
     animation-name: hero-from-left;
   }
@@ -176,6 +192,8 @@
   /* Slow settle on the image while its slide is showing. */
   .hero-slide .hero-drift {
     transform: scale(1.06);
+    /* Reset only after the crossfade, so the outgoing photo doesn't jump while still visible. */
+    transition: transform 0s linear var(--motion-crossfade);
   }
   /* 3s so the zoom-out completes well within a slide's 4.5s on screen. */
   .hero-slide[data-active='true'] .hero-drift {
@@ -185,7 +203,9 @@
 
   @media (prefers-reduced-motion: reduce) {
     .hero-slide,
-    .hero-slide[data-active='true'] {
+    .hero-slide[data-active='true'],
+    .hero-bg,
+    .hero-slide.hero-bg[data-active='true'] {
       transition: none;
     }
     .hero-slide[data-active='true'] :is(.hero-from-left, .hero-from-right) {

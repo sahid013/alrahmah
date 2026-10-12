@@ -62,7 +62,7 @@ export function ImpactSection({ report }: { report: ImpactReport }) {
       />
 
       <StaggerGroup>
-        <Container className="grid gap-16 py-20 sm:py-28 lg:grid-cols-12 lg:gap-12">
+        <Container className="grid gap-16 pt-20 sm:pt-28 lg:grid-cols-12 lg:gap-12">
           {/* Left: intro + primary group */}
           <div className="flex flex-col gap-16 lg:col-span-4">
             <Reveal>

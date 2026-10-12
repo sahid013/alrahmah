@@ -3,6 +3,7 @@ import { GreetingSection } from '@/components/home/greeting-section';
 import { ImpactSection } from '@/components/impact/impact-section';
 import { ServicesSection } from '@/components/services/services-section';
 import { buildHeroSlides } from '@/components/home/hero-slides';
+import { HeroMobile } from '@/components/home/hero-mobile';
 import { HeroSlideshow } from '@/components/home/hero-slideshow';
 import { siteConfig } from '@/config/site';
 import { listEvents } from '@/lib/events/repository';
@@ -20,10 +21,13 @@ export const metadata = buildMetadata({
 
 export default async function HomePage() {
   const events = await listEvents();
+  const heroSlides = buildHeroSlides(events);
 
   return (
     <>
-      <HeroSlideshow slides={buildHeroSlides(events)} events={events} />
+      {/* One hero per screen size: accordion on mobile, slideshow on desktop. */}
+      <HeroMobile slides={heroSlides} events={events} />
+      <HeroSlideshow slides={heroSlides} events={events} />
 
       <GreetingSection />
       <EventsSection events={events.slice(0, 3)} />

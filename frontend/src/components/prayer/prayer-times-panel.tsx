@@ -1,16 +1,7 @@
 'use client';
 
-import { useState, type ComponentType, type SVGProps } from 'react';
-import {
-  AfternoonIcon,
-  CalendarIcon,
-  ChevronIcon,
-  CloseIcon,
-  MoonIcon,
-  SunIcon,
-  SunriseIcon,
-  SunsetIcon,
-} from '@/components/icons';
+import { useState } from 'react';
+import { CalendarIcon, ChevronIcon, CloseIcon } from '@/components/icons';
 import { FlipNumber } from '@/components/ui/flip-number';
 import { siteConfig } from '@/config/site';
 import { useSalahCountdown } from '@/lib/hooks/use-salah-countdown';
@@ -23,17 +14,9 @@ import {
   getDayTimetable,
   getNextFriday,
   isSameLocalDay,
-  type SalahId,
 } from '@/lib/prayer-times';
 import { cn } from '@/lib/utils/cn';
-
-const salahIcons: Record<SalahId, ComponentType<SVGProps<SVGSVGElement>>> = {
-  fajr: SunriseIcon,
-  dhuhr: SunIcon,
-  asr: AfternoonIcon,
-  maghrib: SunsetIcon,
-  isha: MoonIcon,
-};
+import { salahIcons } from './salah-icons';
 
 const squareButton =
   'inline-flex size-11 items-center justify-center border border-white/20 text-white transition-colors duration-300 hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-400 disabled:pointer-events-none disabled:opacity-30';

@@ -1,5 +1,6 @@
 'use client';
 
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useId, useState } from 'react';
@@ -14,6 +15,18 @@ interface MobileNavProps {
   /** Light icon for the transparent header over dark heroes. */
   light?: boolean;
 }
+
+const ease = [0.22, 1, 0.36, 1] as const;
+
+/** Group links fade and slide in one after another as the group opens. */
+const listVariants: Variants = {
+  open: { transition: { staggerChildren: 0.05, delayChildren: 0.08 } },
+  closed: {},
+};
+const itemVariants: Variants = {
+  open: { opacity: 1, x: 0, transition: { duration: 0.35, ease } },
+  closed: { opacity: 0, x: -12 },
+};
 
 const rowClass =
   'font-label flex w-full items-center justify-between py-3 text-sm font-bold tracking-[0.12em] uppercase transition-colors';
@@ -47,61 +60,94 @@ function MobileLink({
   );
 }
 
-function MobileGroup({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
-  const [expanded, setExpanded] = useState(false);
+/** One expandable menu group. Expansion is controlled by `MobileNav`, so only one is open. */
+function MobileGroup({
+  item,
+  expanded,
+  onToggle,
+  onNavigate,
+}: {
+  item: NavItem;
+  expanded: boolean;
+  onToggle: () => void;
+  onNavigate: () => void;
+}) {
   const pathname = usePathname();
   const groupId = useId();
+  const reduceMotion = useReducedMotion();
 
   return (
     <li>
       <button
         type="button"
-        onClick={() => setExpanded((e) => !e)}
+        onClick={onToggle}
         aria-expanded={expanded}
         aria-controls={groupId}
-        className={cn(rowClass, 'text-primary-100 hover:text-white')}
+        className={cn(rowClass, expanded ? 'text-white' : 'text-primary-100 hover:text-white')}
       >
         {item.label}
-        <ChevronIcon
-          direction="right"
-          className={cn(
-            'size-4 transition-transform duration-300',
-            // Points down when closed, up when open.
-            expanded ? '-rotate-90' : 'rotate-90',
-          )}
-        />
+        {/* Points down when closed, up when open. */}
+        <motion.span
+          aria-hidden
+          initial={false}
+          animate={{ rotate: expanded ? -90 : 90 }}
+          transition={{ duration: reduceMotion ? 0 : 0.4, ease }}
+          className={cn('inline-flex', expanded && 'text-secondary-300')}
+        >
+          <ChevronIcon direction="right" className="size-4" />
+        </motion.span>
       </button>
-      <ul
-        id={groupId}
-        hidden={!expanded}
-        className="animate-fade mb-3 border-l-2 border-secondary-500"
-      >
-        {item.children?.map((child) => (
-          <li key={child.href}>
-            <MobileLink link={child} pathname={pathname} onNavigate={onNavigate} />
-            {child.children && (
-              <ul className="ml-4 border-l border-white/15">
-                {child.children.map((grandchild) => (
-                  <li key={grandchild.href}>
-                    <MobileLink
-                      link={grandchild}
-                      pathname={pathname}
-                      onNavigate={onNavigate}
-                      small
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-        ))}
-      </ul>
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key="panel"
+            id={groupId}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.45, ease }}
+            className="overflow-hidden"
+          >
+            <motion.ul
+              variants={reduceMotion ? undefined : listVariants}
+              initial="closed"
+              animate="open"
+              className="mb-3 border-l-2 border-secondary-500"
+            >
+              {item.children?.map((child) => (
+                <motion.li key={child.href} variants={reduceMotion ? undefined : itemVariants}>
+                  <MobileLink link={child} pathname={pathname} onNavigate={onNavigate} />
+                  {child.children && (
+                    <ul className="ml-4 border-l border-white/15">
+                      {child.children.map((grandchild) => (
+                        <li key={grandchild.href}>
+                          <MobileLink
+                            link={grandchild}
+                            pathname={pathname}
+                            onNavigate={onNavigate}
+                            small
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </li>
   );
 }
 
 export function MobileNav({ nav, open, onOpenChange, light = false }: MobileNavProps) {
   const close = () => onOpenChange(false);
+  // Accordion: at most one group open at a time; opening another collapses the previous one.
+  const [expandedHref, setExpandedHref] = useState<string | null>(null);
+
+  // Start collapsed each time the menu reopens (state adjusted during render, no effect).
+  if (!open && expandedHref !== null) setExpandedHref(null);
 
   return (
     <div className="lg:hidden">
@@ -127,7 +173,15 @@ export function MobileNav({ nav, open, onOpenChange, light = false }: MobileNavP
           <ul className="divide-y divide-white/10">
             {nav.map((item) =>
               item.children?.length ? (
-                <MobileGroup key={item.href} item={item} onNavigate={close} />
+                <MobileGroup
+                  key={item.href}
+                  item={item}
+                  expanded={expandedHref === item.href}
+                  onToggle={() =>
+                    setExpandedHref((current) => (current === item.href ? null : item.href))
+                  }
+                  onNavigate={close}
+                />
               ) : (
                 <li key={item.href}>
                   <Link
