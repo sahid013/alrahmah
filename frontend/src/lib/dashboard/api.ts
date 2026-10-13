@@ -6,6 +6,7 @@ import type {
   SignInNext,
   TotpEnrollment,
 } from './auth/types';
+import type { KhutbahEntry } from '@/lib/khutbahs/types';
 import type { Campaign, Donation, DonationQuery, PrayerDay } from './types';
 
 /**
@@ -59,5 +60,16 @@ export interface DashboardApi {
   };
   donations: {
     list(query?: DonationQuery): Promise<Donation[]>;
+  };
+  /**
+   * Khutbahs posted by link for the home page (newest by date = "This week"). Supabase: a
+   * `khutbahs` table keyed by `video_id`, public read, write for signed-in staff only.
+   */
+  khutbahs: {
+    /** Newest first. */
+    list(): Promise<KhutbahEntry[]>;
+    /** Adds, or updates the entry with the same video. */
+    save(entry: KhutbahEntry): Promise<KhutbahEntry>;
+    remove(videoId: string): Promise<void>;
   };
 }

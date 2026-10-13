@@ -2,6 +2,7 @@ import type { DashboardApi } from './api';
 import { createLocalAuth } from './auth/local-auth';
 import { filterDonations } from './queries';
 import { sampleCampaigns, sampleDonations } from './sample-data';
+import { byNewest, khutbahEntrySchema, type KhutbahEntry } from '@/lib/khutbahs/types';
 import { campaignSchema, prayerDaySchema, type Campaign, type PrayerDay } from './types';
 
 /**
@@ -14,6 +15,7 @@ const KEY = 'alrahmah.dashboard.v2'; // v2: causes reduced to three, no posters
 interface Store {
   prayer: Record<string, PrayerDay>;
   campaigns: Campaign[];
+  khutbahs: KhutbahEntry[];
 }
 
 function read(): Store {
@@ -28,12 +30,16 @@ function read(): Store {
           ),
         ),
         campaigns: campaignSchema.array().catch(sampleCampaigns()).parse(parsed.campaigns),
+        khutbahs: khutbahEntrySchema
+          .array()
+          .catch([])
+          .parse(parsed.khutbahs ?? []),
       };
     }
   } catch {
     /* storage unavailable or corrupt: fall back to defaults */
   }
-  return { prayer: {}, campaigns: sampleCampaigns() };
+  return { prayer: {}, campaigns: sampleCampaigns(), khutbahs: [] };
 }
 
 function write(store: Store) {
@@ -117,6 +123,24 @@ export function createLocalDashboardApi(): DashboardApi {
     donations: {
       async list(query) {
         return settle(filterDonations(donations, query));
+      },
+    },
+    khutbahs: {
+      async list() {
+        return settle([...read().khutbahs].sort(byNewest));
+      },
+      async save(entry) {
+        const valid = khutbahEntrySchema.parse({ ...entry, updatedAt: now() });
+        const store = read();
+        store.khutbahs = [valid, ...store.khutbahs.filter((k) => k.videoId !== valid.videoId)];
+        write(store);
+        return settle(valid);
+      },
+      async remove(videoId) {
+        const store = read();
+        store.khutbahs = store.khutbahs.filter((k) => k.videoId !== videoId);
+        write(store);
+        return settle(undefined);
       },
     },
   };

@@ -14,6 +14,7 @@ import {
   MenuIcon,
   ReceiptIcon,
   RepeatIcon,
+  YouTubeIcon,
 } from '@/components/icons';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils/cn';
@@ -30,6 +31,7 @@ interface NavEntry {
 export const DASHBOARD_NAV: NavEntry[] = [
   { label: 'Overview', href: '/dashboard', icon: GridIcon },
   { label: 'Prayer times', href: '/dashboard/prayer-times', icon: ClockIcon },
+  { label: 'Khutbahs', href: '/dashboard/khutbahs', icon: YouTubeIcon },
   { label: 'Campaigns', href: '/dashboard/campaigns', icon: HeartIcon },
   { label: 'Donations', href: '/dashboard/donations', icon: ReceiptIcon },
   { label: 'Regular giving', href: '/dashboard/regular-giving', icon: RepeatIcon },

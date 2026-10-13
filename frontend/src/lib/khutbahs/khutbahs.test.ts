@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { byNewest, youtubeVideoId, type KhutbahEntry } from './types';
 import { splitKhutbahTitle, toKhutbahs } from './youtube';
 
 const item = (videoId: string, title: string, extra: Record<string, unknown> = {}) => ({
@@ -47,5 +48,49 @@ describe('toKhutbahs', () => {
 
   it('rejects a response without items', () => {
     expect(() => toKhutbahs({ error: { code: 403 } })).toThrow();
+  });
+});
+
+describe('youtubeVideoId', () => {
+  it.each([
+    'https://www.youtube.com/watch?v=r9nPHD7Uubo',
+    'https://youtube.com/watch?v=r9nPHD7Uubo&list=PLATxZb7uoh6DSDhYSsk6TsaNSWYTQ5rUA&t=42s',
+    'https://m.youtube.com/watch?v=r9nPHD7Uubo',
+    'https://youtu.be/r9nPHD7Uubo?si=abc123',
+    'youtu.be/r9nPHD7Uubo',
+    'https://www.youtube.com/live/r9nPHD7Uubo?feature=share',
+    'https://www.youtube.com/shorts/r9nPHD7Uubo',
+    'https://www.youtube-nocookie.com/embed/r9nPHD7Uubo',
+    '  r9nPHD7Uubo  ',
+  ])('reads the id from %s', (link) => {
+    expect(youtubeVideoId(link)).toBe('r9nPHD7Uubo');
+  });
+
+  it.each([
+    '',
+    'hello',
+    'https://www.youtube.com/@alrahmahmasjid',
+    'https://www.youtube.com/playlist?list=PLATxZb7uoh6DSDhYSsk6TsaNSWYTQ5rUA',
+    'https://vimeo.com/123456789',
+    'https://example.com/watch?v=r9nPHD7Uubo',
+  ])('rejects %s', (link) => {
+    expect(youtubeVideoId(link)).toBeNull();
+  });
+});
+
+describe('byNewest', () => {
+  it('orders by date, then by most recently saved', () => {
+    const k = (videoId: string, date: string, updatedAt?: string): KhutbahEntry => ({
+      videoId,
+      title: videoId,
+      date,
+      updatedAt,
+    });
+    const list = [
+      k('aaaaaaaaaaa', '2026-10-02'),
+      k('bbbbbbbbbbb', '2026-10-09', '2026-10-09T15:00:00Z'),
+      k('ccccccccccc', '2026-10-09', '2026-10-10T09:00:00Z'),
+    ].sort(byNewest);
+    expect(list.map((x) => x.videoId)).toEqual(['ccccccccccc', 'bbbbbbbbbbb', 'aaaaaaaaaaa']);
   });
 });
