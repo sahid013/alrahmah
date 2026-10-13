@@ -1,6 +1,7 @@
 import { EventsSection } from '@/components/events/events-section';
 import { GreetingSection } from '@/components/home/greeting-section';
 import { ImpactSection } from '@/components/impact/impact-section';
+import { KhutbahsSection } from '@/components/khutbahs/khutbahs-section';
 import { ServicesSection } from '@/components/services/services-section';
 import { buildHeroSlides } from '@/components/home/hero-slides';
 import { HeroMobile } from '@/components/home/hero-mobile';
@@ -8,9 +9,10 @@ import { HeroSlideshow } from '@/components/home/hero-slideshow';
 import { siteConfig } from '@/config/site';
 import { listEvents } from '@/lib/events/repository';
 import { impactReport } from '@/lib/impact/data';
+import { listKhutbahs } from '@/lib/khutbahs/repository';
 import { buildMetadata } from '@/lib/seo';
 
-/** Re-render hourly so past events drop off the list. */
+/** Re-render hourly so past events drop off and new khutbahs appear. */
 export const revalidate = 3600;
 
 export const metadata = buildMetadata({
@@ -20,7 +22,7 @@ export const metadata = buildMetadata({
 });
 
 export default async function HomePage() {
-  const events = await listEvents();
+  const [events, khutbahs] = await Promise.all([listEvents(), listKhutbahs()]);
   const heroSlides = buildHeroSlides(events);
 
   return (
@@ -33,6 +35,7 @@ export default async function HomePage() {
       <EventsSection events={events.slice(0, 3)} />
       <ImpactSection report={impactReport} />
       <ServicesSection />
+      <KhutbahsSection khutbahs={khutbahs} />
     </>
   );
 }

@@ -83,6 +83,11 @@ export const siteConfig = {
     // TODO: replace with the nikah booking / certificate form link.
     nikahBooking: '/contact',
   },
+  /** YouTube channel, and its "Weekly Khutbah Videos" playlist (newest first) shown on the home page. */
+  youtube: {
+    channel: 'https://www.youtube.com/@alrahmahmasjid',
+    khutbahPlaylistId: 'PLATxZb7uoh6DSDhYSsk6TsaNSWYTQ5rUA',
+  },
   /**
    * Social channels promoted in the "Follow Us" nav dropdown.
    * TODO: replace every placeholder URL with Al-Rahmah's real profile links (remove any the
@@ -90,7 +95,7 @@ export const siteConfig = {
    */
   socials: [
     { platform: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/' },
-    { platform: 'youtube', name: 'YouTube', href: 'https://www.youtube.com/' },
+    { platform: 'youtube', name: 'YouTube', href: 'https://www.youtube.com/@alrahmahmasjid' },
     { platform: 'instagram', name: 'Instagram', href: 'https://www.instagram.com/' },
     { platform: 'whatsapp', name: 'WhatsApp', href: 'https://whatsapp.com/channel/' },
   ],

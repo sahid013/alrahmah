@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
-import { Fragment, useState, type FocusEvent } from 'react';
+import { Fragment, useState, useSyncExternalStore, type FocusEvent } from 'react';
 import { UpcomingEventsMobile } from '@/components/events/upcoming-events';
 import { ArrowRightIcon, HeartIcon, PlusIcon, WhatsAppIcon } from '@/components/icons';
 import { NextPrayerSection } from '@/components/prayer/next-prayer-section';
@@ -16,6 +16,7 @@ const SLIDE_DURATION_MS = 6500;
 const ease = [0.22, 1, 0.36, 1] as const;
 
 const ctaIcons = { whatsapp: WhatsAppIcon, heart: HeartIcon } as const;
+const noopSubscribe = () => () => {};
 
 /** Mobile CTA: 4px smaller text (12px) and icons than the desktop hero buttons. */
 const mobileCta = 'h-11 px-5 text-xs';
@@ -30,7 +31,14 @@ export function HeroMobile({ slides, events }: { slides: HeroSlide[]; events: Ev
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const reduceMotion = useReducedMotion();
-  const autoplay = !reduceMotion && !paused && slides.length > 1;
+  // The server can't know the reduced-motion setting, so autoplay (and its progress line) only
+  // starts once hydrated; otherwise reduced-motion visitors get a hydration mismatch.
+  const hydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+  const autoplay = hydrated && !reduceMotion && !paused && slides.length > 1;
 
   // Keyboard focus inside the hero pauses autoplay (WCAG 2.2.2); taps don't.
   const onFocus = (event: FocusEvent<HTMLElement>) => {

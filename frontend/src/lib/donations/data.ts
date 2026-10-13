@@ -35,10 +35,11 @@ export const seedDonations: DonationsData = {
       cta: { label: 'Donate', href: checkoutHref('masjid-maintenance') },
     },
     {
-      id: 'zakaat',
-      title: 'Zakaat',
-      summary: 'Pay your Zakaat through the masjid and fulfil this pillar of Islam.',
-      cta: { label: 'Donate', href: checkoutHref('zakaat') },
+      id: 'sadaqah',
+      title: 'Sadaqah',
+      summary:
+        'Give voluntary charity through the masjid to support those in need and our community.',
+      cta: { label: 'Donate', href: checkoutHref('sadaqah') },
     },
   ],
 };

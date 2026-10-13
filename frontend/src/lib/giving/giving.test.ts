@@ -23,7 +23,7 @@ const donor: DonationRequest['donor'] = {
   phone: '07700 900123',
 };
 const valid: DonationRequest = {
-  campaignId: 'zakaat',
+  campaignId: 'sadaqah',
   frequency: 'one-off',
   amount: 50,
   donor,

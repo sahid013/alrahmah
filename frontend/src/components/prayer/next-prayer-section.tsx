@@ -36,10 +36,12 @@ export function NextPrayerSection() {
   return (
     <motion.section
       aria-labelledby="next-prayer-title"
-      initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+      // Same initial state on server and client (the server can't know the reduced-motion
+      // setting); reduced motion just makes the reveal instant.
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.4 }}
-      transition={{ duration: 0.8, ease }}
+      transition={{ duration: reduceMotion ? 0 : 0.8, ease }}
       className="relative isolate overflow-hidden border-b border-white/10 bg-primary-900 px-4 py-10 text-center sm:px-8"
     >
       <div aria-hidden className="bg-islamic-pattern absolute inset-0 -z-10 opacity-[0.06]" />
