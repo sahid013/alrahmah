@@ -7,9 +7,10 @@ import { formatSalahTime } from '@/lib/prayer-times';
 import { usePrayerTimesDialog } from './prayer-times-provider';
 
 /**
- * Fixed bottom-left round badge: "PRAYER TIMES" on a continuously rotating ring around the
- * Al-Rahmah building icon. Opens the shared prayer times popup. The circle is the design system's
- * deliberate exception to square corners (`.shape-round`).
+ * Fixed round badge (bottom-right on phones, bottom-left from `sm`), white with navy:
+ * "PRAYER TIMES" on a continuously rotating ring around the Al-Rahmah building icon. Opens the
+ * shared prayer times popup. The circle is the design system's deliberate exception to square
+ * corners (`.shape-round`).
  */
 export function PrayerBadge() {
   const { next } = useSalahCountdown();
@@ -24,7 +25,7 @@ export function PrayerBadge() {
       aria-label={
         next ? `Prayer times. Next: ${next.name} at ${formatSalahTime(next.time)}` : 'Prayer times'
       }
-      className="btn-fill shape-round fixed bottom-4 left-4 z-40 flex size-24 items-center justify-center overflow-hidden border-4 border-primary-950 bg-white text-primary-950 [--btn-fill:var(--color-secondary-200)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-secondary-400 sm:bottom-6 sm:left-6 sm:size-28 sm:border-[3px] sm:bg-secondary-500 sm:[--btn-fill:var(--color-secondary-300)] lg:bottom-8 lg:left-8"
+      className="btn-fill shape-round fixed right-4 bottom-4 z-40 flex size-24 items-center justify-center overflow-hidden border-4 border-primary-950 bg-white text-primary-950 [--btn-fill:var(--color-secondary-200)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-secondary-400 sm:right-auto sm:bottom-6 sm:left-6 sm:size-28 sm:border-[3px] lg:bottom-8 lg:left-8"
     >
       <svg
         aria-hidden
