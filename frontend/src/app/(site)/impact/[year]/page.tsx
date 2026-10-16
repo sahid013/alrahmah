@@ -6,8 +6,11 @@ import { Heading, Text } from '@/components/ui/typography';
 import { impactReport } from '@/lib/impact/data';
 import { buildMetadata } from '@/lib/seo';
 
-/** Only published report years exist. */
-export const dynamicParams = false;
+/**
+ * `dynamicParams` stays on (the default): with it off, Next.js can't re-render these prerendered
+ * pages after an on-demand refresh (e.g. a prayer-time save revalidates every page) and serves a
+ * 404. Unknown ids still 404 through `notFound()` below.
+ */
 export const generateStaticParams = () => [{ year: String(impactReport.year) }];
 
 type Props = { params: Promise<{ year: string }> };

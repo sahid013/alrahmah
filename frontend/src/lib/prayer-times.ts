@@ -1,10 +1,12 @@
 import { CalculationMethod, Coordinates, HighLatitudeRule, Madhab, PrayerTimes } from 'adhan';
 import { siteConfig } from '@/config/site';
+import type { PrayerDay } from './dashboard/types';
 import { PRAYER_TIMETABLE_2026 } from './prayer-timetable-2026';
 
 /**
- * Prayer times for the masjid. Uses the masjid's **published timetable** (start + jama'ah times)
- * for years that have one, and falls back to an astronomical calculation otherwise. This module is
+ * Prayer times for the masjid, in order of precedence: days the team **edited in the dashboard**
+ * (Supabase `prayer_days`, registered with `setPrayerOverrides`), then the masjid's **published
+ * timetable** (start + jama'ah times) for years that have one, then an astronomical calculation. This module is
  * the only place that knows how times are produced; components never change.
  *
  * Adding next year: run scripts/import-prayer-timetable.py on the new spreadsheet and add the
@@ -29,8 +31,12 @@ export interface DayTimetable {
   isFriday: boolean;
   salah: Salah[];
   sunrise: Date;
-  /** `published` = the masjid's own timetable; `calculated` = astronomical fallback. */
+  /** `published` = the masjid's own timetable (or dashboard edit); `calculated` = astronomical fallback. */
   source: 'published' | 'calculated';
+  /** Fridays: Jumu'ah (khutbah) times set in the dashboard. */
+  jumuah?: Date[];
+  /** A note for the day from the dashboard, e.g. "Eid prayer at 8am". */
+  note?: string;
 }
 
 /** Published timetables by year: "MM-DD" → space-separated UK clock times (see the generator). */
@@ -136,9 +142,47 @@ function publishedDay(day: ReturnType<typeof localDay>): DayTimetable | undefine
   };
 }
 
+/** Days edited in the dashboard, by "YYYY-MM-DD" (UK date). */
+let overrides = new Map<string, PrayerDay>();
+
+/**
+ * Registers the dashboard's edited days (loaded on the server, handed over by
+ * `PrayerTimesProvider`). They take precedence over the published/calculated times.
+ */
+export function setPrayerOverrides(days: readonly PrayerDay[]) {
+  overrides = new Map(days.map((d) => [d.date, d]));
+}
+
+function overrideDay(day: ReturnType<typeof localDay>): DayTimetable | undefined {
+  const key = `${day.year}-${String(day.month).padStart(2, '0')}-${String(day.day).padStart(2, '0')}`;
+  const edited = overrides.get(key);
+  if (!edited) return undefined;
+  const at = (hhmm: string) => atLocalTime(day.year, day.month, day.day, hhmm);
+  const salah = (id: SalahId): Salah => {
+    const t: { adhan: string; jamaah?: string } = edited.times[id];
+    return {
+      id,
+      name: named(id, day.isFriday),
+      time: at(t.adhan),
+      ...(t.jamaah && { jamaah: at(t.jamaah) }),
+    };
+  };
+  return {
+    date: at(edited.times.dhuhr.adhan),
+    isFriday: day.isFriday,
+    sunrise: at(edited.times.sunrise.adhan),
+    source: 'published',
+    salah: (['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const).map(salah),
+    ...(edited.jumuah?.length && { jumuah: edited.jumuah.map(at) }),
+    ...(edited.note && { note: edited.note }),
+  };
+}
+
 /** Full timetable (five salah + sunrise) for the masjid's local day containing `instant`. */
 export function getDayTimetable(instant: Date): DayTimetable {
   const day = localDay(instant);
+  const edited = overrideDay(day);
+  if (edited) return edited;
   const published = publishedDay(day);
   if (published) return published;
 

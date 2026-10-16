@@ -191,15 +191,22 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
             </div>
             <div className="text-right">
               <p className="font-label text-[0.65rem] font-bold tracking-[0.15em] text-primary-300 uppercase">
-                Dhuhr begins
+                {friday.jumuah?.length ? 'Khutbah' : 'Dhuhr begins'}
               </p>
               <p className="font-ui text-xl font-medium tabular-nums">
-                {formatSalahTime(friday.salah[1]!.time)}
+                {(friday.jumuah?.length ? friday.jumuah : [friday.salah[1]!.time])
+                  .map(formatSalahTime)
+                  .join(' · ')}
               </p>
             </div>
           </li>
         </ul>
 
+        {day.note && (
+          <p className="mt-4 border-l-2 border-secondary-400 bg-primary-950/60 px-4 py-2 text-sm text-primary-100">
+            {day.note}
+          </p>
+        )}
         <p className="mt-4 text-xs text-primary-300">
           {day.source === 'published'
             ? `From ${siteConfig.name}'s ${day.date.getFullYear()} prayer timetable.`

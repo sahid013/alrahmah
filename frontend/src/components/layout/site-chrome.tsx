@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PrayerBadge } from '@/components/prayer/prayer-badge';
 import { PrayerTimesProvider } from '@/components/prayer/prayer-times-provider';
 import { listEvents } from '@/lib/events/repository';
+import { listPrayerOverrides } from '@/lib/prayer/overrides';
 import { Footer } from './footer';
 import { Header } from './header';
 import { PreFooter } from './pre-footer';
@@ -11,7 +12,10 @@ import { PreFooter } from './pre-footer';
  * Used by the `(site)` route group layout and the global 404 page; the dashboard has its own.
  */
 export async function SiteChrome({ children }: { children: ReactNode }) {
-  const latestEvents = await listEvents({ limit: 4 });
+  const [latestEvents, prayerOverrides] = await Promise.all([
+    listEvents({ limit: 4 }),
+    listPrayerOverrides(),
+  ]);
 
   return (
     <>
@@ -21,7 +25,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <PrayerTimesProvider>
+      <PrayerTimesProvider overrides={prayerOverrides}>
         <Header latestEvents={latestEvents} />
         <main id="main" className="flex-1">
           {children}

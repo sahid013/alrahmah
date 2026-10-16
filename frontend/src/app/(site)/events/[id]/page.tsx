@@ -9,8 +9,11 @@ import { Heading, Text } from '@/components/ui/typography';
 import { siteConfig } from '@/config/site';
 import { buildMetadata } from '@/lib/seo';
 
-/** Only events in the data exist; anything else is a 404. */
-export const dynamicParams = false;
+/**
+ * `dynamicParams` stays on (the default): with it off, Next.js can't re-render these prerendered
+ * pages after an on-demand refresh (e.g. a prayer-time save revalidates every page) and serves a
+ * 404. Unknown ids still 404 through `notFound()` below.
+ */
 
 export async function generateStaticParams() {
   return (await listEvents()).map((event) => ({ id: event.id }));

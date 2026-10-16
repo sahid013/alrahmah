@@ -11,15 +11,19 @@ import {
 } from 'react';
 import type { DashboardApi } from '@/lib/dashboard/api';
 import { createLocalDashboardApi } from '@/lib/dashboard/local-api';
+import { createSupabaseDashboardApi } from '@/lib/dashboard/supabase-api';
+import { supabaseConfigured } from '@/lib/supabase/client';
 
 const DashboardApiContext = createContext<DashboardApi | null>(null);
 
 /**
- * Provides the dashboard data source. THE single swap point: replace
- * `createLocalDashboardApi()` with the Supabase / backend implementation of `DashboardApi`.
+ * Provides the dashboard data source. THE single swap point: Supabase (`createSupabaseDashboardApi`:
+ * real sign-in and database) when its env vars are set, otherwise the browser preview.
  */
 export function DashboardApiProvider({ children }: { children: ReactNode }) {
-  const [api] = useState(createLocalDashboardApi);
+  const [api] = useState(() =>
+    supabaseConfigured ? createSupabaseDashboardApi() : createLocalDashboardApi(),
+  );
   return <DashboardApiContext.Provider value={api}>{children}</DashboardApiContext.Provider>;
 }
 

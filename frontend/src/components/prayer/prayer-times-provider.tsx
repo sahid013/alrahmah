@@ -1,6 +1,8 @@
 'use client';
 
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
+import type { PrayerDay } from '@/lib/dashboard/types';
+import { setPrayerOverrides } from '@/lib/prayer-times';
 import { PrayerTimesPanel } from './prayer-times-panel';
 
 interface PrayerTimesDialogApi {
@@ -21,8 +23,18 @@ export function usePrayerTimesDialog(): PrayerTimesDialogApi {
  * Hosts one native <dialog> for the whole site. `showModal()` gives focus trapping, Escape to
  * close, an inert background and focus restoration for free. Content only renders while open,
  * so its clock doesn't tick in the background.
+ *
+ * `overrides` are the days edited in the dashboard (loaded on the server). They're registered
+ * before any child renders, so every prayer widget uses them.
  */
-export function PrayerTimesProvider({ children }: { children: ReactNode }) {
+export function PrayerTimesProvider({
+  overrides,
+  children,
+}: {
+  overrides: PrayerDay[];
+  children: ReactNode;
+}) {
+  setPrayerOverrides(overrides);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
