@@ -179,7 +179,8 @@ function PaymentForm({
         size="lg"
         variant="secondary"
         className="w-full"
-        disabled={busy || !checkout.canConfirm}
+        loading={busy}
+        disabled={!checkout.canConfirm}
         onClick={() => void pay()}
       >
         <HeartIcon className="size-4" />

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ExternalIcon, PencilIcon, TrashIcon } from '@/components/icons';
+import { Spinner } from '@/components/ui/spinner';
 import { watchUrl, type KhutbahEntry } from '@/lib/khutbahs/types';
 import { useDashboardApi, useDashboardQuery } from '../dashboard-api-provider';
 import { Badge, EmptyState, iconButton, LoadingRows, Panel, shortDate, td, th } from '../ui';
@@ -23,12 +24,20 @@ export function KhutbahManager() {
     reload();
   };
 
+  const [removing, setRemoving] = useState<string>();
   const remove = async (entry: KhutbahEntry) => {
     if (!window.confirm(`Remove “${entry.title}” from the website?`)) return;
-    await api.khutbahs.remove(entry.videoId);
-    if (editing?.videoId === entry.videoId) setEditing(undefined);
-    setNotice(`Removed “${entry.title}”.`);
-    reload();
+    setRemoving(entry.videoId);
+    try {
+      await api.khutbahs.remove(entry.videoId);
+      if (editing?.videoId === entry.videoId) setEditing(undefined);
+      setNotice(`Removed “${entry.title}”.`);
+      reload();
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : 'Could not remove. Please try again.');
+    } finally {
+      setRemoving(undefined);
+    }
   };
 
   return (
@@ -108,9 +117,11 @@ export function KhutbahManager() {
                           type="button"
                           className={iconButton}
                           onClick={() => void remove(k)}
+                          disabled={removing === k.videoId}
+                          aria-busy={removing === k.videoId || undefined}
                           aria-label={`Remove ${k.title}`}
                         >
-                          <TrashIcon className="size-4" />
+                          {removing === k.videoId ? <Spinner /> : <TrashIcon className="size-4" />}
                         </button>
                       </div>
                     </td>

@@ -56,12 +56,14 @@ const legendClass = 'mb-3 font-label text-sm font-bold tracking-[0.12em] text-wh
  */
 export function AmountStep({
   program,
+  canChangeCause = true,
   value,
   amount,
   errors,
   onChange,
 }: {
   program: DonationProgram;
+  canChangeCause?: boolean;
   value: AmountValue;
   /** Parsed amount per payment (NaN when empty/invalid). */
   amount: number;
@@ -78,13 +80,15 @@ export function AmountStep({
           <span>
             Giving to <strong className="text-white">{program.title}</strong>
           </span>
-          <Link
-            href="/donate"
-            className="inline-flex items-center gap-1 font-label text-xs font-bold tracking-[0.15em] text-secondary-300 uppercase hover:text-white"
-          >
-            <ChevronIcon direction="left" className="size-3" />
-            Change cause
-          </Link>
+          {canChangeCause && (
+            <Link
+              href="/donate"
+              className="inline-flex items-center gap-1 font-label text-xs font-bold tracking-[0.15em] text-secondary-300 uppercase hover:text-white"
+            >
+              <ChevronIcon direction="left" className="size-3" />
+              Change cause
+            </Link>
+          )}
         </p>
         <StepTitle id="step-title">Your donation</StepTitle>
       </div>

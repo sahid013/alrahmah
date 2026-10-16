@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { Spinner } from './spinner';
 
 type Variant =
   | 'primary'
@@ -65,15 +66,31 @@ export const buttonStyles = ({ variant = 'primary', size = 'md' }: StyleProps = 
     isTertiary(variant) ? tertiarySizes[size] : sizes[size],
   );
 
+/**
+ * `loading`: for actions that save or change something: shows a spinner, disables the button
+ * (no double submits) and marks it busy for screen readers. Pair it with a label like "Saving…".
+ */
 export function Button({
   variant,
   size,
   className,
   type = 'button',
+  loading = false,
+  disabled,
+  children,
   ...props
-}: ComponentProps<'button'> & StyleProps) {
+}: ComponentProps<'button'> & StyleProps & { loading?: boolean }) {
   return (
-    <button type={type} className={cn(buttonStyles({ variant, size }), className)} {...props} />
+    <button
+      type={type}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      className={cn(buttonStyles({ variant, size }), loading && 'disabled:opacity-80', className)}
+      {...props}
+    >
+      {loading && <Spinner />}
+      {children}
+    </button>
   );
 }
 

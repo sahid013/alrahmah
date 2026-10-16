@@ -45,7 +45,14 @@ const EMPTY_DONOR: Donor = {
  * Step 3 shows Stripe's Payment Element when Stripe keys are configured (`paymentsMode`).
  * Dark theme; steps slide/fade with framer-motion (respects reduced motion).
  */
-export function DonationFlow({ program }: { program: DonationProgram }) {
+export function DonationFlow({
+  program,
+  canChangeCause = true,
+}: {
+  program: DonationProgram;
+  /** False when this is the only cause on the website (no "Change cause" link). */
+  canChangeCause?: boolean;
+}) {
   const stripeMode = paymentsMode === 'stripe';
   const [step, setStep] = useState(0);
   /** +1 when moving forward, -1 when going back (drives the slide direction). */
@@ -176,6 +183,7 @@ export function DonationFlow({ program }: { program: DonationProgram }) {
                   {step === 0 && (
                     <AmountStep
                       program={program}
+                      canChangeCause={canChangeCause}
                       value={choice}
                       amount={amount}
                       errors={errors}
@@ -231,6 +239,7 @@ export function DonationFlow({ program }: { program: DonationProgram }) {
                       program={program}
                       plan={plan}
                       reference={reference}
+                      canChangeCause={canChangeCause}
                       onAgain={restart}
                     />
                   )}
@@ -252,7 +261,7 @@ export function DonationFlow({ program }: { program: DonationProgram }) {
                     <span />
                   )}
                   {showSubmit && (
-                    <Button type="submit" size="lg" variant="secondary" disabled={busy}>
+                    <Button type="submit" size="lg" variant="secondary" loading={busy}>
                       {nextLabel}
                       {step < 2 && <ArrowRightIcon className="size-4" />}
                     </Button>

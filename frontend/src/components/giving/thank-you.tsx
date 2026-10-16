@@ -11,6 +11,7 @@ export function ThankYou({
   plan,
   reference,
   onAgain,
+  canChangeCause = true,
 }: {
   request: DonationRequest;
   program: DonationProgram;
@@ -18,6 +19,8 @@ export function ThankYou({
   plan?: DailyPlan;
   reference: string;
   onAgain: () => void;
+  /** False when this is the only cause on the website (no "Choose another cause"). */
+  canChangeCause?: boolean;
 }) {
   const g = program.giving;
   return (
@@ -57,9 +60,11 @@ export function ThankYou({
         Reference: <span className="font-ui text-white">{reference}</span>
       </p>
       <div className="flex flex-wrap gap-4">
-        <ButtonLink href="/donate" variant="outline-light">
-          Choose another cause
-        </ButtonLink>
+        {canChangeCause && (
+          <ButtonLink href="/donate" variant="outline-light">
+            Choose another cause
+          </ButtonLink>
+        )}
         <button
           type="button"
           onClick={onAgain}

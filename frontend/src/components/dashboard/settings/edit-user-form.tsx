@@ -137,7 +137,7 @@ export function EditUserForm({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={busy}>
+          <Button type="submit" loading={busy}>
             {busy ? 'Saving…' : 'Save changes'}
           </Button>
           <Button type="button" variant="ghost" onClick={() => onDone()}>

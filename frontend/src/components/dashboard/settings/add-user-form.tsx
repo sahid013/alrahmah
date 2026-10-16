@@ -143,7 +143,7 @@ export function AddUserForm({ onCreated }: { onCreated: () => void }) {
             </div>
           </Field>
           <div className="sm:col-span-2">
-            <Button type="submit" disabled={busy}>
+            <Button type="submit" loading={busy}>
               {busy ? 'Creating…' : 'Create user'}
             </Button>
           </div>

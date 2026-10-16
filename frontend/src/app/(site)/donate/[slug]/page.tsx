@@ -3,7 +3,7 @@ import { ArrowRightIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { DonationFlow } from '@/components/giving/donation-flow';
-import { loadDonations } from '@/lib/donations/repository';
+import { isCauseVisible, loadDonations, loadVisibleDonations } from '@/lib/donations/repository';
 import { dailyStatus } from '@/lib/giving/schedule';
 import { buildMetadata } from '@/lib/seo';
 
@@ -40,6 +40,23 @@ export default async function DonateCausePage({ params }: PageProps<'/donate/[sl
   const program = programs.find((p) => p.id === slug);
   if (!program) notFound();
 
+  if (!(await isCauseVisible(program.id)))
+    return (
+      <section className="bg-primary-950 text-white">
+        <Container className="max-w-3xl py-20 lg:py-28">
+          <h1 className="text-title-3xl leading-none sm:text-title-4xl">{program.title}</h1>
+          <p className="mt-6 text-lg text-primary-100">
+            Donations to {program.title} aren&apos;t open at the moment. Please check back soon, or
+            give to one of our other causes.
+          </p>
+          <ButtonLink href="/donate" variant="secondary" className="mt-10">
+            Donate
+            <ArrowRightIcon className="size-4" />
+          </ButtonLink>
+        </Container>
+      </section>
+    );
+
   if (program.giving.kind === 'daily' && dailyStatus(program.giving) === 'closed')
     return (
       <section className="bg-primary-950 text-white">
@@ -57,5 +74,6 @@ export default async function DonateCausePage({ params }: PageProps<'/donate/[sl
       </section>
     );
 
-  return <DonationFlow program={program} />;
+  const { programs: shown } = await loadVisibleDonations();
+  return <DonationFlow program={program} canChangeCause={shown.length > 1} />;
 }

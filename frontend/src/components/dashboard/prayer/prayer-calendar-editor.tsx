@@ -31,7 +31,9 @@ export function PrayerCalendarEditor() {
   const today = useMemo(() => todayAtMasjid(), []);
   const [month, setMonth] = useState(today.slice(0, 7));
   const [selected, setSelected] = useState(today);
-  const [status, setStatus] = useState<string>();
+  const [status, setStatus] = useState<{ tone: 'ok' | 'error'; text: string }>();
+  /** Which database action is running (its button shows a spinner; the others wait). */
+  const [pending, setPending] = useState<'save' | 'reset'>();
 
   const weeks = useMemo(() => monthGrid(month, today), [month, today]);
   const gridStart = weeks[0]![0]!.date;
@@ -90,19 +92,31 @@ export function PrayerCalendarEditor() {
       return { ...d, times: times as PrayerDay['times'] };
     });
 
-  const save = async () => {
-    await api.prayer.saveDay(draft);
-    reload();
-    setStatus(`Saved ${formatLongDate(asDate(selected))}.`);
+  const run = async (kind: 'save' | 'reset', task: () => Promise<unknown>, done: string) => {
+    setPending(kind);
+    setStatus(undefined);
+    try {
+      await task();
+      reload();
+      setStatus({ tone: 'ok', text: done });
+    } catch (e) {
+      setStatus({
+        tone: 'error',
+        text: e instanceof Error ? e.message : 'Could not save. Please try again.',
+      });
+    } finally {
+      setPending(undefined);
+    }
   };
+
+  const save = () =>
+    run('save', () => api.prayer.saveDay(draft), `Saved ${formatLongDate(asDate(selected))}.`);
 
   /** Only offered for days with custom times: delete the override. */
   const resetToCalculated = async () => {
     if (!window.confirm('Remove the custom times for this day and go back to the timetable?'))
       return;
-    await api.prayer.deleteDay(selected);
-    reload();
-    setStatus('Back to the timetable times.');
+    await run('reset', () => api.prayer.deleteDay(selected), 'Back to the timetable times.');
   };
 
   // First load only; month changes keep the previous grid visible while fetching.
@@ -409,19 +423,28 @@ export function PrayerCalendarEditor() {
             </Field>
 
             <div className="flex flex-wrap gap-3 border-t border-neutral-200 pt-5">
-              <Button onClick={save} disabled={!dirty || hasErrors}>
-                Save day
+              <Button
+                onClick={() => void save()}
+                loading={pending === 'save'}
+                disabled={!dirty || hasErrors || !!pending}
+              >
+                {pending === 'save' ? 'Saving…' : 'Save day'}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setDraft(structuredClone(baseline))}
-                disabled={!dirty}
+                disabled={!dirty || !!pending}
               >
                 Discard changes
               </Button>
               {stored && (
-                <Button variant="ghost" onClick={resetToCalculated}>
-                  Use timetable times
+                <Button
+                  variant="ghost"
+                  onClick={() => void resetToCalculated()}
+                  loading={pending === 'reset'}
+                  disabled={!!pending}
+                >
+                  {pending === 'reset' ? 'Resetting…' : 'Use timetable times'}
                 </Button>
               )}
             </div>
@@ -430,8 +453,11 @@ export function PrayerCalendarEditor() {
             ) : (
               dirty && <p className="text-sm text-warning-700">Unsaved changes.</p>
             )}
-            <p role="status" className="text-sm text-success-700">
-              {status}
+            <p
+              role="status"
+              className={`text-sm ${status?.tone === 'error' ? 'text-error-700' : 'text-success-700'}`}
+            >
+              {status?.text}
             </p>
           </div>
         </Panel>

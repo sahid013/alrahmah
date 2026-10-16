@@ -1,6 +1,6 @@
 import 'server-only';
 import Stripe from 'stripe';
-import { loadDonations } from '@/lib/donations/repository';
+import { isCauseVisible, loadDonations } from '@/lib/donations/repository';
 import { countryName } from './countries';
 import { chargeFor, DonationInputError } from './causes';
 import { remainingCharges, type DailyPlan } from './schedule';
@@ -71,7 +71,8 @@ export async function createDonationSession(input: unknown, origin: string) {
 
   const { programs } = await loadDonations();
   const campaign = programs.find((p) => p.id === r.campaignId);
-  if (!campaign) throw new DonationInputError('That cause is no longer available.');
+  if (!campaign || !(await isCauseVisible(campaign.id)))
+    throw new DonationInputError('That cause is no longer available.');
 
   const charge = chargeFor(r, campaign.giving);
   const metadata = donationMetadata(r, campaign.title);

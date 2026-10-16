@@ -65,6 +65,14 @@ export interface DashboardApi {
     list(query?: DonationQuery): Promise<Donation[]>;
   };
   /**
+   * Which donation causes are shown on the website (/donate, /donations). Supabase:
+   * `donation_causes` (public read, staff write). Ids not listed count as shown.
+   */
+  causes: {
+    list(): Promise<{ id: string; visible: boolean }[]>;
+    setVisible(id: string, visible: boolean): Promise<void>;
+  };
+  /**
    * Khutbahs posted by link for the home page (newest by date = "This week"). Supabase: a
    * `khutbahs` table keyed by `video_id`, public read, write for signed-in staff only.
    */

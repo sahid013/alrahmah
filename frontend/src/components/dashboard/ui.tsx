@@ -128,7 +128,7 @@ export const Textarea = ({ className, ...props }: ComponentProps<'textarea'>) =>
 
 /** Square icon-only button (pair with an aria-label). */
 export const iconButton =
-  'inline-flex size-10 shrink-0 items-center justify-center border border-neutral-300 bg-white text-primary-700 transition-colors hover:border-primary-500 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-500 disabled:opacity-40';
+  'inline-flex size-10 shrink-0 items-center justify-center border border-neutral-300 bg-white text-primary-700 transition-colors hover:border-primary-500 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-500 disabled:opacity-40 aria-busy:opacity-100';
 
 /** Table cell classes (data tables are plain semantic <table>s). */
 export const th =

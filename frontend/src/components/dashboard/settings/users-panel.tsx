@@ -10,6 +10,7 @@ import {
 } from '@/lib/dashboard/auth/types';
 import { useDashboardApi, useDashboardQuery } from '../dashboard-api-provider';
 import { Badge, iconButton, LoadingRows, Panel, Select, shortDate, td, th } from '../ui';
+import { Spinner } from '@/components/ui/spinner';
 import { AddUserForm } from './add-user-form';
 import { EditUserForm } from './edit-user-form';
 
@@ -19,20 +20,32 @@ export function UsersPanel({ meId }: { meId: string }) {
   const { data: users, reload } = useDashboardQuery((a) => a.users.list(), []);
   const [message, setMessage] = useState<{ tone: 'ok' | 'error'; text: string }>();
   const [editing, setEditing] = useState<DashboardUser>();
+  /** The row whose role change / reset / removal is being saved. */
+  const [pending, setPending] = useState<{ id: string; action: 'role' | 'reset' | 'remove' }>();
 
-  const act = async (task: () => Promise<void>, ok: string) => {
+  const act = async (
+    target: { id: string; action: 'role' | 'reset' | 'remove' },
+    task: () => Promise<void>,
+    ok: string,
+  ) => {
     setMessage(undefined);
+    setPending(target);
     try {
       await task();
       setMessage({ tone: 'ok', text: ok });
       reload();
     } catch (e) {
       setMessage({ tone: 'error', text: e instanceof Error ? e.message : 'Something went wrong.' });
+    } finally {
+      setPending(undefined);
     }
   };
+  const busy = (id: string, action: 'role' | 'reset' | 'remove') =>
+    pending?.id === id && pending.action === action;
 
   const setRole = (u: DashboardUser, role: Role) =>
     act(
+      { id: u.id, action: 'role' },
       () => api.users.setRole(u.id, role),
       `${u.name} is now ${role === 'admin' ? 'an admin' : 'an editor'}.`,
     );
@@ -41,12 +54,17 @@ export function UsersPanel({ meId }: { meId: string }) {
       `Reset two-step verification for ${u.name}? They'll set up their authenticator app again at next sign-in.`,
     ) &&
     act(
+      { id: u.id, action: 'reset' },
       () => api.users.resetTwoFactor(u.id),
       `${u.name} will set up two-step verification at next sign-in.`,
     );
   const remove = (u: DashboardUser) =>
     window.confirm(`Remove ${u.name} (${u.email})? They'll no longer be able to sign in.`) &&
-    act(() => api.users.remove(u.id), `${u.name} has been removed.`);
+    act(
+      { id: u.id, action: 'remove' },
+      () => api.users.remove(u.id),
+      `${u.name} has been removed.`,
+    );
 
   return (
     <div className="space-y-6">
@@ -87,19 +105,30 @@ export function UsersPanel({ meId }: { meId: string }) {
                         <span className="text-xs">{u.email}</span>
                       </td>
                       <td className={td}>
-                        <Select
-                          aria-label={`Role for ${u.name}`}
-                          value={u.role}
-                          disabled={me}
-                          onChange={(e) => void setRole(u, e.target.value as Role)}
-                          className="w-auto py-1.5 text-sm"
-                        >
-                          {ROLES.map((r) => (
-                            <option key={r} value={r}>
-                              {r === 'admin' ? 'Admin' : 'Editor'}
-                            </option>
-                          ))}
-                        </Select>
+                        <span className="inline-flex items-center gap-2">
+                          <Select
+                            aria-label={`Role for ${u.name}`}
+                            value={u.role}
+                            disabled={me || pending?.id === u.id}
+                            onChange={(e) => void setRole(u, e.target.value as Role)}
+                            className="w-auto py-1.5 text-sm"
+                          >
+                            {ROLES.map((r) => (
+                              <option key={r} value={r}>
+                                {r === 'admin' ? 'Admin' : 'Editor'}
+                              </option>
+                            ))}
+                          </Select>
+                          {busy(u.id, 'role') && (
+                            <span
+                              role="status"
+                              className="inline-flex items-center gap-1.5 text-xs text-neutral-500"
+                            >
+                              <Spinner />
+                              Saving…
+                            </span>
+                          )}
+                        </span>
                       </td>
                       {TWO_FACTOR_REQUIRED && (
                         <td className={td}>
@@ -118,9 +147,10 @@ export function UsersPanel({ meId }: { meId: string }) {
                           <button
                             type="button"
                             onClick={() => void resetTwoFactor(u)}
+                            disabled={pending?.id === u.id}
                             className="mr-2 font-label text-xs font-bold tracking-[0.08em] text-primary-500 uppercase hover:text-secondary-700"
                           >
-                            Reset 2FA
+                            {busy(u.id, 'reset') ? 'Resetting…' : 'Reset 2FA'}
                           </button>
                         )}
                         <button
@@ -140,8 +170,10 @@ export function UsersPanel({ meId }: { meId: string }) {
                             className={iconButton}
                             aria-label={`Remove ${u.name}`}
                             onClick={() => void remove(u)}
+                            disabled={pending?.id === u.id}
+                            aria-busy={busy(u.id, 'remove') || undefined}
                           >
-                            <TrashIcon className="size-4" />
+                            {busy(u.id, 'remove') ? <Spinner /> : <TrashIcon className="size-4" />}
                           </button>
                         )}
                       </td>

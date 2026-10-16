@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { GripIcon, PencilIcon, PlusIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { moveId, raisedByCampaign } from '@/lib/dashboard/campaigns';
 import type { Campaign, Donation } from '@/lib/dashboard/types';
 import { trackerLabel } from '@/lib/donations/format';
@@ -53,6 +54,8 @@ function SortableCampaigns({
   }
   const [dragging, setDragging] = useState<string>();
   const [announcement, setAnnouncement] = useState('');
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string>();
   const bodyRef = useRef<HTMLTableSectionElement>(null);
 
   const commit = async (next: string[], moved: string) => {
@@ -61,8 +64,17 @@ function SortableCampaigns({
     setAnnouncement(
       `${byId.get(moved)?.title} moved to position ${next.indexOf(moved) + 1} of ${next.length}.`,
     );
-    await api.campaigns.reorder(next);
-    onSaved();
+    setSavingOrder(true);
+    setOrderError(undefined);
+    try {
+      await api.campaigns.reorder(next);
+      onSaved();
+    } catch (e) {
+      setIds(savedIds);
+      setOrderError(e instanceof Error ? e.message : 'Could not save the new order.');
+    } finally {
+      setSavingOrder(false);
+    }
   };
 
   /** Row index under the pointer, from the row midpoints (ignoring the dragged row). */
@@ -122,10 +134,19 @@ function SortableCampaigns({
     <Panel
       title={`${campaigns.length} campaigns`}
       actions={
-        <ButtonLink href="/dashboard/campaigns/new" size="sm">
-          <PlusIcon className="size-4" />
-          New campaign
-        </ButtonLink>
+        <div className="flex items-center gap-4">
+          {savingOrder && (
+            <span role="status" className="inline-flex items-center gap-2 text-sm text-neutral-500">
+              <Spinner />
+              Saving order…
+            </span>
+          )}
+          {orderError && <span className="text-sm text-error-700">{orderError}</span>}
+          <ButtonLink href="/dashboard/campaigns/new" size="sm">
+            <PlusIcon className="size-4" />
+            New campaign
+          </ButtonLink>
+        </div>
       }
     >
       <p aria-live="polite" className="sr-only">

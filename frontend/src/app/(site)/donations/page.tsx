@@ -7,7 +7,7 @@ import { Container } from '@/components/ui/container';
 import { PageHero } from '@/components/ui/page-hero';
 import { StaggerGroup } from '@/components/ui/stagger-group';
 import { siteConfig } from '@/config/site';
-import { loadDonations } from '@/lib/donations/repository';
+import { loadVisibleDonations } from '@/lib/donations/repository';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
@@ -17,7 +17,7 @@ export const metadata = buildMetadata({
 });
 
 export default async function DonationsPage() {
-  const { overview, programs } = await loadDonations();
+  const { overview, programs } = await loadVisibleDonations();
 
   return (
     <>

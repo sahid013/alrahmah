@@ -16,6 +16,8 @@ interface Store {
   prayer: Record<string, PrayerDay>;
   campaigns: Campaign[];
   khutbahs: KhutbahEntry[];
+  /** Preview only: cause id → shown on the website. */
+  causes?: Record<string, boolean>;
 }
 
 function read(): Store {
@@ -34,6 +36,7 @@ function read(): Store {
           .array()
           .catch([])
           .parse(parsed.khutbahs ?? []),
+        causes: parsed.causes ?? {},
       };
     }
   } catch {
@@ -123,6 +126,19 @@ export function createLocalDashboardApi(): DashboardApi {
     donations: {
       async list(query) {
         return settle(filterDonations(donations, query));
+      },
+    },
+    causes: {
+      async list() {
+        return settle(
+          Object.entries(read().causes ?? {}).map(([id, visible]) => ({ id, visible })),
+        );
+      },
+      async setVisible(id, visible) {
+        const store = read();
+        store.causes = { ...store.causes, [id]: visible };
+        write(store);
+        return settle(undefined);
       },
     },
     khutbahs: {

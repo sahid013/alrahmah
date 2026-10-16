@@ -21,6 +21,7 @@ import { createLocalDashboardApi } from './local-api';
  *    routes (`/api/dashboard/users`), which hold the secret key.
  *  - prayer: the `prayer_days` table. Every change also refreshes the website's cached times.
  * Row Level Security in the database enforces all of this, whatever the browser does.
+ *  - causes: `donation_causes` (which donation causes the website shows).
  * Campaigns, donations and khutbahs still use the browser preview until their tables exist.
  */
 
@@ -65,9 +66,9 @@ async function callSite<T>(path: string, init: RequestInit = {}): Promise<T> {
   return data;
 }
 
-/** Shows prayer-time changes on the website straight away (otherwise within an hour). */
-async function refreshWebsite() {
-  await callSite('/api/revalidate/prayer-times', { method: 'POST' }).catch((e: unknown) =>
+/** Shows a change on the website straight away (otherwise within an hour). */
+async function refreshWebsite(what: 'prayer-times' | 'donation-causes' = 'prayer-times') {
+  await callSite(`/api/revalidate/${what}`, { method: 'POST' }).catch((e: unknown) =>
     console.warn('[dashboard] saved, but the website will update within the hour', e),
   );
 }
@@ -202,6 +203,23 @@ export function createSupabaseDashboardApi(): DashboardApi {
 
       async remove(id) {
         await callSite(`/api/dashboard/users/${id}`, { method: 'DELETE' });
+      },
+    },
+
+    causes: {
+      async list() {
+        const { data, error } = await supabase
+          .from('donation_causes')
+          .select('id,visible')
+          .returns<{ id: string; visible: boolean }[]>();
+        if (error) fail(error.message);
+        return data ?? [];
+      },
+
+      async setVisible(id, visible) {
+        const { error } = await supabase.from('donation_causes').upsert({ id, visible });
+        if (error) fail(error.message);
+        await refreshWebsite('donation-causes');
       },
     },
 

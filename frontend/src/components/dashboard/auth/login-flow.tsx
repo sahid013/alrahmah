@@ -106,7 +106,7 @@ export function LoginFlow() {
             />
           </Field>
           <ErrorText error={error} />
-          <Button type="submit" className="w-full" disabled={busy}>
+          <Button type="submit" className="w-full" loading={busy}>
             {busy ? 'Signing in…' : 'Continue'}
           </Button>
           <p className="text-sm text-neutral-500">
@@ -123,7 +123,7 @@ export function LoginFlow() {
           </p>
           <CodeInput value={code} onChange={setCode} autoFocus />
           <ErrorText error={error} />
-          <Button type="submit" className="w-full" disabled={busy || code.length !== 6}>
+          <Button type="submit" className="w-full" loading={busy} disabled={code.length !== 6}>
             {busy ? 'Checking…' : 'Verify and sign in'}
           </Button>
           <BackLink onClick={back} />
@@ -159,7 +159,7 @@ export function LoginFlow() {
           </div>
           <CodeInput value={code} onChange={setCode} />
           <ErrorText error={error} />
-          <Button type="submit" className="w-full" disabled={busy || code.length !== 6}>
+          <Button type="submit" className="w-full" loading={busy} disabled={code.length !== 6}>
             {busy ? 'Checking…' : 'Turn on and sign in'}
           </Button>
           <BackLink onClick={back} />

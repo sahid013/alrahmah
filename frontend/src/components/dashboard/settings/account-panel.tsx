@@ -84,7 +84,7 @@ export function AccountPanel() {
             </p>
           )}
           <div>
-            <Button type="submit" disabled={busy}>
+            <Button type="submit" loading={busy}>
               {busy ? 'Saving…' : 'Change password'}
             </Button>
           </div>

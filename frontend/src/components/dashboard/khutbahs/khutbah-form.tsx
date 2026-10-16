@@ -163,7 +163,7 @@ export function KhutbahForm({
           </Field>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={saving}>
+          <Button type="submit" loading={saving}>
             {saving ? 'Saving…' : initial ? 'Save changes' : 'Publish khutbah'}
           </Button>
           {onCancel && (

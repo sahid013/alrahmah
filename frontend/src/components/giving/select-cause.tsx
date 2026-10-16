@@ -52,7 +52,13 @@ export function SelectCause({ programs }: { programs: DonationProgram[] }) {
           Choose where your donation goes. Each cause has its own simple form.
         </p>
 
-        <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:gap-6">
+        {programs.length === 0 && (
+          <p className="mt-12 max-w-2xl border border-white/15 p-6 text-lg text-primary-100">
+            Online donations aren&apos;t open at the moment. Please check back soon, or speak to us
+            at the masjid.
+          </p>
+        )}
+        <ul className="mt-12 grid gap-4 empty:hidden md:grid-cols-2 lg:gap-6">
           {programs.map((program) => {
             const Icon = program.icon ? ICONS[program.icon] : null;
             const closed =

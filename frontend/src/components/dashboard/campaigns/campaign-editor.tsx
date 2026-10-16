@@ -63,6 +63,7 @@ function EditorForm({
   const [draft, setDraft] = useState(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string>();
 
@@ -114,8 +115,15 @@ function EditorForm({
       )
     )
       return;
-    await api.campaigns.remove(initial.id);
-    router.push('/dashboard/campaigns');
+    setDeleting(true);
+    setSaveError(undefined);
+    try {
+      await api.campaigns.remove(initial.id);
+      router.push('/dashboard/campaigns');
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Could not delete. Please try again.');
+      setDeleting(false);
+    }
   };
 
   const preview = {
@@ -138,12 +146,18 @@ function EditorForm({
         actions={
           <>
             {!isNew && (
-              <Button type="button" variant="ghost" onClick={remove}>
-                <TrashIcon className="size-4" />
-                Delete
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => void remove()}
+                loading={deleting}
+                disabled={saving}
+              >
+                {!deleting && <TrashIcon className="size-4" />}
+                {deleting ? 'Deleting…' : 'Delete'}
               </Button>
             )}
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" loading={saving} disabled={deleting}>
               {saving ? 'Saving…' : isNew ? 'Create campaign' : 'Save changes'}
             </Button>
           </>
