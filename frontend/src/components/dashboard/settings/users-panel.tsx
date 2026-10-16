@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TrashIcon } from '@/components/icons';
+import { PencilIcon, TrashIcon } from '@/components/icons';
 import {
   ROLES,
   TWO_FACTOR_REQUIRED,
@@ -11,12 +11,14 @@ import {
 import { useDashboardApi, useDashboardQuery } from '../dashboard-api-provider';
 import { Badge, iconButton, LoadingRows, Panel, Select, shortDate, td, th } from '../ui';
 import { AddUserForm } from './add-user-form';
+import { EditUserForm } from './edit-user-form';
 
-/** Team accounts: roles, two-step status (when required), reset and remove (admins only). */
+/** Team accounts: edit, roles, two-step status (when required), reset and remove (admins only). */
 export function UsersPanel({ meId }: { meId: string }) {
   const api = useDashboardApi();
   const { data: users, reload } = useDashboardQuery((a) => a.users.list(), []);
   const [message, setMessage] = useState<{ tone: 'ok' | 'error'; text: string }>();
+  const [editing, setEditing] = useState<DashboardUser>();
 
   const act = async (task: () => Promise<void>, ok: string) => {
     setMessage(undefined);
@@ -121,6 +123,17 @@ export function UsersPanel({ meId }: { meId: string }) {
                             Reset 2FA
                           </button>
                         )}
+                        <button
+                          type="button"
+                          className={`${iconButton} mr-2`}
+                          aria-label={`Edit ${u.name}`}
+                          onClick={() => {
+                            setMessage(undefined);
+                            setEditing(u);
+                          }}
+                        >
+                          <PencilIcon className="size-4" />
+                        </button>
                         {!me && (
                           <button
                             type="button"
@@ -140,6 +153,19 @@ export function UsersPanel({ meId }: { meId: string }) {
           </div>
         )}
       </Panel>
+      {editing && (
+        <EditUserForm
+          key={editing.id}
+          user={editing}
+          onDone={(updated) => {
+            setEditing(undefined);
+            if (updated) {
+              setMessage({ tone: 'ok', text: `${updated.name} has been updated.` });
+              reload();
+            }
+          }}
+        />
+      )}
       <AddUserForm onCreated={reload} />
     </div>
   );

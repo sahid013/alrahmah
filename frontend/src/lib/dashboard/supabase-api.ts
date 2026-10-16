@@ -6,6 +6,7 @@ import {
   newUserSchema,
   passwordSchema,
   TWO_FACTOR_REQUIRED,
+  userUpdateSchema,
   type DashboardUser,
   type Role,
   type Session,
@@ -157,24 +158,34 @@ export function createSupabaseDashboardApi(): DashboardApi {
 
     users: {
       async list() {
-        const [{ data, error }, me] = await Promise.all([
-          supabase
+        // Through the server, which can read sign-in details; falls back to profiles alone.
+        try {
+          const { users } = await callSite<{ users: DashboardUser[] }>('/api/dashboard/users');
+          return users;
+        } catch {
+          const { data, error } = await supabase
             .from('profiles')
             .select('id,email,name,role,created_at')
             .order('name')
-            .returns<ProfileRow[]>(),
-          supabase.auth.getUser(),
-        ]);
-        if (error) fail(error.message);
-        return (data ?? []).map((p) =>
-          toUser(p, p.id === me.data.user?.id ? (me.data.user ?? undefined) : undefined),
-        );
+            .returns<ProfileRow[]>();
+          if (error) fail(error.message);
+          return (data ?? []).map((p) => toUser(p));
+        }
       },
 
       async create(input) {
         const valid = newUserSchema.parse(input);
         const { user } = await callSite<{ user: DashboardUser }>('/api/dashboard/users', {
           method: 'POST',
+          body: JSON.stringify(valid),
+        });
+        return user;
+      },
+
+      async update(id, changes) {
+        const valid = userUpdateSchema.parse(changes);
+        const { user } = await callSite<{ user: DashboardUser }>(`/api/dashboard/users/${id}`, {
+          method: 'PATCH',
           body: JSON.stringify(valid),
         });
         return user;

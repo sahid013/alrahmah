@@ -4,6 +4,7 @@ import { generateSecret, otpauthUri, verifyTotp } from './totp';
 import {
   newUserSchema,
   passwordSchema,
+  userUpdateSchema,
   TWO_FACTOR_REQUIRED,
   type DashboardUser,
   type Session,
@@ -227,6 +228,29 @@ export function createLocalAuth(): Pick<DashboardApi, 'auth' | 'users'> {
         store.users = store.users.map((u) => (u.id === id ? { ...u, role } : u));
         write(store);
         return settle(undefined);
+      },
+
+      async update(id, changes) {
+        const store = await read();
+        await requireAdmin(store);
+        const valid = userUpdateSchema.parse(changes);
+        const user = store.users.find((u) => u.id === id);
+        if (!user) return fail('That user no longer exists.');
+        if (
+          valid.email &&
+          store.users.some(
+            (u) => u.id !== id && u.email.toLowerCase() === valid.email!.toLowerCase(),
+          )
+        )
+          return fail('A user with this email already exists.');
+        if (valid.name) user.name = valid.name;
+        if (valid.email) user.email = valid.email;
+        if (valid.password) {
+          user.salt = newSalt();
+          user.passwordHash = await hash(valid.password, user.salt);
+        }
+        write(store);
+        return settle(publicUser(user));
       },
 
       async resetTwoFactor(id) {

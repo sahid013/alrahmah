@@ -1,7 +1,23 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { newUserSchema, type DashboardUser } from '@/lib/dashboard/auth/types';
+import { newUserSchema } from '@/lib/dashboard/auth/types';
 import { adminClient } from '@/lib/supabase/server';
-import { asAdmin } from './guard';
+import { asAdmin, PROFILE_COLUMNS, toDashboardUser, type ProfileRow } from './guard';
+
+/** GET (admins): every team member, with last sign-in and two-step status from Supabase Auth. */
+export async function GET(request: NextRequest) {
+  return asAdmin(request, async () => {
+    const admin = adminClient();
+    const [{ data: profiles, error }, { data: auth }] = await Promise.all([
+      admin.from('profiles').select(PROFILE_COLUMNS).order('name').returns<ProfileRow[]>(),
+      admin.auth.admin.listUsers({ perPage: 1000 }),
+    ]);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    const byId = new Map((auth?.users ?? []).map((u) => [u.id, u]));
+    return NextResponse.json({
+      users: (profiles ?? []).map((p) => toDashboardUser(p, byId.get(p.id))),
+    });
+  });
+}
 
 /** POST { name, email, role, password } (admins): creates a staff account that can sign in now. */
 export async function POST(request: NextRequest) {
@@ -30,22 +46,14 @@ export async function POST(request: NextRequest) {
     const { data: profile, error: profileError } = await admin
       .from('profiles')
       .insert({ id: data.user.id, email, name, role })
-      .select('id,email,name,role,created_at')
-      .single();
+      .select(PROFILE_COLUMNS)
+      .single<ProfileRow>();
     if (profileError || !profile) {
       // Don't leave an account without dashboard access behind.
       await admin.auth.admin.deleteUser(data.user.id);
       return NextResponse.json({ error: 'Could not add the user.' }, { status: 500 });
     }
 
-    const user: DashboardUser = {
-      id: profile.id,
-      name: profile.name,
-      email: profile.email,
-      role: profile.role,
-      mfaEnrolled: false,
-      createdAt: profile.created_at,
-    };
-    return NextResponse.json({ user }, { status: 201 });
+    return NextResponse.json({ user: toDashboardUser(profile, data.user) }, { status: 201 });
   });
 }

@@ -66,6 +66,17 @@ export const newUserSchema = z.object({
 });
 export type NewUser = z.infer<typeof newUserSchema>;
 
+/** An admin's edit of a team account: any of name, email, or a new password. */
+export const userUpdateSchema = z
+  .object({
+    name: dashboardUserSchema.shape.name,
+    email: dashboardUserSchema.shape.email,
+    password: passwordSchema,
+  })
+  .partial()
+  .refine((u) => Object.keys(u).length > 0, 'Nothing to change.');
+export type UserUpdate = z.infer<typeof userUpdateSchema>;
+
 /** Readable random password for new accounts (no look-alike characters). */
 export function generatePassword(length = 14): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';

@@ -2,6 +2,7 @@ import type {
   DashboardUser,
   NewUser,
   Role,
+  UserUpdate,
   Session,
   SignInNext,
   TotpEnrollment,
@@ -37,6 +38,8 @@ export interface DashboardApi {
     list(): Promise<DashboardUser[]>;
     create(user: NewUser): Promise<DashboardUser>;
     setRole(id: string, role: Role): Promise<void>;
+    /** Change someone's name or email, or set them a new password (admins). */
+    update(id: string, changes: UserUpdate): Promise<DashboardUser>;
     /** Removes their authenticator so they set it up again at next sign-in. */
     resetTwoFactor(id: string): Promise<void>;
     remove(id: string): Promise<void>;
