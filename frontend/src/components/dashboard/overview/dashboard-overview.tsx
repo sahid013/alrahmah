@@ -63,11 +63,6 @@ export function DashboardOverview() {
           value={gbp(totals.recurring, 0)}
           hint="From regular gifts in this period"
         />
-        <StatCard
-          label="Gift Aid to claim"
-          value={gbp(totals.giftAidValue, 0)}
-          hint={`On ${gbp(totals.giftAidEligible, 0)} of eligible gifts`}
-        />
       </div>
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">

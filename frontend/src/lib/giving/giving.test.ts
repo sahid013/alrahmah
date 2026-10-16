@@ -5,9 +5,6 @@ import {
   detailsSchema,
   donationRequestSchema,
   fieldErrors,
-  GIFT_AID_ENABLED,
-  giftAidBonus,
-  houseFromAddress,
   normalisePostcode,
   type DonationRequest,
 } from './types';
@@ -28,7 +25,6 @@ const valid: DonationRequest = {
   frequency: 'one-off',
   amount: 50,
   donor,
-  giftAid: { declared: false },
   marketingConsent: false,
 };
 const errorsOf = (input: unknown) => {
@@ -62,15 +58,14 @@ describe('donation request', () => {
     ).toBeDefined();
   });
 
-  it('needs an organisation name for Corporate / Group and refuses Gift Aid there', () => {
+  it('needs an organisation name for Corporate / Group', () => {
     const org = { ...donor, type: 'organisation' };
     expect(errorsOf({ ...valid, donor: org })['donor.organisation']).toBeDefined();
-    const errors = errorsOf({
-      ...valid,
-      donor: { ...org, organisation: 'Leeds Traders' },
-      giftAid: { declared: true },
-    });
-    expect(errors['giftAid.declared']).toMatch(/personal/);
+    expect(
+      errorsOf({ ...valid, donor: { ...org, organisation: 'Leeds Traders' } })[
+        'donor.organisation'
+      ],
+    ).toBeUndefined();
   });
 
   it('validates amounts', () => {
@@ -84,16 +79,6 @@ describe('donation request', () => {
 });
 
 describe('giving helpers', () => {
-  it('refuses Gift Aid on personal donations while it is switched off', () => {
-    const errors = errorsOf({ ...valid, giftAid: { declared: true } });
-    if (GIFT_AID_ENABLED) expect(errors['giftAid.declared']).toBeUndefined();
-    else expect(errors['giftAid.declared']).toMatch(/isn’t available/);
-  });
-
-  it('works out Gift Aid at 25%', () => {
-    expect(giftAidBonus(50)).toBe(12.5);
-    expect(giftAidBonus(10.1)).toBe(2.53);
-  });
   it('formats amounts with frequency', () => {
     expect(amountWithFrequency(50, 'one-off')).toBe('£50');
     expect(amountWithFrequency(12.5, 'monthly')).toBe('£12.50 a month');
@@ -102,11 +87,6 @@ describe('giving helpers', () => {
   it('normalises postcodes', () => {
     expect(normalisePostcode(' ls73jb ')).toBe('LS7 3JB');
     expect(normalisePostcode('sw1a 1aa')).toBe('SW1A 1AA');
-  });
-  it('finds the house name or number for Gift Aid', () => {
-    expect(houseFromAddress('6 Sheepscar Way')).toBe('6');
-    expect(houseFromAddress('12A High Street\nLeeds')).toBe('12A');
-    expect(houseFromAddress('Rose Cottage, Mill Lane')).toBe('Rose Cottage');
   });
 });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { checkoutHref, moveId, prepareCampaign, raisedByCampaign, slugify } from './campaigns';
-import { isGiftAidClaimable, toCsv } from './csv';
+import { toCsv } from './csv';
 import { timetableDay, copyDayTo, isFriday, sameTimes, validateDay } from './prayer';
 import {
   donationTotals,
@@ -27,12 +27,11 @@ describe('dashboard sample data', () => {
 });
 
 describe('donation queries', () => {
-  it('filters by date, type, gift aid and search', () => {
+  it('filters by date, type and search', () => {
     const r = filterDonations(donations, {
       from: '2026-09-01',
       to: '2026-09-30',
       type: 'recurring',
-      giftAid: true,
     });
     expect(r.length).toBeGreaterThan(0);
     for (const d of r) {
@@ -40,7 +39,6 @@ describe('donation queries', () => {
         d.createdAt.slice(0, 10) >= '2026-09-01' && d.createdAt.slice(0, 10) <= '2026-09-30',
       ).toBe(true);
       expect(d.type).toBe('recurring');
-      expect(d.giftAid).toBe(true);
     }
     const one = donations[0]!;
     expect(
@@ -136,14 +134,6 @@ describe('prepareCampaign', () => {
 });
 
 describe('donor data (frontend contract)', () => {
-  it('only gives Gift Aid to individual UK donors in the sample', () => {
-    for (const d of donations.filter((x) => x.giftAid)) {
-      expect(d.donor.type).toBe('personal');
-      expect(d.donor.country).toBe('GB');
-      expect(d.giftAidDeclaredAt).toBeDefined();
-    }
-  });
-
   it('filters by donor type, consent and source', () => {
     const orgs = filterDonations(donations, { donorType: 'organisation' });
     expect(orgs.length).toBeGreaterThan(0);
@@ -172,14 +162,6 @@ describe('donor data (frontend contract)', () => {
       .reduce((n, d) => n + d.amount, 0);
     expect(totals.recurring).toBe(recurringSum);
   });
-
-  it('keeps organisations out of the Gift Aid schedule', () => {
-    const fake = { ...donations[0]!, giftAid: true, status: 'succeeded' as const };
-    expect(isGiftAidClaimable({ ...fake, donor: { ...fake.donor, type: 'personal' } })).toBe(true);
-    expect(isGiftAidClaimable({ ...fake, donor: { ...fake.donor, type: 'organisation' } })).toBe(
-      false,
-    );
-  });
 });
 
 describe('exports', () => {
@@ -192,7 +174,6 @@ describe('exports', () => {
       ['donors', donors, csv.donorColumns],
       ['contacts', donors.filter((d) => d.marketingConsent), csv.contactColumns],
       ['regular', summariseRegularGifts(donations), csv.regularGiftColumns(campaigns)],
-      ['gift aid', donations.filter(csv.isGiftAidClaimable), csv.giftAidColumns],
     ];
     for (const [, rows, columns] of sets) {
       const out = csv.toCsv(rows as never[], columns as never);

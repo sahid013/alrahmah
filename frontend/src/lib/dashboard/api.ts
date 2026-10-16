@@ -8,7 +8,7 @@ import type {
   TotpEnrollment,
 } from './auth/types';
 import type { KhutbahEntry } from '@/lib/khutbahs/types';
-import type { Campaign, Donation, DonationQuery, PrayerDay } from './types';
+import type { Campaign, DashboardEvent, Donation, DonationQuery, PrayerDay } from './types';
 
 /**
  * The ONE interface every dashboard screen talks to. Today it's implemented by
@@ -65,12 +65,20 @@ export interface DashboardApi {
     list(query?: DonationQuery): Promise<Donation[]>;
   };
   /**
-   * Which donation causes are shown on the website (/donate, /donations). Supabase:
-   * `donation_causes` (public read, staff write). Ids not listed count as shown.
+   * Events & courses (Supabase `events`; published = on the website). Posters go to Storage
+   * (`event-posters`, public read, staff write).
    */
-  causes: {
-    list(): Promise<{ id: string; visible: boolean }[]>;
-    setVisible(id: string, visible: boolean): Promise<void>;
+  events: {
+    /** All events, published and draft, in display order. */
+    list(): Promise<DashboardEvent[]>;
+    get(id: string): Promise<DashboardEvent | undefined>;
+    /** Adds, or updates the event with the same id. */
+    save(event: DashboardEvent): Promise<DashboardEvent>;
+    remove(id: string): Promise<void>;
+    /** Set the display order: `ids` first to last. */
+    reorder(ids: string[]): Promise<void>;
+    /** Uploads a poster (already resized in the browser); returns its public URL. */
+    uploadPoster(file: Blob, name: string): Promise<{ src: string }>;
   };
   /**
    * Khutbahs posted by link for the home page (newest by date = "This week"). Supabase: a
@@ -79,8 +87,11 @@ export interface DashboardApi {
   khutbahs: {
     /** Newest first. */
     list(): Promise<KhutbahEntry[]>;
-    /** Adds, or updates the entry with the same video. */
-    save(entry: KhutbahEntry): Promise<KhutbahEntry>;
+    /**
+     * Adds, or updates the entry with the same video. `previousVideoId` (when editing) moves that
+     * entry to a new video link; refused if the new video is already posted.
+     */
+    save(entry: KhutbahEntry, previousVideoId?: string): Promise<KhutbahEntry>;
     remove(videoId: string): Promise<void>;
   };
 }

@@ -1,7 +1,8 @@
 import type { Campaign } from '@/lib/dashboard/types';
 import type { DonationTracker } from '@/lib/donations/types';
 import { checkoutHref } from '@/lib/dashboard/campaigns';
-import { Badge, Field, Input, Panel, Select, Textarea } from '../ui';
+import { Field, Input, Panel, Select, Textarea } from '../ui';
+import { GivingFields } from './giving-fields';
 
 const num = (value: string) => (value === '' ? Number.NaN : Number(value));
 
@@ -46,7 +47,7 @@ export function CampaignFields({
               className="font-ui"
             />
           </Field>
-          <Field label="Status" hint="Only active campaigns are public.">
+          <Field label="Status" hint="Active = shown on the website; Draft = hidden.">
             <Select
               value={draft.status}
               onChange={(e) => onChange({ status: e.target.value as Campaign['status'] })}
@@ -72,84 +73,62 @@ export function CampaignFields({
         </div>
       </Panel>
 
-      <Panel title="Giving">
+      <GivingFields draft={draft} errors={errors} onChange={onChange} />
+
+      <Panel title="Donate button">
         <div className="grid gap-5 p-5 sm:grid-cols-2">
-          <Field
-            label="Suggested amount (£)"
-            hint="Leave empty for no amount."
-            error={errors['price.amount']}
-          >
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              value={draft.price?.amount ?? ''}
-              onChange={(e) =>
-                onChange({
-                  price: e.target.value
-                    ? { period: draft.price?.period ?? 'once', amount: num(e.target.value) }
-                    : undefined,
-                })
-              }
-              className="font-ui"
-            />
-          </Field>
-          <Field label="Frequency">
-            <Select
-              value={draft.price?.period ?? 'once'}
-              disabled={!draft.price}
-              onChange={(e) =>
-                draft.price &&
-                onChange({
-                  price: { ...draft.price, period: e.target.value as 'once' | 'week' | 'month' },
-                })
-              }
-            >
-              <option value="once">One-off</option>
-              <option value="week">Weekly</option>
-              <option value="month">Monthly</option>
-            </Select>
-          </Field>
+          {draft.giving.kind === 'regular' && (
+            <>
+              <Field
+                label="Suggested amount (£)"
+                hint="Leave empty for no amount."
+                error={errors['price.amount']}
+              >
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={draft.price?.amount ?? ''}
+                  onChange={(e) =>
+                    onChange({
+                      price: e.target.value
+                        ? { period: draft.price?.period ?? 'once', amount: num(e.target.value) }
+                        : undefined,
+                    })
+                  }
+                  className="font-ui"
+                />
+              </Field>
+              <Field label="Suggested frequency">
+                <Select
+                  value={draft.price?.period ?? 'once'}
+                  disabled={!draft.price}
+                  onChange={(e) =>
+                    draft.price &&
+                    onChange({
+                      price: {
+                        ...draft.price,
+                        period: e.target.value as 'once' | 'week' | 'month',
+                      },
+                    })
+                  }
+                >
+                  <option value="once">One-off</option>
+                  <option value="week">Weekly</option>
+                  <option value="month">Monthly</option>
+                </Select>
+              </Field>
+            </>
+          )}
           <Field label="Button label" error={errors['cta.label']}>
             <Input
               value={draft.cta.label}
               onChange={(e) => onChange({ cta: { ...draft.cta, label: e.target.value } })}
             />
           </Field>
-        </div>
-      </Panel>
-
-      <Panel
-        title="Payments"
-        actions={
-          draft.stripe ? (
-            <Badge tone="success">Linked to Stripe</Badge>
-          ) : (
-            <Badge>Not linked yet</Badge>
-          )
-        }
-      >
-        <div className="space-y-3 p-5 text-sm text-neutral-600">
-          <p>
-            The donate button opens Stripe Checkout for this campaign. Supporters choose an amount,
-            one-off or monthly, and can add Gift Aid. Every payment is recorded against this
-            campaign under Donations.
-          </p>
-          <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
-            <dt className="font-label text-xs font-bold tracking-[0.12em] text-neutral-400 uppercase">
-              Donate link
-            </dt>
-            <dd className="font-ui break-all text-primary-900">
-              {draft.id ? checkoutHref(draft.id) : '—'}
-            </dd>
-            <dt className="font-label text-xs font-bold tracking-[0.12em] text-neutral-400 uppercase">
-              Stripe product
-            </dt>
-            <dd className="font-ui break-all text-primary-900">
-              {draft.stripe?.productId ??
-                'Created automatically when this campaign is saved, once payments are live.'}
-            </dd>
-          </dl>
+          <Field label="Donate link" hint="Set automatically from the slug.">
+            <Input value={draft.id ? checkoutHref(draft.id) : ''} readOnly className="font-ui" />
+          </Field>
         </div>
       </Panel>
 

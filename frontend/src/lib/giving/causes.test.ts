@@ -30,7 +30,6 @@ const request = (patch: Partial<DonationRequest>): DonationRequest => ({
     email: 'aisha@example.com',
     phone: '07700 900123',
   },
-  giftAid: { declared: false },
   marketingConsent: false,
   ...patch,
 });

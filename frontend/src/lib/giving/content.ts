@@ -1,5 +1,4 @@
 import { siteConfig } from '@/config/site';
-import { GIFT_AID_ENABLED } from './types';
 
 /**
  * Copy for the donation page's left panel ("other ways to give").
@@ -15,7 +14,7 @@ export const donatePanel = {
   heading: 'Other ways to give',
   paragraphs: [
     `Cash and cheques can be placed in the donation boxes inside the masjid at ${siteConfig.address.street}, ${siteConfig.address.locality} ${siteConfig.address.postalCode}.`,
-    `Please put them in an envelope with your full name, address, email and phone number, so we can thank you${GIFT_AID_ENABLED ? ' and claim Gift Aid' : ''}.`,
+    `Please put them in an envelope with your full name, address, email and phone number, so we can thank you.`,
   ],
   contact: {
     email: siteConfig.contact.email,

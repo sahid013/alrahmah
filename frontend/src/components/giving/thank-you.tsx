@@ -53,7 +53,6 @@ export function ThankYou({
             ? ` for ${request.people} ${request.people === 1 ? 'person' : 'people'}`
             : ''}{' '}
           has been received. A receipt is on its way to {request.donor.email}.
-          {request.giftAid.declared && ' Thank you for adding Gift Aid.'}
         </p>
       )}
       <p className="text-sm text-primary-200">

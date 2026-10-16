@@ -1,5 +1,5 @@
-import { countryName, UK } from '@/lib/giving/countries';
-import { DONOR_TYPE_LABELS, houseFromAddress } from '@/lib/giving/types';
+import { countryName } from '@/lib/giving/countries';
+import { DONOR_TYPE_LABELS } from '@/lib/giving/types';
 import { sourceOf, type DonorSummary, type RegularGift } from './queries';
 import { SUBSCRIPTION_STATUS_LABELS, type Campaign, type Donation } from './types';
 
@@ -33,8 +33,6 @@ export function downloadCsv(filename: string, csv: string) {
 
 const money = (n: number) => n.toFixed(2);
 const yesNo = (v: boolean) => (v ? 'Yes' : 'No');
-/** DD/MM/YYYY, as HMRC and UK spreadsheets expect. */
-const ukDate = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/');
 
 export const donationColumns = (campaigns: Campaign[]): CsvColumn<Donation>[] => {
   const title = new Map(campaigns.map((c) => [c.id, c.title]));
@@ -62,8 +60,6 @@ export const donationColumns = (campaigns: Campaign[]): CsvColumn<Donation>[] =>
       value: (d) => d.subscription && SUBSCRIPTION_STATUS_LABELS[d.subscription.status],
     },
     { header: 'Amount (GBP)', value: (d) => money(d.amount) },
-    { header: 'Gift Aid', value: (d) => yesNo(d.giftAid) },
-    { header: 'Gift Aid declared', value: (d) => d.giftAidDeclaredAt?.slice(0, 10) },
     { header: 'Marketing consent', value: (d) => yesNo(d.marketingConsent) },
     { header: 'Source', value: (d) => sourceOf(d) },
     { header: 'Medium', value: (d) => d.source?.utmMedium },
@@ -92,7 +88,6 @@ export const donorColumns: CsvColumn<DonorSummary>[] = [
     header: 'Regular giving',
     value: (d) => (d.recurringStatus ? SUBSCRIPTION_STATUS_LABELS[d.recurringStatus] : 'No'),
   },
-  { header: 'Gift Aid declared', value: (d) => yesNo(d.giftAid) },
   { header: 'Marketing consent', value: (d) => yesNo(d.marketingConsent) },
   { header: 'First source', value: (d) => d.firstSource },
 ];
@@ -121,24 +116,5 @@ export const regularGiftColumns = (campaigns: Campaign[]): CsvColumn<RegularGift
     { header: 'Last payment', value: (g) => g.lastPaymentAt },
     { header: 'Payments', value: (g) => g.payments },
     { header: 'Total (GBP)', value: (g) => money(g.total) },
-    { header: 'Gift Aid', value: (g) => yesNo(g.giftAid) },
   ];
 };
-
-/** Donations HMRC will accept: succeeded, Gift Aid declared, given by an individual. */
-export const isGiftAidClaimable = (d: Donation) =>
-  d.status === 'succeeded' && d.giftAid && d.donor.type === 'personal';
-
-/** Columns of HMRC's Gift Aid schedule (one row per claimable donation). */
-export const giftAidColumns: CsvColumn<Donation>[] = [
-  { header: 'Title', value: () => '' },
-  { header: 'First name or initial', value: (d) => d.donor.firstName },
-  { header: 'Last name', value: (d) => d.donor.lastName },
-  { header: 'House name or number', value: (d) => houseFromAddress(d.donor.address) },
-  // HMRC: overseas donors use "X" as the postcode.
-  { header: 'Postcode', value: (d) => (d.donor.country === UK ? d.donor.postcode : 'X') },
-  { header: 'Aggregated donations', value: () => '' },
-  { header: 'Sponsored event', value: () => 'No' },
-  { header: 'Donation date', value: (d) => ukDate(d.createdAt) },
-  { header: 'Amount', value: (d) => money(d.amount) },
-];

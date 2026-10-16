@@ -29,7 +29,6 @@ export function DonationTable({
             <th className={th}>Donor</th>
             <th className={th}>Campaign</th>
             <th className={th}>Type</th>
-            {!compact && <th className={th}>Gift Aid</th>}
             {!compact && <th className={th}>Source</th>}
             <th className={`${th} text-right`}>Amount</th>
           </tr>
@@ -68,9 +67,6 @@ export function DonationTable({
                   <Badge>One-off</Badge>
                 )}
               </td>
-              {!compact && (
-                <td className={td}>{d.giftAid ? <Badge tone="indigo">Gift Aid</Badge> : '—'}</td>
-              )}
               {!compact && <td className={`${td} text-xs`}>{sourceOf(d)}</td>}
               <td className={`${td} text-right font-ui whitespace-nowrap tabular-nums`}>
                 {d.status === 'refunded' ? (

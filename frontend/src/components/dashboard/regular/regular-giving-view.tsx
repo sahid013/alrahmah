@@ -16,7 +16,7 @@ import { Badge, EmptyState, gbp, LoadingRows, Panel, shortDate, StatCard, td, th
 
 const STATUS_TONE = { active: 'success', past_due: 'warning', cancelled: 'neutral' } as const;
 
-/** Weekly and monthly gifts (Stripe subscriptions): status, value and history. */
+/** Weekly, monthly and daily (10 nights/days) gifts (Stripe subscriptions): status, value and history. */
 export function RegularGivingView() {
   const [status, setStatus] = useState<SubscriptionStatus | 'all'>('all');
   const { data } = useDashboardQuery(
@@ -45,7 +45,7 @@ export function RegularGivingView() {
             active.reduce((n, g) => n + monthlyValue(g), 0),
             0,
           )}
-          hint="Active gifts, weekly converted to monthly"
+          hint="Active weekly and monthly gifts, weekly converted to monthly"
         />
         <StatCard
           label="Payment failed"
@@ -127,12 +127,12 @@ export function RegularGivingView() {
                     </td>
                     <td className={td}>{title.get(g.campaignId) ?? g.campaignId}</td>
                     <td className={`${td} font-ui whitespace-nowrap`}>
-                      {gbp(g.amount)} / {g.frequency === 'weekly' ? 'week' : 'month'}
-                      {g.giftAid && (
-                        <span className="ml-2">
-                          <Badge tone="indigo">Gift Aid</Badge>
-                        </span>
-                      )}
+                      {gbp(g.amount)} /{' '}
+                      {g.frequency === 'weekly'
+                        ? 'week'
+                        : g.frequency === 'daily'
+                          ? 'day'
+                          : 'month'}
                     </td>
                     <td className={td}>
                       <Badge tone={STATUS_TONE[g.status]}>

@@ -9,7 +9,7 @@ export default function DonorsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Donors & exports"
-        description="Choose a period, review who gave, and download donor records or the Gift Aid claim schedule."
+        description="Choose a period, review who gave, and download donor records."
       />
       <DonorsView />
     </div>

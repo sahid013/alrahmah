@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import type { DonationProgram } from '@/lib/donations/types';
 import { UK } from '@/lib/giving/countries';
+import { readSource } from '@/lib/giving/attribution';
 import { paymentsMode, previewPay } from '@/lib/giving/payments';
 import { remainingCharges, type DailyPlan } from '@/lib/giving/schedule';
 import {
-  GIFT_AID_ENABLED,
   amountSchema,
   amountWithFrequency,
   detailsSchema,
@@ -40,7 +40,7 @@ const EMPTY_DONOR: Donor = {
 };
 
 /**
- * One cause's donation page: Amount → Details (+ Gift Aid) → Payment → Thank you. The first
+ * One cause's donation page: Amount → Details → Payment → Thank you. The first
  * step is customised to the cause (`AmountStep`); the cause is chosen beforehand on /donate.
  * Step 3 shows Stripe's Payment Element when Stripe keys are configured (`paymentsMode`).
  * Dark theme; steps slide/fade with framer-motion (respects reduced motion).
@@ -59,7 +59,6 @@ export function DonationFlow({
   const [direction, setDirection] = useState(1);
   const [choice, setChoice] = useState<AmountValue>(() => initialAmount(program));
   const [donor, setDonor] = useState<Donor>(EMPTY_DONOR);
-  const [giftAid, setGiftAid] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -81,8 +80,9 @@ export function DonationFlow({
       email: donor.email.trim(),
       postcode: donor.country === UK ? normalisePostcode(donor.postcode) : donor.postcode.trim(),
     },
-    giftAid: { declared: GIFT_AID_ENABLED && giftAid && donor.type === 'personal' },
     marketingConsent,
+    // Where the donor came from (UTM / referrer / landing page), read when the request is built.
+    ...(typeof window !== 'undefined' && { source: readSource() }),
   };
 
   const goTo = (next: number) => {
@@ -196,18 +196,11 @@ export function DonationFlow({
                   {step === 1 && (
                     <DetailsStep
                       donor={donor}
-                      giftAid={giftAid}
                       marketingConsent={marketingConsent}
-                      amount={amount}
-                      frequency={choice.frequency}
                       errors={errors}
                       onDonor={(patch) => {
                         setDonor((d) => ({ ...d, ...patch }));
                         clear(Object.keys(patch).map((k) => `donor.${k}`));
-                      }}
-                      onGiftAid={(declared) => {
-                        setGiftAid(declared);
-                        clear(['giftAid.declared']);
                       }}
                       onConsent={setMarketingConsent}
                     />

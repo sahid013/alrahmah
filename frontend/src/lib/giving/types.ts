@@ -91,57 +91,31 @@ export const donorSchema = donorFields.superRefine((d, ctx) => {
 export type Donor = z.infer<typeof donorSchema>;
 
 /**
- * Gift Aid on/off. OFF: the masjid isn't currently eligible to claim it (client request,
- * October 2026), so the form doesn't offer it and the server refuses declarations. Set back to
- * `true` to restore the option, the declaration text, the summary row and the Stripe metadata.
+ * Where the donor came from, captured when they first arrive on the site (UTM tags, referring
+ * site, landing page) and sent with the donation, so the dashboard can report sources.
  */
-export const GIFT_AID_ENABLED = false;
-
-/** Gift Aid uses the donor's address (HMRC needs house name/number and postcode). */
-export const giftAidSchema = z.object({ declared: z.boolean() });
+export const sourceSchema = z.object({
+  utmSource: z.string().max(100).optional(),
+  utmMedium: z.string().max(100).optional(),
+  utmCampaign: z.string().max(100).optional(),
+  referrer: z.string().max(300).optional(),
+  landingPage: z.string().max(300).optional(),
+});
+export type DonationSource = z.infer<typeof sourceSchema>;
 
 const detailsShape = {
   donor: donorSchema,
-  giftAid: giftAidSchema,
   /** Opt-in to email updates (unticked by default, separate from the donation). */
   marketingConsent: z.boolean(),
-};
-
-/** Gift Aid is for individual UK taxpayers only, not companies or groups, and only while enabled. */
-const checkGiftAid = (
-  r: { donor: { type: DonorType }; giftAid: { declared: boolean } },
-  ctx: z.RefinementCtx,
-) => {
-  if (r.giftAid.declared && r.donor.type !== 'personal')
-    ctx.addIssue({
-      code: 'custom',
-      path: ['giftAid', 'declared'],
-      message: 'Gift Aid can only be added to personal donations',
-    });
-  else if (r.giftAid.declared && !GIFT_AID_ENABLED)
-    ctx.addIssue({
-      code: 'custom',
-      path: ['giftAid', 'declared'],
-      message: 'Gift Aid isn’t available at the moment',
-    });
+  source: sourceSchema.optional(),
 };
 
 /** Step 2 (Details) on its own. */
-export const detailsSchema = z.object(detailsShape).superRefine(checkGiftAid);
+export const detailsSchema = z.object(detailsShape);
 
-export const donationRequestSchema = amountSchema.extend(detailsShape).superRefine(checkGiftAid);
+export const donationRequestSchema = amountSchema.extend(detailsShape);
 export type DonationRequest = z.infer<typeof donationRequestSchema>;
 export type AmountStep = z.infer<typeof amountSchema>;
-
-/** "House name or number" for the HMRC Gift Aid schedule: the first part of the address. */
-export function houseFromAddress(address: string): string {
-  const first = address.split(/[\n,]/)[0]!.trim();
-  // "6 Sheepscar Way" → "6", "12A High St" → "12A"; otherwise it's a house name ("Rose Cottage").
-  return first.match(/^\d+[a-z]?\b/i)?.[0] ?? first.slice(0, 40);
-}
-
-/** Gift Aid adds 25p for every £1 (basic-rate tax reclaimed from HMRC). */
-export const giftAidBonus = (amount: number) => Math.round(amount * 25) / 100;
 
 export const formatGbp = (n: number) =>
   new Intl.NumberFormat('en-GB', {
@@ -167,7 +141,7 @@ export const amountWithFrequency = (
     ? formatGbp(amount)
     : `${formatGbp(amount)} a ${frequency === 'daily' && unit ? unit : PER[frequency]}`;
 
-/** Field errors keyed by path ("donor.email", "giftAid.postcode"). */
+/** Field errors keyed by path ("donor.email", "people"). */
 export function fieldErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};
   for (const issue of error.issues) out[issue.path.join('.')] ??= issue.message;

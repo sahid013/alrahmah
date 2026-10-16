@@ -4,13 +4,9 @@ import { COUNTRY_OPTIONS, UK } from '@/lib/giving/countries';
 import {
   DONOR_TYPE_LABELS,
   DONOR_TYPES,
-  formatGbp,
-  GIFT_AID_ENABLED,
-  giftAidBonus,
   normalisePostcode,
   type Donor,
   type DonorType,
-  type Frequency,
 } from '@/lib/giving/types';
 import { GiveField, GiveInput, GiveSelect, GiveTextarea, StepTitle } from './fields';
 
@@ -19,23 +15,15 @@ type TextKey = Exclude<keyof Donor, 'type' | 'country'>;
 
 export function DetailsStep({
   donor,
-  giftAid,
   marketingConsent,
-  amount,
-  frequency,
   errors,
   onDonor,
-  onGiftAid,
   onConsent,
 }: {
   donor: Donor;
-  giftAid: boolean;
   marketingConsent: boolean;
-  amount: number;
-  frequency: Frequency;
   errors: Record<string, string>;
   onDonor: (patch: Partial<Donor>) => void;
-  onGiftAid: (declared: boolean) => void;
   onConsent: (consent: boolean) => void;
 }) {
   const err = (k: keyof Donor) => errors[`donor.${k}`];
@@ -49,7 +37,6 @@ export function DetailsStep({
   });
   const uk = donor.country === UK;
   const personal = donor.type === 'personal';
-  const bonus = giftAidBonus(amount);
 
   return (
     <div className="space-y-10">
@@ -62,8 +49,6 @@ export function DetailsStep({
             onChange={(e) => {
               const type = e.target.value as DonorType;
               onDonor({ type, ...(type === 'personal' && { organisation: undefined }) });
-              // Gift Aid is only for individuals.
-              if (type !== 'personal') onGiftAid(false);
             }}
           >
             {DONOR_TYPES.map((t) => (
@@ -147,44 +132,6 @@ export function DetailsStep({
         </GiveField>
       </div>
 
-      {/* Gift Aid: individuals only, and only while it's enabled. */}
-      {GIFT_AID_ENABLED && personal && (
-        <section aria-labelledby="gift-aid-title" className="space-y-3">
-          <h3
-            id="gift-aid-title"
-            className="font-heading text-title-lg tracking-heading text-white uppercase"
-          >
-            Boost your donation with Gift Aid
-          </h3>
-          <p className="text-primary-100">
-            If you are a UK taxpayer, Gift Aid lets us claim an extra 25p for every £1 you give, at
-            no cost to you.
-            {Number.isFinite(amount) && amount > 0 && (
-              <>
-                {' '}
-                Your {formatGbp(amount)} becomes{' '}
-                <strong className="font-ui text-secondary-300">{formatGbp(amount + bonus)}</strong>.
-              </>
-            )}
-          </p>
-          <Checkbox checked={giftAid} onChange={onGiftAid} error={errors['giftAid.declared']}>
-            <strong>Yes, I want to Gift Aid my donation</strong>
-            {frequency === 'one-off' ? ' of ' : ', '}
-            <span className="font-ui">{Number.isFinite(amount) ? formatGbp(amount) : ''}</span>
-            {frequency === 'one-off' ? '' : ` ${frequency} gifts,`} and any donations I make in the
-            future or have made in the past 4 years to {siteConfig.legalName}.
-          </Checkbox>
-          {giftAid && (
-            <p className="text-sm text-primary-200">
-              I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains
-              Tax in the current tax year than the amount of Gift Aid claimed on all my donations,
-              it is my responsibility to pay any difference. Please tell us if you change your name
-              or address, stop paying enough tax, or want to cancel this declaration.
-            </p>
-          )}
-        </section>
-      )}
-
       {/* Marketing / data consent: optional, unticked by default. */}
       <section aria-label="Keeping in touch" className="space-y-3">
         <Checkbox checked={marketingConsent} onChange={onConsent}>
@@ -192,8 +139,7 @@ export function DetailsStep({
           about news, events and appeals. I can unsubscribe at any time.
         </Checkbox>
         <p className="text-sm text-primary-200">
-          We use your details to process your donation and send your receipt
-          {GIFT_AID_ENABLED ? ', and to claim Gift Aid if you add it' : ''}. We never sell or share
+          We use your details to process your donation and send your receipt. We never sell or share
           your information.
         </p>
       </section>

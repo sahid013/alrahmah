@@ -70,7 +70,6 @@ export function DonationDetail({
                   <Badge>One-off</Badge>
                 )}
                 {d.status === 'refunded' && <Badge tone="error">Refunded</Badge>}
-                {d.giftAid && <Badge tone="indigo">Gift Aid</Badge>}
                 {d.marketingConsent && <Badge tone="success">Opted in</Badge>}
               </div>
             </div>
@@ -103,12 +102,7 @@ export function DonationDetail({
               </Row>
               <Row label="Country">{countryName(d.donor.country)}</Row>
             </Section>
-            <Section title="Gift Aid & consent">
-              <Row label="Gift Aid">
-                {d.giftAid
-                  ? `Declared ${d.giftAidDeclaredAt ? shortDate(d.giftAidDeclaredAt) : ''}`
-                  : 'No'}
-              </Row>
+            <Section title="Consent">
               <Row label="Marketing">{d.marketingConsent ? 'Opted in to email updates' : 'No'}</Row>
             </Section>
             <Section title="Payment">

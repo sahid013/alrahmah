@@ -1,13 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import type Stripe from 'stripe';
-import { recordDonationEvent, toDonationEvent } from '@/lib/giving/fulfilment';
+import { recordStripeEvent } from '@/lib/giving/record';
 import { DonationInputError, finaliseDailyGiving, getStripe } from '@/lib/giving/stripe-server';
 
 /**
  * Stripe webhook. Every event's signature is verified with STRIPE_WEBHOOK_SECRET before use.
  * Subscribe the endpoint to: checkout.session.completed, checkout.session.async_payment_succeeded,
  * checkout.session.async_payment_failed, invoice.paid, invoice.payment_failed, charge.refunded,
- * customer.subscription.deleted.
+ * customer.subscription.deleted. Donations are recorded in Supabase (`lib/giving/record.ts`).
  */
 export async function POST(request: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -41,7 +41,16 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const donation = toDonationEvent(event);
-  if (donation) await recordDonationEvent(donation);
+  try {
+    await recordStripeEvent(event);
+  } catch (error) {
+    // 500 → Stripe retries the event later (recording is idempotent).
+    console.error(
+      '[stripe] could not record donation',
+      event.type,
+      error instanceof Error ? error.message : error,
+    );
+    return NextResponse.json({ error: 'Recording failed' }, { status: 500 });
+  }
   return NextResponse.json({ received: true });
 }

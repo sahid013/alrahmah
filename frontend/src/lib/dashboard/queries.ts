@@ -15,7 +15,6 @@ export function filterDonations(list: Donation[], q: DonationQuery = {}): Donati
       if (q.to && day > q.to) return false;
       if (q.campaignId && d.campaignId !== q.campaignId) return false;
       if (q.type && d.type !== q.type) return false;
-      if (q.giftAid !== undefined && d.giftAid !== q.giftAid) return false;
       if (q.status && d.status !== q.status) return false;
       if (q.donorType && d.donor.type !== q.donorType) return false;
       if (q.marketingConsent !== undefined && d.marketingConsent !== q.marketingConsent)
@@ -60,7 +59,6 @@ export interface DonorSummary {
   recurring: boolean;
   /** Status of their most recent regular gift, if any. */
   recurringStatus?: SubscriptionStatus;
-  giftAid: boolean;
   /** Consent given with their most recent donation. */
   marketingConsent: boolean;
   /** Source of their first donation in the period. */
@@ -94,14 +92,12 @@ export function summariseDonors(list: Donation[]): DonorSummary[] {
       firstGift: day,
       lastGift: day,
       recurring: false,
-      giftAid: false,
       marketingConsent: false,
       firstSource: sourceOf(d),
     };
     s.donations += 1;
     s.total += d.amount;
     s.lastGift = day;
-    s.giftAid ||= d.giftAid;
     s.marketingConsent = d.marketingConsent;
     if (d.type === 'recurring') {
       s.recurring = true;
@@ -119,13 +115,13 @@ export interface RegularGift {
   email: string;
   campaignId: string;
   amount: number;
-  frequency: 'weekly' | 'monthly';
+  /** `daily`: the 10 nights/days causes (a fixed run of payments, not ongoing income). */
+  frequency: 'weekly' | 'monthly' | 'daily';
   status: SubscriptionStatus;
   startedAt: string;
   lastPaymentAt: string;
   payments: number;
   total: number;
-  giftAid: boolean;
 }
 
 /** One row per regular gift (Stripe subscription), newest payment first. */
@@ -150,7 +146,6 @@ export function summariseRegularGifts(list: Donation[]): RegularGift[] {
       lastPaymentAt: day,
       payments: 0,
       total: 0,
-      giftAid: d.giftAid,
     };
     g.payments += 1;
     g.total += d.amount;
@@ -162,30 +157,27 @@ export function summariseRegularGifts(list: Donation[]): RegularGift[] {
   return [...map.values()].sort((a, b) => b.lastPaymentAt.localeCompare(a.lastPaymentAt));
 }
 
-/** A regular gift's value per month (weekly gifts × 52 / 12). */
+/**
+ * A regular gift's ongoing value per month (weekly gifts × 52 / 12). Daily gifts (10 nights/days)
+ * end by themselves, so they aren't monthly income.
+ */
 export const monthlyValue = (g: Pick<RegularGift, 'amount' | 'frequency'>) =>
-  g.frequency === 'weekly' ? (g.amount * 52) / 12 : g.amount;
+  g.frequency === 'weekly' ? (g.amount * 52) / 12 : g.frequency === 'daily' ? 0 : g.amount;
 
 export interface DonationTotals {
   total: number;
   count: number;
   /** Value of recurring payments (£). */
   recurring: number;
-  giftAidEligible: number;
-  /** 25% Gift Aid on eligible donations. */
-  giftAidValue: number;
 }
 
 export function donationTotals(list: Donation[]): DonationTotals {
   const ok = list.filter((d) => d.status === 'succeeded');
   const sum = (xs: Donation[]) => xs.reduce((n, d) => n + d.amount, 0);
-  const eligible = sum(ok.filter((d) => d.giftAid));
   return {
     total: sum(ok),
     count: ok.length,
     recurring: sum(ok.filter((d) => d.type === 'recurring')),
-    giftAidEligible: eligible,
-    giftAidValue: eligible * 0.25,
   };
 }
 

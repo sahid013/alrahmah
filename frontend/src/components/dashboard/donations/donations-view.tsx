@@ -94,18 +94,6 @@ export function DonationsView() {
               <option value="recurring">Recurring</option>
             </Select>
           </Field>
-          <Field label="Gift Aid">
-            <Select
-              value={query.giftAid === undefined ? '' : String(query.giftAid)}
-              onChange={(e) =>
-                update({ giftAid: e.target.value === '' ? undefined : e.target.value === 'true' })
-              }
-            >
-              <option value="">Any</option>
-              <option value="true">Gift Aid declared</option>
-              <option value="false">No Gift Aid</option>
-            </Select>
-          </Field>
           <Field label="Donor type">
             <Select
               value={query.donorType ?? ''}
@@ -168,11 +156,6 @@ export function DonationsView() {
         <StatCard label="Total received" value={gbp(totals.total)} hint="Excludes refunds" />
         <StatCard label="Donations" value={String(totals.count)} hint="Successful payments" />
         <StatCard label="Recurring" value={gbp(totals.recurring)} hint="From regular gifts" />
-        <StatCard
-          label="Gift Aid value"
-          value={gbp(totals.giftAidValue)}
-          hint="25% of eligible gifts"
-        />
       </div>
 
       <Panel

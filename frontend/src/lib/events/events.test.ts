@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   formatMonth,
   monthBounds,
@@ -9,6 +9,9 @@ import {
 } from './calendar';
 import { seedEvents } from './data';
 import { listEvents } from './repository';
+
+// The repository is server-only; without Supabase settings it reads the seed events.
+vi.mock('server-only', () => ({}));
 import {
   formatSchedule,
   formatTime,

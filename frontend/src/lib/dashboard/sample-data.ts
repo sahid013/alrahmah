@@ -131,8 +131,6 @@ export function sampleDonations(today = new Date()): Donation[] {
         email: `${firstName}.${lastName}${i + 1}@example.com`.toLowerCase(),
         phone: `07700 9${String(10000 + i * 137).slice(-5)}`,
       },
-      // Gift Aid: individual UK taxpayers only.
-      giftAid: !organisation && !abroad && rand() < 0.6,
       marketingConsent: rand() < 0.45,
       source: source ? { ...source, landingPage: '/donate' } : undefined,
     };
@@ -149,8 +147,6 @@ export function sampleDonations(today = new Date()): Donation[] {
       createdAt: at.toISOString(),
       currency: 'GBP',
       status: rand() < 0.03 ? 'refunded' : 'succeeded',
-      giftAid: d.giftAid,
-      ...(d.giftAid && { giftAidDeclaredAt: new Date(at.getTime() - 60_000).toISOString() }),
       donor: d.donor,
       marketingConsent: d.marketingConsent,
       ...(d.source && { source: d.source }),

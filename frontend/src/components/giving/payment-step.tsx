@@ -2,13 +2,7 @@ import type { ReactNode } from 'react';
 import { siteConfig } from '@/config/site';
 import type { DonationProgram } from '@/lib/donations/types';
 import { dateRange, remainingCharges } from '@/lib/giving/schedule';
-import {
-  GIFT_AID_ENABLED,
-  FREQUENCY_LABELS,
-  formatGbp,
-  giftAidBonus,
-  type DonationRequest,
-} from '@/lib/giving/types';
+import { FREQUENCY_LABELS, formatGbp, type DonationRequest } from '@/lib/giving/types';
 import { ErrorBox, StepTitle } from './fields';
 
 /** The summary rows for the cause's kind of giving. */
@@ -60,8 +54,6 @@ export function PaymentStep({
     ['Name', `${request.donor.firstName} ${request.donor.lastName}`],
     ['Receipt to', request.donor.email],
   ];
-  if (request.giftAid.declared)
-    rows.push(['Gift Aid', `+ ${formatGbp(giftAidBonus(request.amount))} from HMRC`]);
 
   return (
     <div className="space-y-10">
@@ -88,8 +80,7 @@ export function PaymentStep({
           Payments are processed by Stripe. {siteConfig.name} never sees or stores your card
           details.
           {daily && ' Your card is saved with Stripe only to take the payments listed above.'} Your
-          information is only used to process your donation
-          {GIFT_AID_ENABLED ? ' and claim Gift Aid' : ''}.
+          information is only used to process your donation.
         </p>
       </section>
 

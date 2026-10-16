@@ -94,7 +94,7 @@ export const siteConfig = {
    * masjid doesn't use — the dropdown adapts to however many remain).
    */
   socials: [
-    { platform: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/' },
+    { platform: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/alrahmahleeds/' },
     { platform: 'youtube', name: 'YouTube', href: 'https://www.youtube.com/@alrahmahmasjid' },
     { platform: 'instagram', name: 'Instagram', href: 'https://www.instagram.com/' },
     { platform: 'whatsapp', name: 'WhatsApp', href: 'https://whatsapp.com/channel/' },

@@ -1,6 +1,16 @@
 import type { NextConfig } from 'next';
 
+/** Event posters uploaded in the dashboard live in Supabase Storage (public bucket). */
+const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+  : undefined;
+
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: supabaseHost
+      ? [{ protocol: 'https', hostname: supabaseHost, pathname: '/storage/v1/object/public/**' }]
+      : [],
+  },
   async redirects() {
     return [
       // The donation flow moved from /give to /donate.

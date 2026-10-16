@@ -46,8 +46,9 @@ export function KhutbahForm({
   const [title, setTitle] = useState(initial?.title ?? '');
   const [speaker, setSpeaker] = useState(initial?.speaker ?? '');
   const [date, setDate] = useState(initial?.date ?? todayAtMasjid());
-  // Once someone types a title or speaker, a new link no longer overwrites it.
-  const [edited, setEdited] = useState(Boolean(initial));
+  // Once someone types a title or speaker, a new link no longer overwrites it. (When editing,
+  // a different link fills them from the new video unless they're changed by hand first.)
+  const [edited, setEdited] = useState(false);
   const [lookup, setLookup] = useState<'idle' | 'loading' | 'failed'>('idle');
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
@@ -98,7 +99,7 @@ export function KhutbahForm({
     setErrors({});
     setSaving(true);
     try {
-      onSaved(await api.khutbahs.save(result.data));
+      onSaved(await api.khutbahs.save(result.data, initial?.videoId));
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : 'Could not save. Please try again.');
     } finally {
@@ -120,7 +121,9 @@ export function KhutbahForm({
               ? 'Getting the title from YouTube…'
               : lookup === 'failed'
                 ? 'Couldn’t read the title from YouTube; type it below.'
-                : 'Paste the video’s link, e.g. https://youtu.be/…'
+                : initial && videoId && videoId !== initial.videoId
+                  ? 'Saving moves this post to the new video.'
+                  : 'Paste the video’s link, e.g. https://youtu.be/…'
           }
           error={
             errors.link ?? (link.trim() && !videoId ? 'That isn’t a YouTube video link' : undefined)
@@ -132,7 +135,6 @@ export function KhutbahForm({
             value={link}
             onChange={(e) => changeLink(e.target.value)}
             placeholder="https://www.youtube.com/watch?v=…"
-            disabled={Boolean(initial)}
             required
           />
         </Field>

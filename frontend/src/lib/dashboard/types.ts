@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { donationProgramSchema } from '@/lib/donations/types';
-import { donorFields } from '@/lib/giving/types';
+import { eventSchema } from '@/lib/events/types';
+import { donorFields, sourceSchema } from '@/lib/giving/types';
 
 /**
  * Dashboard data contracts — shared by the UI and (later) the Supabase / backend API.
@@ -66,14 +67,7 @@ export type Campaign = z.infer<typeof campaignSchema>;
 /* ---------- Donations ---------- */
 
 /** Where a donation came from (UTM tags captured on arrival; no tags = direct). */
-export const sourceSchema = z.object({
-  utmSource: z.string().optional(),
-  utmMedium: z.string().optional(),
-  utmCampaign: z.string().optional(),
-  referrer: z.string().optional(),
-  landingPage: z.string().optional(),
-});
-export type DonationSource = z.infer<typeof sourceSchema>;
+export { sourceSchema, type DonationSource } from '@/lib/giving/types';
 
 export const SUBSCRIPTION_STATUSES = ['active', 'past_due', 'cancelled'] as const;
 export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
@@ -95,12 +89,10 @@ export const donationSchema = z.object({
   amount: z.number().positive(),
   currency: z.literal('GBP'),
   type: z.enum(['one-off', 'recurring']),
-  frequency: z.enum(['weekly', 'monthly']).optional(),
+  /** Recurring gifts: how often (daily = one of the 10 nights/days). */
+  frequency: z.enum(['weekly', 'monthly', 'daily']).optional(),
   campaignId: z.string(),
   status: z.enum(['succeeded', 'refunded']),
-  giftAid: z.boolean(),
-  /** When the donor made their Gift Aid declaration (ISO). */
-  giftAidDeclaredAt: z.string().optional(),
   donor: donorFields.extend({ id: z.string() }),
   /** Opted in to email updates when giving this donation. */
   marketingConsent: z.boolean(),
@@ -118,7 +110,6 @@ export interface DonationQuery {
   to?: string; // YYYY-MM-DD inclusive
   campaignId?: string;
   type?: DonationType;
-  giftAid?: boolean;
   status?: Donation['status'];
   donorType?: Donation['donor']['type'];
   marketingConsent?: boolean;
@@ -127,3 +118,14 @@ export interface DonationQuery {
   /** Matches donor name, organisation, email, phone, postcode or payment reference. */
   search?: string;
 }
+
+/* ---------- Events ---------- */
+
+export const EVENT_STATUSES = ['published', 'draft'] as const;
+/** An event as the dashboard edits it: the website's event plus publish status and position. */
+export const dashboardEventSchema = eventSchema.extend({
+  status: z.enum(EVENT_STATUSES),
+  order: z.number().int(),
+  updatedAt: z.string().optional(),
+});
+export type DashboardEvent = z.infer<typeof dashboardEventSchema>;

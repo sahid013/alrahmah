@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
 import {
+  CalendarIcon,
   ClockIcon,
   DownloadIcon,
   GearIcon,
@@ -32,6 +33,7 @@ export const DASHBOARD_NAV: NavEntry[] = [
   { label: 'Overview', href: '/dashboard', icon: GridIcon },
   { label: 'Prayer times', href: '/dashboard/prayer-times', icon: ClockIcon },
   { label: 'Khutbahs', href: '/dashboard/khutbahs', icon: YouTubeIcon },
+  { label: 'Events', href: '/dashboard/events', icon: CalendarIcon },
   { label: 'Campaigns', href: '/dashboard/campaigns', icon: HeartIcon },
   { label: 'Donations', href: '/dashboard/donations', icon: ReceiptIcon },
   { label: 'Regular giving', href: '/dashboard/regular-giving', icon: RepeatIcon },

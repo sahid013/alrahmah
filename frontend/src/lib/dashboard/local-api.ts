@@ -3,7 +3,15 @@ import { createLocalAuth } from './auth/local-auth';
 import { filterDonations } from './queries';
 import { sampleCampaigns, sampleDonations } from './sample-data';
 import { byNewest, khutbahEntrySchema, type KhutbahEntry } from '@/lib/khutbahs/types';
-import { campaignSchema, prayerDaySchema, type Campaign, type PrayerDay } from './types';
+import {
+  campaignSchema,
+  dashboardEventSchema,
+  prayerDaySchema,
+  type Campaign,
+  type DashboardEvent,
+  type PrayerDay,
+} from './types';
+import { seedEvents } from '@/lib/events/data';
 
 /**
  * Preview implementation of `DashboardApi`: stores edits in this browser's localStorage and
@@ -16,8 +24,7 @@ interface Store {
   prayer: Record<string, PrayerDay>;
   campaigns: Campaign[];
   khutbahs: KhutbahEntry[];
-  /** Preview only: cause id → shown on the website. */
-  causes?: Record<string, boolean>;
+  events?: DashboardEvent[];
 }
 
 function read(): Store {
@@ -36,7 +43,9 @@ function read(): Store {
           .array()
           .catch([])
           .parse(parsed.khutbahs ?? []),
-        causes: parsed.causes ?? {},
+        ...(parsed.events && {
+          events: dashboardEventSchema.array().catch([]).parse(parsed.events),
+        }),
       };
     }
   } catch {
@@ -61,6 +70,10 @@ const now = () => new Date().toISOString();
 
 export function createLocalDashboardApi(): DashboardApi {
   const donations = sampleDonations();
+  /** Stored events, or the site's events to start from (all published, in order). */
+  const events = (): DashboardEvent[] =>
+    read().events ??
+    seedEvents.map((e, i) => dashboardEventSchema.parse({ ...e, status: 'published', order: i }));
 
   return {
     ...createLocalAuth(),
@@ -128,27 +141,60 @@ export function createLocalDashboardApi(): DashboardApi {
         return settle(filterDonations(donations, query));
       },
     },
-    causes: {
+    events: {
       async list() {
-        return settle(
-          Object.entries(read().causes ?? {}).map(([id, visible]) => ({ id, visible })),
-        );
+        return settle([...events()].sort((a, b) => a.order - b.order));
       },
-      async setVisible(id, visible) {
+      async get(id) {
+        return settle(events().find((e) => e.id === id));
+      },
+      async save(event) {
+        const valid = dashboardEventSchema.parse({ ...event, updatedAt: now() });
         const store = read();
-        store.causes = { ...store.causes, [id]: visible };
+        store.events = [...events().filter((e) => e.id !== valid.id), valid];
+        write(store);
+        return settle(valid);
+      },
+      async remove(id) {
+        const store = read();
+        store.events = events().filter((e) => e.id !== id);
         write(store);
         return settle(undefined);
+      },
+      async reorder(ids) {
+        const store = read();
+        const position = new Map(ids.map((id, i) => [id, i]));
+        store.events = events().map((e) => ({ ...e, order: position.get(e.id) ?? e.order }));
+        write(store);
+        return settle(undefined);
+      },
+      async uploadPoster(file) {
+        // Preview only: keep the image in the browser as a data URL.
+        const src = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(new Error('Could not read the image.'));
+          reader.readAsDataURL(file);
+        });
+        return settle({ src });
       },
     },
     khutbahs: {
       async list() {
         return settle([...read().khutbahs].sort(byNewest));
       },
-      async save(entry) {
+      async save(entry, previousVideoId) {
         const valid = khutbahEntrySchema.parse({ ...entry, updatedAt: now() });
         const store = read();
-        store.khutbahs = [valid, ...store.khutbahs.filter((k) => k.videoId !== valid.videoId)];
+        const moving = previousVideoId && previousVideoId !== valid.videoId;
+        if (moving && store.khutbahs.some((k) => k.videoId === valid.videoId))
+          throw new Error('That video is already posted. Edit or remove that one instead.');
+        store.khutbahs = [
+          valid,
+          ...store.khutbahs.filter(
+            (k) => k.videoId !== valid.videoId && k.videoId !== previousVideoId,
+          ),
+        ];
         write(store);
         return settle(valid);
       },

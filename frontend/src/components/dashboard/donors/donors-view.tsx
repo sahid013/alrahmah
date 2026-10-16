@@ -8,8 +8,6 @@ import {
   donationColumns,
   donorColumns,
   downloadCsv,
-  giftAidColumns,
-  isGiftAidClaimable,
   toCsv,
 } from '@/lib/dashboard/csv';
 import { summariseDonors, taxYear } from '@/lib/dashboard/queries';
@@ -27,8 +25,7 @@ interface Range {
 }
 
 /**
- * Donor list for a period plus the exports: donations, donors, opted-in contacts and the HMRC
- * Gift Aid schedule.
+ * Donor list for a period plus the exports: donations, donors and opted-in contacts.
  */
 export function DonorsView() {
   const today = todayAtMasjid();
@@ -54,16 +51,13 @@ export function DonorsView() {
       .toLowerCase()
       .includes(search.trim().toLowerCase()),
   );
-  // HMRC: individuals only, succeeded payments with a declaration.
-  const giftAid = (donations ?? []).filter(isGiftAidClaimable);
   const contacts = donors.filter((d) => d.marketingConsent);
   const suffix = `${range.from ?? 'start'}_to_${range.to ?? today}`;
 
   const exports = [
     {
       title: 'All donations',
-      description:
-        'One row per successful payment: donor details, campaign, Gift Aid, consent and source.',
+      description: 'One row per successful payment: donor details, campaign, consent and source.',
       count: donations?.length ?? 0,
       run: () =>
         downloadCsv(`donations_${suffix}.csv`, toCsv(donations ?? [], donationColumns(campaigns))),
@@ -80,13 +74,6 @@ export function DonorsView() {
         'Donors who agreed to email updates (their latest choice), for the mailing list.',
       count: contacts.length,
       run: () => downloadCsv(`contacts-opted-in_${suffix}.csv`, toCsv(contacts, contactColumns)),
-    },
-    {
-      title: 'Gift Aid schedule',
-      description:
-        "Claimable donations (individuals only) in HMRC's schedule column order, ready to paste into the claim spreadsheet.",
-      count: giftAid.length,
-      run: () => downloadCsv(`gift-aid_${suffix}.csv`, toCsv(giftAid, giftAidColumns)),
     },
   ];
 
@@ -226,7 +213,6 @@ export function DonorsView() {
                           </Badge>
                         )}
                         {d.type === 'organisation' && <Badge>Corporate</Badge>}
-                        {d.giftAid && <Badge tone="indigo">Gift Aid</Badge>}
                         {d.marketingConsent && <Badge tone="success">Opted in</Badge>}
                       </span>
                     </td>

@@ -4,7 +4,7 @@ import { isCauseVisible, loadDonations } from '@/lib/donations/repository';
 import { countryName } from './countries';
 import { chargeFor, DonationInputError } from './causes';
 import { remainingCharges, type DailyPlan } from './schedule';
-import { donationRequestSchema, houseFromAddress, type DonationRequest } from './types';
+import { donationRequestSchema, type DonationRequest } from './types';
 
 /**
  * Server-only Stripe access. Keys come from env (provisioned by the Vercel Stripe integration):
@@ -28,10 +28,15 @@ export { DonationInputError };
 const pence = (pounds: number) => Math.round(pounds * 100);
 const idOf = (v: string | { id: string } | null | undefined) => (typeof v === 'string' ? v : v?.id);
 
-/** Metadata stored on the session and on the PaymentIntent / Subscription it creates. */
+/**
+ * Metadata stored on the session and on the PaymentIntent / Subscription it creates. The webhook
+ * builds the dashboard's donation record from it (`lib/giving/record.ts`), so it carries the
+ * donor exactly as the form collected them, plus where they came from. Stripe allows 500
+ * characters per value.
+ */
 function donationMetadata(r: DonationRequest, campaignTitle: string): Stripe.MetadataParam {
   const d = r.donor;
-  const giftAid = r.giftAid.declared;
+  const s = r.source;
   return {
     campaign_id: r.campaignId,
     campaign_title: campaignTitle,
@@ -47,12 +52,14 @@ function donationMetadata(r: DonationRequest, campaignTitle: string): Stripe.Met
     donor_region: d.region ?? '',
     donor_postcode: d.postcode,
     donor_country: countryName(d.country),
+    donor_country_code: d.country,
+    donor_email: d.email,
     marketing_consent: r.marketingConsent ? 'yes' : 'no',
-    gift_aid: giftAid ? 'yes' : 'no',
-    // HMRC schedule columns: house name or number + postcode.
-    gift_aid_house: giftAid ? houseFromAddress(d.address) : '',
-    gift_aid_postcode: giftAid ? d.postcode : '',
-    gift_aid_declared_at: giftAid ? new Date().toISOString() : '',
+    utm_source: s?.utmSource ?? '',
+    utm_medium: s?.utmMedium ?? '',
+    utm_campaign: s?.utmCampaign ?? '',
+    referrer: s?.referrer ?? '',
+    landing_page: s?.landingPage ?? '',
   };
 }
 
