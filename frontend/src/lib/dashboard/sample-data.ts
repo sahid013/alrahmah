@@ -1,4 +1,5 @@
 import { seedDonations } from '@/lib/donations/data';
+import { donationsDataSchema } from '@/lib/donations/types';
 import type { Campaign, Donation } from './types';
 
 /**
@@ -9,7 +10,9 @@ import type { Campaign, Donation } from './types';
 
 /** Campaigns start from the public donation programmes. */
 export const sampleCampaigns = (): Campaign[] =>
-  seedDonations.programs.map((p, i) => ({ ...p, status: 'active', order: i }));
+  donationsDataSchema
+    .parse(seedDonations)
+    .programs.map((p, i) => ({ ...p, status: 'active', order: i }));
 
 function rng(seed: number) {
   return () => {

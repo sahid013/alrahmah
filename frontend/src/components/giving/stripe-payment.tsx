@@ -10,6 +10,7 @@ import { useMemo, useState } from 'react';
 import { HeartIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { referenceFromSession } from '@/lib/giving/payments';
+import type { DailyPlan } from '@/lib/giving/schedule';
 import { amountWithFrequency, type DonationRequest } from '@/lib/giving/types';
 import { ErrorBox } from './fields';
 
@@ -48,6 +49,19 @@ const appearance: Appearance = {
   },
 };
 
+/** Daily causes: schedule the nightly/daily charges for the saved card (idempotent). */
+async function finaliseDaily(sessionId: string): Promise<DailyPlan> {
+  const res = await fetch('/api/giving/finalise', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId }),
+  });
+  const data = (await res.json().catch(() => ({}))) as { plan?: DailyPlan; error?: string };
+  if (!res.ok || !data.plan)
+    throw new Error(data.error ?? 'Your card was saved, but the donations could not be scheduled.');
+  return data.plan;
+}
+
 async function fetchClientSecret(request: DonationRequest): Promise<string> {
   const res = await fetch('/api/giving/session', {
     method: 'POST',
@@ -65,10 +79,14 @@ async function fetchClientSecret(request: DonationRequest): Promise<string> {
  */
 export function StripePayment({
   request,
+  unit,
   onPaid,
 }: {
   request: DonationRequest;
-  onPaid: (reference: string) => void;
+  /** Daily causes: "night" or "day" (for the button). */
+  unit?: 'night' | 'day';
+  /** `plan` is set for daily causes (card saved, charges scheduled). */
+  onPaid: (reference: string, plan?: DailyPlan) => void;
 }) {
   // One session per mount; the promise is created once.
   const [clientSecret] = useState(() => fetchClientSecret(request));
@@ -103,17 +121,19 @@ export function StripePayment({
 
   return (
     <CheckoutElementsProvider stripe={stripePromise} options={options}>
-      <PaymentForm request={request} onPaid={onPaid} />
+      <PaymentForm request={request} unit={unit} onPaid={onPaid} />
     </CheckoutElementsProvider>
   );
 }
 
 function PaymentForm({
   request,
+  unit,
   onPaid,
 }: {
   request: DonationRequest;
-  onPaid: (reference: string) => void;
+  unit?: 'night' | 'day';
+  onPaid: (reference: string, plan?: DailyPlan) => void;
 }) {
   const state = useCheckoutElements();
   const [busy, setBusy] = useState(false);
@@ -138,6 +158,8 @@ function PaymentForm({
       // Bank checks that need a redirect return to the session's return_url (/donate/complete).
       const result = await checkout.confirm({ redirect: 'if_required' });
       if (result.type === 'error') setError(result.error.message);
+      else if (request.frequency === 'daily')
+        onPaid(referenceFromSession(result.session.id), await finaliseDaily(result.session.id));
       else onPaid(referenceFromSession(result.session.id));
     } catch (e) {
       setError(
@@ -161,7 +183,9 @@ function PaymentForm({
         onClick={() => void pay()}
       >
         <HeartIcon className="size-4" />
-        {busy ? 'Processing…' : `Donate ${amountWithFrequency(request.amount, request.frequency)}`}
+        {busy
+          ? 'Processing…'
+          : `${request.frequency === 'daily' ? 'Confirm' : 'Donate'} ${amountWithFrequency(request.amount, request.frequency, unit)}`}
       </Button>
     </div>
   );

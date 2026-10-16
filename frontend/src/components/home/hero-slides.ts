@@ -1,5 +1,4 @@
 import { siteConfig } from '@/config/site';
-import { EVENTS_PAGE, eventScheduleText, getEventHref, type EventItem } from '@/lib/events';
 
 /**
  * Hero slideshow content. Kept as plain data so it can later come from the backend/CMS
@@ -19,23 +18,12 @@ export interface HeroSlide {
   secondaryCta?: { label: string; href: string };
   /** Full-bleed background photo. Without one the slide shows navy with the star pattern. */
   background?: { src: string; alt: string };
-  /** Poster shown beside the text on desktop (event slides without a background photo). */
+  /** Poster shown beside the text on desktop (for a slide without a background photo). */
   poster?: { src: string; alt: string; width: number; height: number };
 }
 
-/** The event highlighted in the hero (falls back to the first event when it's gone). */
-export const FEATURED_EVENT_ID = 'seerah-of-muhammad';
-
-/**
- * Background photo for the featured event. Optimised copy of public/images/hero/Serah
- * Background.png (the Seerah poster's photo without its text). Only used for that event.
- */
-const featuredEventBackground = {
-  src: '/images/hero/seerah-background.webp',
-  alt: 'Ornate arched entrance of a masjid with a hanging lantern and a carved golden door',
-};
-
-const fixedSlides: HeroSlide[] = [
+/** Welcome, then the Make Space for Rahmah appeal (client request: no featured-event slide). */
+export const heroSlides: HeroSlide[] = [
   {
     id: 'welcome',
     label: 'Welcome',
@@ -71,34 +59,3 @@ const fixedSlides: HeroSlide[] = [
     },
   },
 ];
-
-/**
- * Balanced hero heading for an event title: "Seerah of Muhammad ﷺ" → "Seerah of" / "Muhammad ﷺ".
- * The name and ﷺ always stay together on the second line.
- */
-const heroTitle = (title: string) => title.replace(/\s+Muhammad\s*ﷺ$/u, '\nMuhammad\u00a0ﷺ');
-
-/**
- * Slide for one event: its schedule and speaker, title, summary, and the background photo when
- * there is one (otherwise its poster beside the text).
- */
-function eventSlide(event: EventItem, background?: HeroSlide['background']): HeroSlide {
-  return {
-    id: `event-${event.id}`,
-    label: 'Featured Event',
-    eyebrow: [eventScheduleText(event), event.speaker].filter(Boolean).join(' · '),
-    title: heroTitle(event.title),
-    body: [event.summary],
-    primaryCta: { label: 'Event details', href: getEventHref(event) },
-    secondaryCta: { label: 'All events', href: EVENTS_PAGE },
-    ...(background ? { background } : { poster: event.image }),
-  };
-}
-
-/** Welcome, Our Appeal, then the featured event (left out when there are no events). */
-export function buildHeroSlides(events: EventItem[]): HeroSlide[] {
-  const featured = events.find((e) => e.id === FEATURED_EVENT_ID) ?? events[0];
-  if (!featured) return fixedSlides;
-  const background = featured.id === FEATURED_EVENT_ID ? featuredEventBackground : undefined;
-  return [...fixedSlides, eventSlide(featured, background)];
-}

@@ -26,6 +26,42 @@ export const priceSchema = z.object({
   period: z.enum(['once', 'week', 'month']),
 });
 
+/**
+ * How a cause is given to (each has its own form on /donate/<id>):
+ *  - `regular`    → one-off, weekly or monthly, any amount (Masjid Expansion).
+ *  - `per-person` → one-off; the donor says how many people they're paying for and the total is
+ *                   `unitAmount` × people (Fitrana).
+ *  - `daily`      → an amount charged once on each of `count` consecutive nights/days starting
+ *                   `firstDate` at `chargeTime` (UK time), then it stops by itself (Last 10 Nights,
+ *                   First 10 Days of Dhul Hijjah). Donors can sign up in advance; joining part-way
+ *                   charges only the nights/days left.
+ */
+export const givingSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('regular') }),
+  z.object({
+    kind: z.literal('per-person'),
+    /** In pounds, per person. */
+    unitAmount: z.number().positive(),
+    maxPeople: z.number().int().positive().default(20),
+  }),
+  z.object({
+    kind: z.literal('daily'),
+    /** UK date of the first night/day (YYYY-MM-DD). For nights: the evening it starts. */
+    firstDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    count: z.number().int().min(1).max(30),
+    unit: z.enum(['night', 'day']),
+    /** UK time each payment is taken (HH:mm). */
+    chargeTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+    /** Shown in sentences: "the last 10 nights of Ramadan". */
+    periodLabel: z.string().min(1),
+    /** Suggested amounts per night/day, in pounds. */
+    presets: z.array(z.number().positive()).min(1).max(4).default([1, 5, 10, 20]),
+  }),
+]);
+
+/** Line icon on the "Select your cause" tiles. */
+export const CAUSE_ICONS = ['mosque', 'people', 'moon', 'sun'] as const;
+
 export const donationProgramSchema = z.object({
   /** URL-safe id, also the card's anchor (`/donations#<id>`). */
   id: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
@@ -47,6 +83,8 @@ export const donationProgramSchema = z.object({
     href: z.string().min(1),
   }),
   tracker: trackerSchema.optional(),
+  giving: givingSchema.default({ kind: 'regular' }),
+  icon: z.enum(CAUSE_ICONS).optional(),
 });
 
 /** Optional page-level tracker (e.g. "Running costs covered"). */
@@ -64,5 +102,7 @@ export const donationsDataSchema = z.object({
 export type DonationTracker = z.infer<typeof trackerSchema>;
 export type DonationPrice = z.infer<typeof priceSchema>;
 export type DonationProgram = z.infer<typeof donationProgramSchema>;
+export type Giving = z.infer<typeof givingSchema>;
+export type DailyGiving = Extract<Giving, { kind: 'daily' }>;
 export type DonationOverview = z.infer<typeof donationOverviewSchema>;
 export type DonationsData = z.infer<typeof donationsDataSchema>;

@@ -18,6 +18,8 @@ export const newCampaign = (order: number): Campaign => ({
   title: '',
   summary: '',
   cta: { label: 'Donate now', href: '' },
+  // New campaigns use the standard form (one-off, weekly or monthly).
+  giving: { kind: 'regular' },
   status: 'draft',
   order,
 });

@@ -95,7 +95,7 @@ function utcOffsetMinutes(instant: number): number {
 }
 
 /** The instant when the masjid's clock shows `hhmm` on the given local date (DST-aware). */
-function atLocalTime(year: number, month: number, day: number, hhmm: string): Date {
+export function atLocalTime(year: number, month: number, day: number, hhmm: string): Date {
   const [h, m] = hhmm.split(':').map(Number);
   const wall = Date.UTC(year, month - 1, day, h, m);
   const guess = wall - utcOffsetMinutes(wall) * 60_000;

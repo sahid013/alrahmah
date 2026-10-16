@@ -5,6 +5,7 @@ import {
   detailsSchema,
   donationRequestSchema,
   fieldErrors,
+  GIFT_AID_ENABLED,
   giftAidBonus,
   houseFromAddress,
   normalisePostcode,
@@ -83,6 +84,12 @@ describe('donation request', () => {
 });
 
 describe('giving helpers', () => {
+  it('refuses Gift Aid on personal donations while it is switched off', () => {
+    const errors = errorsOf({ ...valid, giftAid: { declared: true } });
+    if (GIFT_AID_ENABLED) expect(errors['giftAid.declared']).toBeUndefined();
+    else expect(errors['giftAid.declared']).toMatch(/isn’t available/);
+  });
+
   it('works out Gift Aid at 25%', () => {
     expect(giftAidBonus(50)).toBe(12.5);
     expect(giftAidBonus(10.1)).toBe(2.53);

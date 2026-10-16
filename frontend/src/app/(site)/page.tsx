@@ -3,7 +3,7 @@ import { GreetingSection } from '@/components/home/greeting-section';
 import { ImpactSection } from '@/components/impact/impact-section';
 import { KhutbahsSection } from '@/components/khutbahs/khutbahs-section';
 import { ServicesSection } from '@/components/services/services-section';
-import { buildHeroSlides } from '@/components/home/hero-slides';
+import { heroSlides } from '@/components/home/hero-slides';
 import { HeroMobile } from '@/components/home/hero-mobile';
 import { HeroSlideshow } from '@/components/home/hero-slideshow';
 import { siteConfig } from '@/config/site';
@@ -23,7 +23,6 @@ export const metadata = buildMetadata({
 
 export default async function HomePage() {
   const [events, khutbahs] = await Promise.all([listEvents(), listKhutbahs()]);
-  const heroSlides = buildHeroSlides(events);
 
   return (
     <>

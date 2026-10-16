@@ -31,6 +31,8 @@ export function toDonationEvent(event: Stripe.Event): DonationEvent | null {
     case 'checkout.session.completed':
     case 'checkout.session.async_payment_succeeded': {
       const s = event.data.object;
+      // Daily causes only save the card here; each night's charge arrives as invoice.paid.
+      if (s.mode === 'setup') return null;
       // Delayed payment methods complete while still unpaid; fulfil only once paid.
       if (s.payment_status === 'unpaid') return null;
       return {
@@ -46,7 +48,16 @@ export function toDonationEvent(event: Stripe.Event): DonationEvent | null {
       return { kind: 'failed', ref: event.data.object.id };
     case 'invoice.paid': {
       const inv = event.data.object;
-      // The first invoice is covered by checkout.session.completed; record renewals only.
+      const meta = inv.parent?.subscription_details?.metadata ?? {};
+      // Daily causes: every night's/day's charge (including the first) is a donation.
+      if (meta.giving_kind === 'daily')
+        return {
+          kind: 'paid',
+          ref: inv.id ?? event.id,
+          amount: pounds(inv.amount_paid),
+          campaignId: meta.campaign_id,
+        };
+      // Weekly/monthly: the first invoice is covered by checkout.session.completed.
       if (inv.billing_reason !== 'subscription_cycle') return null;
       return { kind: 'renewed', ref: inv.id ?? event.id, amount: pounds(inv.amount_paid) };
     }

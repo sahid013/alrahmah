@@ -6,13 +6,18 @@ import { COUNTRY_CODES, UK } from './countries';
  * creates the Stripe PaymentIntent (one-off) or Subscription (weekly/monthly) for the campaign's
  * Stripe product and returns a client secret for the on-page Stripe Payment Element.
  */
-export const FREQUENCIES = ['one-off', 'weekly', 'monthly'] as const;
+/** The choices on a `regular` cause's form (e.g. Masjid Expansion). */
+export const REGULAR_FREQUENCIES = ['one-off', 'weekly', 'monthly'] as const;
+/** `daily`: one payment on each night/day of a daily cause (see `lib/giving/schedule.ts`). */
+export const FREQUENCIES = [...REGULAR_FREQUENCIES, 'daily'] as const;
 export type Frequency = (typeof FREQUENCIES)[number];
 export const FREQUENCY_LABELS: Record<Frequency, string> = {
   'one-off': 'One-off',
   weekly: 'Weekly',
   monthly: 'Monthly',
+  daily: 'Daily',
 };
+export const MAX_PEOPLE = 50;
 
 export const PRESET_AMOUNTS = [10, 25, 50, 100] as const;
 export const MIN_AMOUNT = 1;
@@ -36,6 +41,13 @@ export const amountSchema = z.object({
       (n) => Math.abs(n * 100 - Math.round(n * 100)) < 1e-6,
       'Use pounds and pence, e.g. 12.50',
     ),
+  /** Per-person causes (Fitrana): how many people the donor is paying for. */
+  people: z
+    .number()
+    .int('Enter a whole number of people')
+    .min(1, 'Pay for at least 1 person')
+    .max(MAX_PEOPLE, `For more than ${MAX_PEOPLE} people, please contact us`)
+    .optional(),
 });
 
 export const DONOR_TYPES = ['personal', 'organisation'] as const;
@@ -78,6 +90,13 @@ export const donorSchema = donorFields.superRefine((d, ctx) => {
 });
 export type Donor = z.infer<typeof donorSchema>;
 
+/**
+ * Gift Aid on/off. OFF: the masjid isn't currently eligible to claim it (client request,
+ * October 2026), so the form doesn't offer it and the server refuses declarations. Set back to
+ * `true` to restore the option, the declaration text, the summary row and the Stripe metadata.
+ */
+export const GIFT_AID_ENABLED = false;
+
 /** Gift Aid uses the donor's address (HMRC needs house name/number and postcode). */
 export const giftAidSchema = z.object({ declared: z.boolean() });
 
@@ -88,7 +107,7 @@ const detailsShape = {
   marketingConsent: z.boolean(),
 };
 
-/** Gift Aid is for individual UK taxpayers only, not companies or groups. */
+/** Gift Aid is for individual UK taxpayers only, not companies or groups, and only while enabled. */
 const checkGiftAid = (
   r: { donor: { type: DonorType }; giftAid: { declared: boolean } },
   ctx: z.RefinementCtx,
@@ -98,6 +117,12 @@ const checkGiftAid = (
       code: 'custom',
       path: ['giftAid', 'declared'],
       message: 'Gift Aid can only be added to personal donations',
+    });
+  else if (r.giftAid.declared && !GIFT_AID_ENABLED)
+    ctx.addIssue({
+      code: 'custom',
+      path: ['giftAid', 'declared'],
+      message: 'Gift Aid isn’t available at the moment',
     });
 };
 
@@ -126,11 +151,21 @@ export const formatGbp = (n: number) =>
     maximumFractionDigits: 2,
   }).format(n);
 
-/** "£50", "£50 a week", "£50 a month". */
-export const amountWithFrequency = (amount: number, frequency: Frequency) =>
+const PER: Record<Exclude<Frequency, 'one-off'>, string> = {
+  weekly: 'week',
+  monthly: 'month',
+  daily: 'day',
+};
+
+/** "£50", "£50 a week", "£50 a month", "£5 a night" (`unit` names a daily cause's payment). */
+export const amountWithFrequency = (
+  amount: number,
+  frequency: Frequency,
+  unit?: 'night' | 'day',
+) =>
   frequency === 'one-off'
     ? formatGbp(amount)
-    : `${formatGbp(amount)} a ${frequency === 'weekly' ? 'week' : 'month'}`;
+    : `${formatGbp(amount)} a ${frequency === 'daily' && unit ? unit : PER[frequency]}`;
 
 /** Field errors keyed by path ("donor.email", "giftAid.postcode"). */
 export function fieldErrors(error: z.ZodError): Record<string, string> {

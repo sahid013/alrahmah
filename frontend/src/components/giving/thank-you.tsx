@@ -1,39 +1,64 @@
 import { ArrowRightIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
-import { siteConfig } from '@/config/site';
-import { amountWithFrequency, type DonationRequest } from '@/lib/giving/types';
+import type { DonationProgram } from '@/lib/donations/types';
+import { dateRange, formatClock, type DailyPlan } from '@/lib/giving/schedule';
+import { amountWithFrequency, formatGbp, type DonationRequest } from '@/lib/giving/types';
 import { StepTitle } from './fields';
 
 export function ThankYou({
   request,
-  campaignTitle,
+  program,
+  plan,
   reference,
   onAgain,
 }: {
   request: DonationRequest;
-  campaignTitle: string;
+  program: DonationProgram;
+  /** Daily causes: the payments that were scheduled. */
+  plan?: DailyPlan;
   reference: string;
   onAgain: () => void;
 }) {
+  const g = program.giving;
   return (
     <div className="space-y-8">
       <p className="font-script text-4xl text-secondary-300">Jazakum Allahu khairan</p>
       <StepTitle id="step-title">Thank you, {request.donor.firstName}</StepTitle>
-      <p className="text-lg text-primary-100">
-        Your donation of{' '}
-        <strong className="font-ui text-white">
-          {amountWithFrequency(request.amount, request.frequency)}
-        </strong>{' '}
-        to <strong className="text-white">{campaignTitle}</strong> has been received. A receipt is
-        on its way to {request.donor.email}.
-        {request.giftAid.declared && ' Thank you for adding Gift Aid.'}
-      </p>
+      {g.kind === 'daily' && plan ? (
+        <p className="text-lg text-primary-100">
+          Your donation of{' '}
+          <strong className="font-ui text-white">
+            {amountWithFrequency(plan.amount, 'daily', g.unit)}
+          </strong>{' '}
+          to <strong className="text-white">{program.title}</strong> is set up:{' '}
+          <span className="font-ui text-white">
+            {plan.count} payments,{' '}
+            {dateRange([new Date(plan.firstCharge), new Date(plan.lastCharge)])}
+          </span>
+          , taken at {formatClock(g.chargeTime)} each {g.unit} (
+          {formatGbp(plan.amount * plan.count)} in total). Nothing has been taken today. A
+          confirmation is on its way to {request.donor.email}.
+        </p>
+      ) : (
+        <p className="text-lg text-primary-100">
+          Your donation of{' '}
+          <strong className="font-ui text-white">
+            {amountWithFrequency(request.amount, request.frequency)}
+          </strong>{' '}
+          to <strong className="text-white">{program.title}</strong>
+          {g.kind === 'per-person' && request.people
+            ? ` for ${request.people} ${request.people === 1 ? 'person' : 'people'}`
+            : ''}{' '}
+          has been received. A receipt is on its way to {request.donor.email}.
+          {request.giftAid.declared && ' Thank you for adding Gift Aid.'}
+        </p>
+      )}
       <p className="text-sm text-primary-200">
         Reference: <span className="font-ui text-white">{reference}</span>
       </p>
       <div className="flex flex-wrap gap-4">
-        <ButtonLink href={siteConfig.links.donations} variant="outline-light">
-          More ways to give
+        <ButtonLink href="/donate" variant="outline-light">
+          Choose another cause
         </ButtonLink>
         <button
           type="button"

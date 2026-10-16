@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import type { DonationProgram } from '@/lib/donations/types';
 import { UK } from '@/lib/giving/countries';
-import { checkoutHref, DEFAULT_CAUSE } from '@/lib/giving/links';
 import { paymentsMode, previewPay } from '@/lib/giving/payments';
+import { remainingCharges, type DailyPlan } from '@/lib/giving/schedule';
 import {
+  GIFT_AID_ENABLED,
   amountSchema,
   amountWithFrequency,
   detailsSchema,
@@ -18,7 +19,7 @@ import {
   type DonationRequest,
   type Donor,
 } from '@/lib/giving/types';
-import { AmountStep, defaultFrequency, type AmountValue } from './amount-step';
+import { AmountStep, amountFor, initialAmount, type AmountValue } from './amount-step';
 import { DonatePanel } from './donate-panel';
 import { DetailsStep } from './details-step';
 import { PaymentStep } from './payment-step';
@@ -39,29 +40,17 @@ const EMPTY_DONOR: Donor = {
 };
 
 /**
- * Four-step donation page: Amount → Details (+ Gift Aid) → Payment → Thank you.
+ * One cause's donation page: Amount → Details (+ Gift Aid) → Payment → Thank you. The first
+ * step is customised to the cause (`AmountStep`); the cause is chosen beforehand on /donate.
  * Step 3 shows Stripe's Payment Element when Stripe keys are configured (`paymentsMode`).
  * Dark theme; steps slide/fade with framer-motion (respects reduced motion).
  */
-export function DonationFlow({
-  programs,
-  initialId,
-}: {
-  programs: DonationProgram[];
-  initialId?: string;
-}) {
+export function DonationFlow({ program }: { program: DonationProgram }) {
   const stripeMode = paymentsMode === 'stripe';
-  // A campaign link preselects its cause; the general /donate page starts on General Sadaqah.
-  const initial =
-    programs.find((p) => p.id === initialId) ?? programs.find((p) => p.id === DEFAULT_CAUSE);
   const [step, setStep] = useState(0);
   /** +1 when moving forward, -1 when going back (drives the slide direction). */
   const [direction, setDirection] = useState(1);
-  const [choice, setChoice] = useState<AmountValue>(() => ({
-    campaignId: initial?.id ?? '',
-    frequency: defaultFrequency(initial),
-    amountText: String(initial?.price?.amount ?? 25),
-  }));
+  const [choice, setChoice] = useState<AmountValue>(() => initialAmount(program));
   const [donor, setDonor] = useState<Donor>(EMPTY_DONOR);
   const [giftAid, setGiftAid] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
@@ -69,20 +58,23 @@ export function DonationFlow({
   const [busy, setBusy] = useState(false);
   const [payError, setPayError] = useState<string>();
   const [reference, setReference] = useState<string>();
+  const [plan, setPlan] = useState<DailyPlan>();
   const formRef = useRef<HTMLDivElement>(null);
 
-  const program = programs.find((p) => p.id === choice.campaignId);
-  const amount = choice.amountText === '' ? Number.NaN : Number(choice.amountText);
+  const giving = program.giving;
+  const unit = giving.kind === 'daily' ? giving.unit : undefined;
+  const amount = amountFor(program, choice);
   const request: DonationRequest = {
-    campaignId: choice.campaignId,
+    campaignId: program.id,
     frequency: choice.frequency,
     amount,
+    ...(giving.kind === 'per-person' && { people: choice.people }),
     donor: {
       ...donor,
       email: donor.email.trim(),
       postcode: donor.country === UK ? normalisePostcode(donor.postcode) : donor.postcode.trim(),
     },
-    giftAid: { declared: giftAid && donor.type === 'personal' },
+    giftAid: { declared: GIFT_AID_ENABLED && giftAid && donor.type === 'personal' },
     marketingConsent,
   };
 
@@ -120,6 +112,16 @@ export function DonationFlow({
       setPayError(undefined);
       try {
         const { reference } = await previewPay();
+        if (giving.kind === 'daily') {
+          // Preview: show the plan the server would schedule.
+          const charges = remainingCharges(giving);
+          setPlan({
+            amount,
+            count: charges.length,
+            firstCharge: charges[0]?.toISOString() ?? '',
+            lastCharge: charges.at(-1)?.toISOString() ?? '',
+          });
+        }
         setReference(reference);
         goTo(3);
       } catch (e) {
@@ -134,6 +136,7 @@ export function DonationFlow({
 
   const restart = () => {
     setReference(undefined);
+    setPlan(undefined);
     goTo(0);
   };
 
@@ -141,7 +144,7 @@ export function DonationFlow({
     step === 2
       ? busy
         ? 'Processing…'
-        : `Complete test donation ${Number.isFinite(amount) ? amountWithFrequency(amount, choice.frequency) : ''}`
+        : `Complete test donation ${Number.isFinite(amount) ? amountWithFrequency(amount, choice.frequency, unit) : ''}`
       : 'Next';
   // With Stripe, the Payment Element has its own Donate button.
   const showSubmit = !(step === 2 && stripeMode);
@@ -172,15 +175,13 @@ export function DonationFlow({
                 <motion.div key={step} {...slide} onAnimationComplete={focusHeading}>
                   {step === 0 && (
                     <AmountStep
-                      programs={programs}
+                      program={program}
                       value={choice}
                       amount={amount}
                       errors={errors}
                       onChange={(patch) => {
                         setChoice((c) => ({ ...c, ...patch }));
                         clear(Object.keys(patch).map((k) => (k === 'amountText' ? 'amount' : k)));
-                        if (patch.campaignId)
-                          window.history.replaceState(null, '', checkoutHref(patch.campaignId));
                       }}
                     />
                   )}
@@ -204,16 +205,14 @@ export function DonationFlow({
                     />
                   )}
                   {step === 2 && (
-                    <PaymentStep
-                      request={request}
-                      campaignTitle={program?.title ?? ''}
-                      error={payError}
-                    >
+                    <PaymentStep request={request} program={program} error={payError}>
                       {stripeMode ? (
                         <StripePayment
                           key={JSON.stringify(request)}
                           request={request}
-                          onPaid={(ref) => {
+                          unit={unit}
+                          onPaid={(ref, dailyPlan) => {
+                            setPlan(dailyPlan);
                             setReference(ref);
                             goTo(3);
                           }}
@@ -229,7 +228,8 @@ export function DonationFlow({
                   {step === 3 && reference && (
                     <ThankYou
                       request={request}
-                      campaignTitle={program?.title ?? ''}
+                      program={program}
+                      plan={plan}
                       reference={reference}
                       onAgain={restart}
                     />

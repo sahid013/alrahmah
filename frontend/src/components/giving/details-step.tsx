@@ -5,6 +5,7 @@ import {
   DONOR_TYPE_LABELS,
   DONOR_TYPES,
   formatGbp,
+  GIFT_AID_ENABLED,
   giftAidBonus,
   normalisePostcode,
   type Donor,
@@ -146,8 +147,8 @@ export function DetailsStep({
         </GiveField>
       </div>
 
-      {/* Gift Aid: individuals only. */}
-      {personal && (
+      {/* Gift Aid: individuals only, and only while it's enabled. */}
+      {GIFT_AID_ENABLED && personal && (
         <section aria-labelledby="gift-aid-title" className="space-y-3">
           <h3
             id="gift-aid-title"
@@ -191,8 +192,9 @@ export function DetailsStep({
           about news, events and appeals. I can unsubscribe at any time.
         </Checkbox>
         <p className="text-sm text-primary-200">
-          We use your details to process your donation and send your receipt, and to claim Gift Aid
-          if you add it. We never sell or share your information.
+          We use your details to process your donation and send your receipt
+          {GIFT_AID_ENABLED ? ', and to claim Gift Aid if you add it' : ''}. We never sell or share
+          your information.
         </p>
       </section>
     </div>

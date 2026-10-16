@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 import { siteConfig } from '@/config/site';
+import type { DonationProgram } from '@/lib/donations/types';
+import { dateRange, remainingCharges } from '@/lib/giving/schedule';
 import {
+  GIFT_AID_ENABLED,
   FREQUENCY_LABELS,
   formatGbp,
   giftAidBonus,
@@ -8,22 +11,49 @@ import {
 } from '@/lib/giving/types';
 import { ErrorBox, StepTitle } from './fields';
 
+/** The summary rows for the cause's kind of giving. */
+function donationRows(request: DonationRequest, program: DonationProgram): [string, string][] {
+  const g = program.giving;
+  if (g.kind === 'per-person') {
+    const people = request.people ?? 1;
+    return [
+      ['Cause', program.title],
+      ['People', `${people} × ${formatGbp(g.unitAmount)}`],
+      ['Total (one-off)', formatGbp(request.amount)],
+    ];
+  }
+  if (g.kind === 'daily') {
+    const charges = remainingCharges(g);
+    return [
+      ['Cause', program.title],
+      [`Each ${g.unit}`, formatGbp(request.amount)],
+      [g.unit === 'night' ? 'Nights' : 'Days', `${charges.length} (${dateRange(charges)})`],
+      ['Total', formatGbp(request.amount * charges.length)],
+      ['Taken today', formatGbp(0)],
+    ];
+  }
+  return [
+    ['Donation', formatGbp(request.amount)],
+    ['How often', FREQUENCY_LABELS[request.frequency]],
+    ['Supporting', program.title],
+  ];
+}
+
 /** Summary plus the payment area (`children`: Stripe's Payment Element, or the preview note). */
 export function PaymentStep({
   request,
-  campaignTitle,
+  program,
   error,
   children,
 }: {
   request: DonationRequest;
-  campaignTitle: string;
+  program: DonationProgram;
   error?: string;
   children: ReactNode;
 }) {
+  const daily = program.giving.kind === 'daily';
   const rows: [string, string][] = [
-    ['Donation', formatGbp(request.amount)],
-    ['How often', FREQUENCY_LABELS[request.frequency]],
-    ['Supporting', campaignTitle],
+    ...donationRows(request, program),
     ...(request.donor.type === 'organisation'
       ? ([['Organisation', request.donor.organisation ?? '']] as [string, string][])
       : []),
@@ -51,12 +81,15 @@ export function PaymentStep({
           id="card-title"
           className="mb-3 font-label text-sm font-bold tracking-[0.12em] text-white uppercase"
         >
-          Pay securely
+          {daily ? 'Save your card' : 'Pay securely'}
         </h3>
         {children}
         <p className="mt-3 text-sm text-primary-200">
           Payments are processed by Stripe. {siteConfig.name} never sees or stores your card
-          details. Your information is only used to process your donation and claim Gift Aid.
+          details.
+          {daily && ' Your card is saved with Stripe only to take the payments listed above.'} Your
+          information is only used to process your donation
+          {GIFT_AID_ENABLED ? ' and claim Gift Aid' : ''}.
         </p>
       </section>
 

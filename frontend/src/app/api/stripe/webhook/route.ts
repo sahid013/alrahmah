@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import type Stripe from 'stripe';
 import { recordDonationEvent, toDonationEvent } from '@/lib/giving/fulfilment';
-import { getStripe } from '@/lib/giving/stripe-server';
+import { DonationInputError, finaliseDailyGiving, getStripe } from '@/lib/giving/stripe-server';
 
 /**
  * Stripe webhook. Every event's signature is verified with STRIPE_WEBHOOK_SECRET before use.
@@ -23,6 +23,22 @@ export async function POST(request: NextRequest) {
     event = await getStripe().webhooks.constructEventAsync(await request.text(), signature, secret);
   } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+  }
+
+  // Daily causes: the card was saved; schedule the nightly/daily charges (backup for the browser,
+  // which normally does this straight away; idempotent).
+  if (event.type === 'checkout.session.completed' && event.data.object.mode === 'setup') {
+    try {
+      await finaliseDailyGiving(event.data.object.id);
+    } catch (error) {
+      // A closed cause won't succeed on retry; anything else returns 500 so Stripe retries.
+      console.error(
+        '[stripe] could not schedule daily donation',
+        error instanceof Error ? error.message : error,
+      );
+      if (!(error instanceof DonationInputError))
+        return NextResponse.json({ error: 'Scheduling failed' }, { status: 500 });
+    }
   }
 
   const donation = toDonationEvent(event);
