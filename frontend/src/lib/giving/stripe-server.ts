@@ -89,6 +89,14 @@ export async function createDonationSession(input: unknown, origin: string) {
     integration_identifier: INTEGRATION_ID,
     return_url: `${origin}/donate/complete?session_id={CHECKOUT_SESSION_ID}`,
   } as const;
+  // The website's own payment method settings in Stripe, so the account's defaults (used by the
+  // masjid's other donation pages) stay untouched. Daily causes use a set without Direct Debit,
+  // which takes days to clear. Unset (e.g. the test sandbox): Stripe's defaults apply.
+  const methods =
+    (charge.kind === 'daily'
+      ? process.env.STRIPE_PAYMENT_METHOD_CONFIG_DAILY
+      : process.env.STRIPE_PAYMENT_METHOD_CONFIG) || undefined;
+  const config = methods ? { payment_method_configuration: methods } : {};
   const product = { name: `Donation: ${campaign.title}` };
 
   let session: Stripe.Checkout.Session;
@@ -114,6 +122,7 @@ export async function createDonationSession(input: unknown, origin: string) {
     };
     session = await stripe.checkout.sessions.create({
       ...common,
+      ...config,
       mode: 'setup',
       currency: 'gbp',
       customer: customer.id,
@@ -126,6 +135,7 @@ export async function createDonationSession(input: unknown, origin: string) {
   } else if (charge.kind === 'recurring') {
     session = await stripe.checkout.sessions.create({
       ...common,
+      ...config,
       mode: 'subscription',
       customer_email: r.donor.email,
       line_items: [
@@ -148,6 +158,7 @@ export async function createDonationSession(input: unknown, origin: string) {
   } else {
     session = await stripe.checkout.sessions.create({
       ...common,
+      ...config,
       mode: 'payment',
       customer_email: r.donor.email,
       customer_creation: 'always',

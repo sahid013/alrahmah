@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
+import { loadVisibleDonations } from '@/lib/donations/repository';
 import { EVENTS_PAGE } from '@/lib/events';
+import { checkoutHref } from '@/lib/giving/links';
 import { listEvents } from '@/lib/events/repository';
 import { siteConfig } from '@/config/site';
 
@@ -25,9 +27,13 @@ const staticRoutes = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [events, { programs }] = await Promise.all([listEvents(), loadVisibleDonations()]);
   const pages = [
     ...staticRoutes,
-    ...(await listEvents()).map((event) => `${EVENTS_PAGE}/${event.id}`),
+    '/donate',
+    // Only causes shown on the website (hidden ones say they aren't open).
+    ...programs.map((p) => checkoutHref(p.id)),
+    ...events.map((event) => `${EVENTS_PAGE}/${event.id}`),
   ];
   return pages.map((path) => ({
     url: `${siteConfig.url}${path === '/' ? '' : path}`,

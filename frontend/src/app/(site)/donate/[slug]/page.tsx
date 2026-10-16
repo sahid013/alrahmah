@@ -28,8 +28,6 @@ export async function generateMetadata({ params }: PageProps<'/donate/[slug]'>) 
     title: program ? `Donate to ${program.title}` : 'Donate',
     description: program?.summary,
     path: `/donate/${slug}`,
-    // TODO: remove once Stripe payments are live (preview takes no payment).
-    noindex: true,
   });
 }
 

@@ -8,8 +8,6 @@ export const metadata = buildMetadata({
   title: 'Donate',
   description: 'Select your cause: Masjid Expansion, Fitrana, Last 10 Nights or Dhul Hijjah.',
   path: '/donate',
-  // TODO: remove once Stripe payments are live (preview takes no payment).
-  noindex: true,
 });
 
 /** Re-render hourly so daily causes open and close on time. */
