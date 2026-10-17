@@ -4,7 +4,8 @@ import { Container } from '@/components/ui/container';
 import { siteConfig } from '@/config/site';
 import { referenceFromSession } from '@/lib/giving/payments';
 import { dateRange } from '@/lib/giving/schedule';
-import { finaliseDailyGiving, getStripe } from '@/lib/giving/stripe-server';
+import { finaliseDailyGiving } from '@/lib/giving/stripe-server';
+import { modeOfSession, stripeFor } from '@/lib/giving/stripe-mode';
 import { amountWithFrequency, type Frequency } from '@/lib/giving/types';
 import { buildMetadata } from '@/lib/seo';
 
@@ -24,8 +25,8 @@ export default async function DonateCompletePage({ searchParams }: PageProps<'/d
   const id =
     typeof session_id === 'string' && session_id.startsWith('cs_') ? session_id : undefined;
   const session = id
-    ? await getStripe()
-        .checkout.sessions.retrieve(id)
+    ? await Promise.resolve()
+        .then(() => stripeFor(modeOfSession(id)).checkout.sessions.retrieve(id))
         .catch(() => null)
     : null;
   const daily =

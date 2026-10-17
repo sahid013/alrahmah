@@ -1,7 +1,7 @@
 import 'server-only';
 import type Stripe from 'stripe';
 import { adminClient } from '@/lib/supabase/server';
-import { getStripe } from './stripe-server';
+import { stripeFor } from './stripe-mode';
 
 /**
  * Records donations from verified Stripe webhook events into Supabase `donations` (the dashboard's
@@ -14,6 +14,7 @@ import { getStripe } from './stripe-server';
  *
  * Rows are keyed by `payment_ref` (PaymentIntent or Invoice id), so Stripe's retries never create
  * duplicates. Payments without our metadata (e.g. made elsewhere in Stripe) are ignored.
+ * Test-mode payments are recorded with `livemode: false`, so they can be deleted before go-live.
  */
 
 type Meta = Record<string, string>;
@@ -90,6 +91,7 @@ export async function recordStripeEvent(event: Stripe.Event): Promise<void> {
         marketing_consent: m.marketing_consent === 'yes',
         source: sourceFrom(m),
         stripe_customer: idOf(s.customer) ?? null,
+        livemode: event.livemode,
       });
       return;
     }
@@ -101,7 +103,10 @@ export async function recordStripeEvent(event: Stripe.Event): Promise<void> {
       const subscription = idOf(details?.subscription);
       if (!subscription || !m.campaign_id || !inv.id || !inv.amount_paid) return;
       // The PaymentIntent behind this invoice, so a refund can be matched to it later.
-      const payments = await getStripe().invoicePayments.list({ invoice: inv.id, limit: 1 });
+      const payments = await stripeFor(event.livemode ? 'live' : 'test').invoicePayments.list({
+        invoice: inv.id,
+        limit: 1,
+      });
       const paymentIntent = idOf(payments.data[0]?.payment.payment_intent);
       await upsert({
         payment_ref: inv.id,
@@ -121,6 +126,7 @@ export async function recordStripeEvent(event: Stripe.Event): Promise<void> {
         subscription_status: 'active',
         source: sourceFrom(m),
         stripe_customer: idOf(inv.customer) ?? null,
+        livemode: event.livemode,
       });
       // A successful payment means the regular gift is active again (e.g. after a failure).
       await updateWhere('subscription_id', subscription, { subscription_status: 'active' });

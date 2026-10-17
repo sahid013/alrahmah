@@ -3,6 +3,8 @@
  *  - `stripe`: Stripe's Payment Element (Checkout Sessions, ui_mode `elements`), created by
  *    POST /api/giving/session. Card data goes straight to Stripe; webhooks record donations.
  *  - `preview`: no Stripe keys configured; walks through the flow without taking money.
+ * `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` only switches payments on here: the key Stripe.js actually
+ * uses comes with each session, matching its mode (live or test, see `stripe-mode.ts`).
  */
 export const paymentsMode: 'stripe' | 'preview' = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? 'stripe'

@@ -4,22 +4,15 @@ import { isCauseVisible, loadDonations } from '@/lib/donations/repository';
 import { countryName } from './countries';
 import { chargeFor, DonationInputError } from './causes';
 import { remainingCharges, type DailyPlan } from './schedule';
+import { currentStripeMode, keysFor, modeOfSession, stripeFor } from './stripe-mode';
 import { donationRequestSchema, type DonationRequest } from './types';
 
 /**
- * Server-only Stripe access. Keys come from env (provisioned by the Vercel Stripe integration):
- * STRIPE_SECRET_KEY (server) and NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (browser).
- * Before going live, swap the secret key for a restricted key (rk_…) with only the
+ * Server-only Stripe calls for donations. Which keys (live or test) come from `stripe-mode.ts`:
+ * new sessions use the current mode; anything already started uses the mode of its session id.
+ * Before going live, swap each secret key for a restricted key (rk_…) with only the
  * permissions used here: Checkout Sessions (write), Customers (write), Products/Prices (write).
  */
-let client: Stripe | null = null;
-export function getStripe(): Stripe {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error('Stripe is not configured (STRIPE_SECRET_KEY is missing).');
-  client ??= new Stripe(key);
-  return client;
-}
-
 /** Tags our sessions in the Stripe Dashboard (label + 8-letter suffix, per Stripe guidance). */
 const INTEGRATION_ID = 'alrahmah-give-QKZMWPLT';
 
@@ -83,7 +76,9 @@ export async function createDonationSession(input: unknown, origin: string) {
 
   const charge = chargeFor(r, campaign.giving);
   const metadata = donationMetadata(r, campaign.title);
-  const stripe = getStripe();
+  const mode = await currentStripeMode();
+  const stripe = stripeFor(mode);
+  const keys = keysFor(mode)!;
   const common = {
     ui_mode: 'elements',
     integration_identifier: INTEGRATION_ID,
@@ -93,9 +88,7 @@ export async function createDonationSession(input: unknown, origin: string) {
   // masjid's other donation pages) stay untouched. Daily causes use a set without Direct Debit,
   // which takes days to clear. Unset (e.g. the test sandbox): Stripe's defaults apply.
   const methods =
-    (charge.kind === 'daily'
-      ? process.env.STRIPE_PAYMENT_METHOD_CONFIG_DAILY
-      : process.env.STRIPE_PAYMENT_METHOD_CONFIG) || undefined;
+    charge.kind === 'daily' ? keys.paymentMethodConfigDaily : keys.paymentMethodConfig;
   const config = methods ? { payment_method_configuration: methods } : {};
   const product = { name: `Donation: ${campaign.title}` };
 
@@ -182,7 +175,12 @@ export async function createDonationSession(input: unknown, origin: string) {
   }
 
   if (!session.client_secret) throw new Error('Stripe did not return a client secret.');
-  return { clientSecret: session.client_secret, sessionId: session.id };
+  // The browser loads Stripe.js with the same mode's publishable key.
+  return {
+    clientSecret: session.client_secret,
+    sessionId: session.id,
+    publishableKey: keys.publishableKey,
+  };
 }
 
 function planOf(schedule: Stripe.SubscriptionSchedule): DailyPlan {
@@ -195,8 +193,8 @@ function planOf(schedule: Stripe.SubscriptionSchedule): DailyPlan {
   };
 }
 
-async function findSchedule(customer: string, sessionId: string) {
-  const { data } = await getStripe().subscriptionSchedules.list({ customer, limit: 20 });
+async function findSchedule(stripe: Stripe, customer: string, sessionId: string) {
+  const { data } = await stripe.subscriptionSchedules.list({ customer, limit: 20 });
   return data.find((s) => s.metadata?.checkout_session === sessionId);
 }
 
@@ -206,7 +204,7 @@ async function findSchedule(customer: string, sessionId: string) {
  * webhook all call it); later calls return the existing plan. Returns null for other sessions.
  */
 export async function finaliseDailyGiving(sessionId: string): Promise<DailyPlan | null> {
-  const stripe = getStripe();
+  const stripe = stripeFor(modeOfSession(sessionId));
   const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['setup_intent'] });
   const m = session.metadata ?? {};
   if (session.mode !== 'setup' || m.giving_kind !== 'daily') return null;
@@ -217,7 +215,7 @@ export async function finaliseDailyGiving(sessionId: string): Promise<DailyPlan 
     throw new DonationInputError('Your card hasn’t been confirmed yet.');
   if (!paymentMethod) throw new Error('The saved card is missing from the session.');
 
-  const existing = await findSchedule(customer, session.id);
+  const existing = await findSchedule(stripe, customer, session.id);
   if (existing) return planOf(existing);
 
   const { programs } = await loadDonations();
@@ -274,7 +272,7 @@ export async function finaliseDailyGiving(sessionId: string): Promise<DailyPlan 
     return planOf(schedule);
   } catch (error) {
     // Another caller may have created it at the same moment.
-    const raced = await findSchedule(customer, session.id);
+    const raced = await findSchedule(stripe, customer, session.id);
     if (raced) return planOf(raced);
     throw error;
   }

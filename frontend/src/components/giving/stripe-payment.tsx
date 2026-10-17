@@ -5,7 +5,7 @@ import {
   PaymentElement,
   useCheckoutElements,
 } from '@stripe/react-stripe-js/checkout';
-import { loadStripe, type Appearance } from '@stripe/stripe-js';
+import { loadStripe, type Appearance, type Stripe } from '@stripe/stripe-js';
 import { useMemo, useState } from 'react';
 import { HeartIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,19 @@ import type { DailyPlan } from '@/lib/giving/schedule';
 import { amountWithFrequency, type DonationRequest } from '@/lib/giving/types';
 import { ErrorBox } from './fields';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '');
+/**
+ * Stripe.js, loaded only when a payment starts, with the publishable key the server sends with
+ * the session (live or test, whichever mode the donation is in). Cached per key.
+ */
+const stripeByKey = new Map<string, Promise<Stripe | null>>();
+function loadStripeFor(publishableKey: string) {
+  let stripe = stripeByKey.get(publishableKey);
+  if (!stripe) {
+    stripe = loadStripe(publishableKey);
+    stripeByKey.set(publishableKey, stripe);
+  }
+  return stripe;
+}
 
 /** Stripe's form, styled to match the dark donation page: square corners, brand colours, Poppins. */
 const appearance: Appearance = {
@@ -62,15 +74,23 @@ async function finaliseDaily(sessionId: string): Promise<DailyPlan> {
   return data.plan;
 }
 
-async function fetchClientSecret(request: DonationRequest): Promise<string> {
+interface PaymentSession {
+  clientSecret: string;
+  publishableKey: string;
+}
+
+async function startSession(request: DonationRequest): Promise<PaymentSession> {
   const res = await fetch('/api/giving/session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
   });
-  const data = (await res.json().catch(() => ({}))) as { clientSecret?: string; error?: string };
-  if (!res.ok || !data.clientSecret) throw new Error(data.error ?? 'Could not start the payment.');
-  return data.clientSecret;
+  const data = (await res.json().catch(() => ({}))) as Partial<PaymentSession> & {
+    error?: string;
+  };
+  if (!res.ok || !data.clientSecret || !data.publishableKey)
+    throw new Error(data.error ?? 'Could not start the payment.');
+  return { clientSecret: data.clientSecret, publishableKey: data.publishableKey };
 }
 
 /**
@@ -88,8 +108,15 @@ export function StripePayment({
   /** `plan` is set for daily causes (card saved, charges scheduled). */
   onPaid: (reference: string, plan?: DailyPlan) => void;
 }) {
-  // One session per mount; the promise is created once.
-  const [clientSecret] = useState(() => fetchClientSecret(request));
+  // One session per mount; the promises are created once. If the session can't start, both
+  // reject and Stripe's provider shows the error.
+  const [{ stripe, clientSecret }] = useState(() => {
+    const session = startSession(request);
+    return {
+      stripe: session.then((s) => loadStripeFor(s.publishableKey)),
+      clientSecret: session.then((s) => s.clientSecret),
+    };
+  });
   const options = useMemo(
     () => ({
       clientSecret,
@@ -120,7 +147,7 @@ export function StripePayment({
   );
 
   return (
-    <CheckoutElementsProvider stripe={stripePromise} options={options}>
+    <CheckoutElementsProvider stripe={stripe} options={options}>
       <PaymentForm request={request} unit={unit} onPaid={onPaid} />
     </CheckoutElementsProvider>
   );

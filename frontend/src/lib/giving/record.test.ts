@@ -20,8 +20,8 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
   }),
 }));
-vi.mock('./stripe-server', () => ({
-  getStripe: () => ({
+vi.mock('./stripe-mode', () => ({
+  stripeFor: () => ({
     invoicePayments: {
       list: () => Promise.resolve({ data: [{ payment: { payment_intent: 'pi_renewal' } }] }),
     },
