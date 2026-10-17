@@ -3,13 +3,24 @@ import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { PageHero } from '@/components/ui/page-hero';
 import { Reveal } from '@/components/ui/reveal';
+import { JsonLd } from '@/components/seo/json-ld';
 import { siteConfig } from '@/config/site';
 import { buildMetadata } from '@/lib/seo';
+import { servicePageJsonLd } from '@/lib/structured-data';
+
+const description =
+  'Complete Nikah and marriage services at Al-Rahmah Masjid Leeds. Book at least four weeks in advance, especially in summer.';
 
 export const metadata = buildMetadata({
-  title: 'Nikah (Marriage) Services',
-  description:
-    'Complete Nikah and marriage services at Al-Rahmah Masjid Leeds. Book at least four weeks in advance, especially in summer.',
+  title: 'Nikah (Islamic Marriage) in Leeds',
+  description,
+  path: '/services/nikah',
+});
+
+const structuredData = servicePageJsonLd({
+  name: 'Nikah',
+  serviceType: 'Islamic marriage (nikah) ceremony',
+  description,
   path: '/services/nikah',
 });
 
@@ -18,7 +29,8 @@ const paragraph = 'text-lg leading-relaxed text-pretty text-neutral-600 sm:text-
 export default function ServicesNikahPage() {
   return (
     <>
-      <PageHero eyebrow="Services" title="Nikaah" />
+      <JsonLd data={structuredData} />
+      <PageHero eyebrow="Services" title="Nikah" />
       <section aria-labelledby="nikah-services-title" className="py-20 sm:py-28">
         <Container className="grid items-center gap-16 lg:grid-cols-12">
           <div className="lg:col-span-6">

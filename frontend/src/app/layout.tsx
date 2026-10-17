@@ -3,6 +3,7 @@ import { Amiri, Forum, Poppins, PT_Sans_Narrow, Sacramento } from 'next/font/goo
 import localFont from 'next/font/local';
 import { JsonLd } from '@/components/seo/json-ld';
 import { siteConfig } from '@/config/site';
+import { siteJsonLd } from '@/lib/structured-data';
 import './globals.css';
 
 /** Titles. */
@@ -88,27 +89,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       className={`${glacial.variable} ${forum.variable} ${poppins.variable} ${ptSansNarrow.variable} ${sacramento.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <JsonLd
-          data={{
-            '@context': 'https://schema.org',
-            '@type': 'Mosque',
-            name: siteConfig.name,
-            alternateName: siteConfig.legalName,
-            description: siteConfig.description,
-            url: siteConfig.url,
-            logo: `${siteConfig.url}${siteConfig.logo.src}`,
-            foundingDate: String(siteConfig.foundingYear),
-            telephone: siteConfig.contact.phone,
-            email: siteConfig.contact.email,
-            address: {
-              '@type': 'PostalAddress',
-              streetAddress: siteConfig.address.street,
-              postalCode: siteConfig.address.postalCode,
-              addressLocality: siteConfig.address.locality,
-              addressCountry: siteConfig.address.country,
-            },
-          }}
-        />
+        <JsonLd data={siteJsonLd()} />
         {children}
       </body>
     </html>

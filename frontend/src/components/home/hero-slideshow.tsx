@@ -179,7 +179,6 @@ export function HeroSlideshow({ slides, events }: { slides: HeroSlide[]; events:
           {slides.map((slide, i) => {
             const active = i === index;
             const CtaIcon = slide.primaryCta.icon ? ctaIcons[slide.primaryCta.icon] : null;
-            const Title = i === 0 ? 'h1' : 'h2';
 
             return (
               <div
@@ -198,7 +197,7 @@ export function HeroSlideshow({ slides, events }: { slides: HeroSlide[]; events:
                   >
                     {slide.eyebrow}
                   </p>
-                  <Title
+                  <h2
                     className="hero-from-left mt-6 font-heading text-title-4xl leading-[1.05] font-normal tracking-heading text-white uppercase sm:text-title-5xl xl:text-title-6xl"
                     style={step(1)}
                   >
@@ -208,7 +207,7 @@ export function HeroSlideshow({ slides, events }: { slides: HeroSlide[]; events:
                         {line}
                       </Fragment>
                     ))}
-                  </Title>
+                  </h2>
                   <div className="mt-8 max-w-xl space-y-4">
                     {slide.body.map((paragraph, p) => (
                       <p

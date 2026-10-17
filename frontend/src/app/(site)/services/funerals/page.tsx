@@ -4,13 +4,24 @@ import { ContactForm } from '@/components/contact/contact-form';
 import { Container } from '@/components/ui/container';
 import { PageHero } from '@/components/ui/page-hero';
 import { Reveal } from '@/components/ui/reveal';
+import { JsonLd } from '@/components/seo/json-ld';
 import { siteConfig } from '@/config/site';
 import { buildMetadata } from '@/lib/seo';
+import { servicePageJsonLd } from '@/lib/structured-data';
+
+const description =
+  'Funeral (janazah) queries for Al-Rahmah Masjid, Leeds. Email, call or send us a message and we will help your family.';
 
 export const metadata = buildMetadata({
-  title: 'Funerals',
-  description:
-    'Funeral (janazah) queries for Al-Rahmah Masjid, Leeds. Email, call or send us a message and we will help your family.',
+  title: 'Janazah & Muslim Funeral Services, Leeds',
+  description,
+  path: '/services/funerals',
+});
+
+const structuredData = servicePageJsonLd({
+  name: 'Funerals',
+  serviceType: 'Muslim funeral (janazah) services',
+  description,
   path: '/services/funerals',
 });
 
@@ -19,6 +30,7 @@ export default function ServicesFuneralsPage() {
 
   return (
     <>
+      <JsonLd data={structuredData} />
       <PageHero eyebrow="Services" title="Funerals" />
       <section aria-labelledby="funeral-queries-title" className="py-20 sm:py-28">
         <Container className="grid gap-16 lg:grid-cols-12">

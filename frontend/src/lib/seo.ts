@@ -8,16 +8,25 @@ interface PageSeo {
   path: string;
   image?: string;
   noindex?: boolean;
+  /** Use the title as-is, without the "| Al-Rahmah Masjid" suffix (e.g. the home page). */
+  absoluteTitle?: boolean;
 }
 
 /** Builds consistent per-page metadata: title, description, canonical, Open Graph, Twitter. */
-export const buildMetadata = ({ title, description, path, image, noindex }: PageSeo): Metadata => {
+export const buildMetadata = ({
+  title,
+  description,
+  path,
+  image,
+  noindex,
+  absoluteTitle,
+}: PageSeo): Metadata => {
   const pageDescription = description ?? siteConfig.description;
   // Falls back to the generated `app/opengraph-image.tsx`.
   const images = [image ?? '/opengraph-image'];
 
   return {
-    title,
+    title: absoluteTitle ? { absolute: title } : title,
     description: pageDescription,
     alternates: { canonical: path },
     openGraph: {

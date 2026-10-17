@@ -3,17 +3,22 @@ import { notFound } from 'next/navigation';
 import { EVENTS_PAGE, eventScheduleText } from '@/lib/events';
 import { getEvent, listEvents } from '@/lib/events/repository';
 import { ArrowRightIcon } from '@/components/icons';
+import { JsonLd } from '@/components/seo/json-ld';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Heading, Text } from '@/components/ui/typography';
 import { siteConfig } from '@/config/site';
 import { buildMetadata } from '@/lib/seo';
+import { breadcrumbJsonLd, eventJsonLd } from '@/lib/structured-data';
 
 /**
  * `dynamicParams` stays on (the default): with it off, Next.js can't re-render these prerendered
  * pages after an on-demand refresh (e.g. a prayer-time save revalidates every page) and serves a
  * 404. Unknown ids still 404 through `notFound()` below.
  */
+
+/** Re-render hourly so the Event markup's date moves on to the next class. */
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   return (await listEvents()).map((event) => ({ id: event.id }));
@@ -35,9 +40,17 @@ export async function generateMetadata({ params }: Props) {
 export default async function EventPage({ params }: Props) {
   const event = await getEvent((await params).id);
   if (!event) notFound();
+  const eventData = eventJsonLd(event);
 
   return (
     <Container className="py-16 lg:py-24">
+      {eventData && <JsonLd data={eventData} />}
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Events & Courses', path: EVENTS_PAGE },
+          { name: event.title, path: `${EVENTS_PAGE}/${event.id}` },
+        ])}
+      />
       <ButtonLink href={EVENTS_PAGE} variant="tertiary" size="xs">
         <ArrowRightIcon className="size-3.5 rotate-180" />
         All events &amp; courses

@@ -19,9 +19,9 @@ export function DonatePanel() {
       <div aria-hidden className="absolute inset-0 -z-10 bg-primary-950/85" />
 
       <div className="mx-auto max-w-md">
-        <h1 className="text-title-3xl leading-none text-white sm:text-title-4xl">
+        <h2 className="text-title-3xl leading-none text-white sm:text-title-4xl">
           {content.title}
-        </h1>
+        </h2>
 
         <div className="mt-8 space-y-4 text-primary-100 lg:mt-10">
           <p className="font-label text-sm font-bold tracking-[0.15em] text-secondary-300 uppercase">

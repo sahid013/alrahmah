@@ -3,12 +3,23 @@ import { ContactForm } from '@/components/contact/contact-form';
 import { Container } from '@/components/ui/container';
 import { PageHero } from '@/components/ui/page-hero';
 import { Reveal } from '@/components/ui/reveal';
+import { JsonLd } from '@/components/seo/json-ld';
 import { buildMetadata } from '@/lib/seo';
+import { servicePageJsonLd } from '@/lib/structured-data';
+
+const description =
+  'Qur’an and Islamic studies for children aged 5 to 15 at Al-Rahmah Masjid Leeds, Monday to Thursday between 5pm and 7pm.';
 
 export const metadata = buildMetadata({
-  title: 'Al-Rahmah Quran Academy',
-  description:
-    'Qur’an and Islamic studies for children aged 5 to 15 at Al-Rahmah Masjid Leeds, Monday to Thursday between 5pm and 7pm.',
+  title: 'Quran Classes for Children in Leeds',
+  description,
+  path: '/services/education/quran-academy',
+});
+
+const structuredData = servicePageJsonLd({
+  name: 'Al-Rahmah Quran Academy',
+  serviceType: 'Quran and Islamic studies classes for children',
+  description,
   path: '/services/education/quran-academy',
 });
 
@@ -24,6 +35,7 @@ const paragraph = 'text-lg leading-relaxed text-pretty text-neutral-600 sm:text-
 export default function QuranAcademyPage() {
   return (
     <>
+      <JsonLd data={structuredData} />
       <PageHero eyebrow="Education" title="Al-Rahmah Quran Academy" />
 
       <section aria-labelledby="academy-title" className="py-20 sm:py-28">

@@ -6,8 +6,9 @@ import { siteConfig } from '@/config/site';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
-  title: 'About us',
-  description: siteConfig.description,
+  title: 'About Us',
+  description:
+    'Al-Rahmah Masjid in Sheepscar, Leeds: a former Congregational church bought in 2018 and turned into a two-storey mosque with prayer halls and classes.',
   path: '/about',
 });
 

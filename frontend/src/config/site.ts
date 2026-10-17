@@ -13,10 +13,13 @@ export const siteConfig = {
   address: {
     street: '6 Sheepscar Way',
     locality: 'Leeds',
+    region: 'West Yorkshire',
     postalCode: 'LS7 3JB',
     country: 'GB',
   },
   logo: { src: '/brand/Logo.svg', width: 600, height: 149 },
+  /** Photo of the building, used in structured data (the home hero's first slide). */
+  photo: '/images/hero/al-rahmah-centre-night.webp',
   /** Full logo in white + sky, for the transparent header over dark heroes. */
   logoLight: '/brand/logo-light.svg',
   logoMarkLight: '/brand/logo-mark-light.svg',
@@ -91,13 +94,24 @@ export const siteConfig = {
   /**
    * Social channels promoted in the "Follow Us" nav dropdown.
    * TODO: replace every placeholder URL with Al-Rahmah's real profile links (remove any the
-   * masjid doesn't use — the dropdown adapts to however many remain).
+   * masjid doesn't use — the dropdown adapts to however many remain). `placeholder` entries are
+   * left out of the structured data (`sameAs`); drop the flag once the real link is in.
    */
   socials: [
     { platform: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/alrahmahleeds/' },
     { platform: 'youtube', name: 'YouTube', href: 'https://www.youtube.com/@alrahmahmasjid' },
-    { platform: 'instagram', name: 'Instagram', href: 'https://www.instagram.com/' },
-    { platform: 'whatsapp', name: 'WhatsApp', href: 'https://whatsapp.com/channel/' },
+    {
+      platform: 'instagram',
+      name: 'Instagram',
+      href: 'https://www.instagram.com/',
+      placeholder: true,
+    },
+    {
+      platform: 'whatsapp',
+      name: 'WhatsApp',
+      href: 'https://whatsapp.com/channel/',
+      placeholder: true,
+    },
   ],
 } as const;
 

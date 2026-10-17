@@ -60,7 +60,6 @@ export function HeroMobile({ slides, events }: { slides: HeroSlide[]; events: Ev
         {slides.map((slide, i) => {
           const open = i === index;
           const panelId = `hero-mobile-${slide.id}`;
-          const Title = i === 0 ? 'h1' : 'h2';
           const CtaIcon = slide.primaryCta.icon ? ctaIcons[slide.primaryCta.icon] : null;
 
           return (
@@ -114,14 +113,14 @@ export function HeroMobile({ slides, events }: { slides: HeroSlide[]; events: Ev
                       <p className="font-label text-[0.7rem] font-bold tracking-[0.25em] text-secondary-300 uppercase">
                         {slide.eyebrow}
                       </p>
-                      <Title className="mt-4 font-heading text-title-3xl leading-[1.05] font-normal tracking-heading text-balance text-white uppercase sm:text-title-4xl">
+                      <h2 className="mt-4 font-heading text-title-3xl leading-[1.05] font-normal tracking-heading text-balance text-white uppercase sm:text-title-4xl">
                         {slide.title.split('\n').map((line, l) => (
                           <Fragment key={l}>
                             {l > 0 && <br />}
                             {line}
                           </Fragment>
                         ))}
-                      </Title>
+                      </h2>
                       <p className="mt-5 max-w-md text-base leading-relaxed text-balance text-primary-100">
                         {slide.body[0]}
                       </p>

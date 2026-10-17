@@ -73,5 +73,11 @@ export default async function DonateCausePage({ params }: PageProps<'/donate/[sl
     );
 
   const { programs: shown } = await loadVisibleDonations();
-  return <DonationFlow program={program} canChangeCause={shown.length > 1} />;
+  return (
+    <>
+      {/* The flow's visible headings are the panel and the current step; this names the page. */}
+      <h1 className="sr-only">Donate to {program.title}</h1>
+      <DonationFlow program={program} canChangeCause={shown.length > 1} />
+    </>
+  );
 }

@@ -16,9 +16,10 @@ import { buildMetadata } from '@/lib/seo';
 export const revalidate = 3600;
 
 export const metadata = buildMetadata({
-  title: `${siteConfig.name} — Mosque in Leeds, established 2018`,
+  title: `${siteConfig.name} | Mosque in ${siteConfig.address.locality}, ${siteConfig.address.postalCode.split(' ')[0]}`,
   description: siteConfig.description,
   path: '/',
+  absoluteTitle: true,
 });
 
 export default async function HomePage() {
@@ -26,6 +27,11 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* The page's single h1. Both heroes stay in the HTML (one per screen size), so their
+          slide titles are h2s and this heading names the page for search engines and screen readers. */}
+      <h1 className="sr-only">
+        {siteConfig.name}, a mosque in {siteConfig.address.locality} since {siteConfig.foundingYear}
+      </h1>
       {/* One hero per screen size: accordion on mobile, slideshow on desktop. */}
       <HeroMobile slides={heroSlides} events={events} />
       <HeroSlideshow slides={heroSlides} events={events} />
