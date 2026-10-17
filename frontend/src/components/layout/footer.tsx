@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { CookieSettingsButton } from '@/components/consent/cookie-settings-button';
 import { ArrowRightIcon, HeartIcon, MosqueIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
@@ -146,6 +147,12 @@ export function Footer() {
         </p>
         <p>
           Serving {siteConfig.address.locality} since {siteConfig.foundingYear}
+        </p>
+        <p className="flex gap-6 lg:ml-auto">
+          <Link href="/cookies" className="hover:text-white">
+            Cookie policy
+          </Link>
+          <CookieSettingsButton className="uppercase hover:text-white" />
         </p>
       </Container>
     </footer>

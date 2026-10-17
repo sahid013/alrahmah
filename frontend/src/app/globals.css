@@ -625,7 +625,8 @@
 }
 
 /* ---------- Prayer times dialog ---------- */
-.prayer-dialog::backdrop {
+.prayer-dialog::backdrop,
+.consent-dialog::backdrop {
   background: color-mix(in oklab, var(--color-primary-950) 88%, transparent);
   animation: fade-in 0.4s var(--ease-smooth) both;
 }

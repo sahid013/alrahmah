@@ -31,6 +31,15 @@ export function captureSource(location: Location, referrer: string) {
   }
 }
 
+/** Forgets the stored source (when the visitor turns "Donation source" cookies off). */
+export function clearSource() {
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    /* storage unavailable: nothing stored */
+  }
+}
+
 export function readSource(): DonationSource | undefined {
   try {
     const raw = sessionStorage.getItem(KEY);

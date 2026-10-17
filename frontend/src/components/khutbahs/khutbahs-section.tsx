@@ -1,3 +1,4 @@
+import { ConsentGate } from '@/components/consent/consent-gate';
 import { YouTubeIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
@@ -107,22 +108,29 @@ export function KhutbahsSection({ khutbahs }: { khutbahs: Khutbah[] | null }) {
           </Reveal>
         </div>
 
-        {/* Right: the player (loads only when scrolled near). */}
+        {/* Right: the player (loads only when scrolled near, and only with external-media consent). */}
         <Reveal order={1}>
           <div className="relative aspect-video border border-primary-100 bg-primary-900">
-            <iframe
-              src={embedSrc}
-              title={
-                latest
-                  ? `${latest.title} — khutbah video (YouTube)`
-                  : 'Latest khutbah from Al-Rahmah Masjid (YouTube)'
-              }
-              loading="lazy"
-              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-              className="absolute inset-0 size-full"
-            />
+            <ConsentGate
+              service="YouTube"
+              content={latest ? 'this week’s khutbah' : 'the latest khutbahs'}
+              fallback={{ href: latest?.href ?? playlistUrl, label: 'Watch on YouTube' }}
+              tone="dark"
+            >
+              <iframe
+                src={embedSrc}
+                title={
+                  latest
+                    ? `${latest.title} — khutbah video (YouTube)`
+                    : 'Latest khutbah from Al-Rahmah Masjid (YouTube)'
+                }
+                loading="lazy"
+                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                className="absolute inset-0 size-full"
+              />
+            </ConsentGate>
           </div>
         </Reveal>
       </Container>

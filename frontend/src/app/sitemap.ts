@@ -23,6 +23,7 @@ const staticRoutes = [
   '/team',
   '/vision-mission',
   '/volunteering',
+  '/cookies',
   EVENTS_PAGE,
 ];
 

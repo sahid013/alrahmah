@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ConsentProvider } from '@/components/consent/consent-provider';
 import { SourceCapture } from '@/components/giving/source-capture';
 import { PrayerBadge } from '@/components/prayer/prayer-badge';
 import { PrayerTimesProvider } from '@/components/prayer/prayer-times-provider';
@@ -9,7 +10,8 @@ import { Header } from './header';
 import { PreFooter } from './pre-footer';
 
 /**
- * Public-website chrome: skip link, header, main, pre-footer, footer and the prayer badge.
+ * Public-website chrome: skip link, header, main, pre-footer, footer, the prayer badge and cookie
+ * consent (banner + preferences; the dashboard only uses necessary storage, so it has none).
  * Used by the `(site)` route group layout and the global 404 page; the dashboard has its own.
  */
 export async function SiteChrome({ children }: { children: ReactNode }) {
@@ -26,16 +28,18 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <PrayerTimesProvider overrides={prayerOverrides}>
-        <Header latestEvents={latestEvents} />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <PreFooter />
-        <Footer />
-        <PrayerBadge />
-        <SourceCapture />
-      </PrayerTimesProvider>
+      <ConsentProvider>
+        <PrayerTimesProvider overrides={prayerOverrides}>
+          <Header latestEvents={latestEvents} />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <PreFooter />
+          <Footer />
+          <PrayerBadge />
+          <SourceCapture />
+        </PrayerTimesProvider>
+      </ConsentProvider>
     </>
   );
 }
