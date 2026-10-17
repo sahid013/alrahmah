@@ -17,13 +17,13 @@ export function CookieBanner() {
   return (
     <section
       aria-labelledby="cookie-banner-title"
-      className="animate-fade fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-primary-950 text-primary-100"
+      className="animate-fade fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white text-neutral-600"
     >
       <Container className="flex flex-col gap-5 py-5 lg:flex-row lg:items-center lg:justify-between lg:gap-12 lg:py-6">
         <div className="max-w-3xl">
           <h2
             id="cookie-banner-title"
-            className="font-label text-sm font-bold tracking-[0.15em] text-secondary-300 uppercase"
+            className="font-label text-sm font-bold tracking-[0.15em] text-secondary-700 uppercase"
           >
             Cookies on this site
           </h2>
@@ -33,7 +33,7 @@ export function CookieBanner() {
             Google. Read our{' '}
             <Link
               href="/cookies"
-              className="text-white underline underline-offset-4 hover:text-secondary-300"
+              className="text-primary-500 underline underline-offset-4 hover:text-secondary-700"
             >
               cookie policy
             </Link>
@@ -41,14 +41,14 @@ export function CookieBanner() {
           </p>
         </div>
         <div className="grid shrink-0 grid-cols-2 gap-3 sm:grid-cols-3 lg:flex">
-          <Button variant="white" size="sm" onClick={() => save(ACCEPT_ALL)}>
+          <Button size="sm" onClick={() => save(ACCEPT_ALL)}>
             Accept all
           </Button>
-          <Button variant="white" size="sm" onClick={() => save(REJECT_ALL)}>
+          <Button size="sm" onClick={() => save(REJECT_ALL)}>
             Reject all
           </Button>
           <Button
-            variant="outline-light"
+            variant="outline"
             size="sm"
             onClick={openPreferences}
             className="col-span-2 sm:col-span-1"
