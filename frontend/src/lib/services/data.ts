@@ -14,6 +14,8 @@ export interface Service {
   summary: string;
   icon: ServiceIcon;
   image?: { src: string; alt: string };
+  /** Key facts shown on overview pages, e.g. "Every Sunday evening" (keep in step with the page). */
+  facts?: string[];
   children?: Service[];
 }
 
@@ -48,7 +50,8 @@ export const services: Service[] = [
         },
         icon: 'quran',
         summary:
-          'Structured Qur’an reading, tajweed and memorisation classes for children and adults.',
+          'Qur’an and Islamic studies for children aged 5 to 15, taught by male and female teachers under Imam Umar Muqaddam.',
+        facts: ['Ages 5–15', 'Mon–Thu, 5pm–7pm', 'Waiting list'],
       },
       {
         title: 'Sunday Weekly Lessons',
@@ -60,6 +63,7 @@ export const services: Service[] = [
         icon: 'weekly',
         summary:
           'Weekly lessons every Sunday covering core Islamic knowledge for the whole community.',
+        facts: ['Every Sunday evening', 'Open to all'],
       },
       {
         title: 'Sisters’ Only Lessons',
@@ -70,6 +74,7 @@ export const services: Service[] = [
         },
         icon: 'sisters',
         summary: 'A welcoming space for sisters to learn, ask questions and grow together.',
+        facts: ['Every Sunday afternoon', 'Sisters only'],
       },
     ],
   },

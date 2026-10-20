@@ -34,6 +34,7 @@ export const siteConfig = {
     '/appeal',
     '/donations',
     '/events',
+    '/services/education',
     '/services/education/quran-academy',
     '/services/education/sisters-lessons',
     '/services/education/sunday-lessons',
