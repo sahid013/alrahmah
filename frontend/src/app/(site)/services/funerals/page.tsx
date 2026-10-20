@@ -51,7 +51,7 @@ export default function ServicesFuneralsPage() {
               />
             </Reveal>
             <Reveal order={2} className="mt-12 border-t border-neutral-200 pt-12">
-              <ContactForm to={contact.funeralsEmail} subject="Funeral query" />
+              <ContactForm form="funerals" />
             </Reveal>
           </div>
           <Reveal order={1} className="lg:col-span-6">

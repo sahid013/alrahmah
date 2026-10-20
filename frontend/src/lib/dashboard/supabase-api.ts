@@ -6,6 +6,7 @@ import {
   type CampaignRow,
 } from '@/lib/donations/rows';
 import { EVENT_COLUMNS, eventToRow, rowToEvent, type EventRow } from '@/lib/events/rows';
+import { MESSAGE_COLUMNS, rowToMessage, type MessageRow } from '@/lib/contact/rows';
 import { khutbahEntrySchema, type KhutbahEntry } from '@/lib/khutbahs/types';
 import { fromRow, PRAYER_DAY_COLUMNS, toRow, type PrayerDayRow } from '@/lib/prayer/rows';
 import { accessToken, getSupabase } from '@/lib/supabase/client';
@@ -500,6 +501,29 @@ export function createSupabaseDashboardApi(): DashboardApi {
         const { error } = await supabase.from('khutbahs').delete().eq('video_id', videoId);
         if (error) fail(error.message);
         await refreshWebsite('khutbahs');
+      },
+    },
+
+    messages: {
+      async list() {
+        const { data, error } = await supabase
+          .from('contact_messages')
+          .select(MESSAGE_COLUMNS)
+          .order('created_at', { ascending: false })
+          .limit(1000)
+          .returns<MessageRow[]>();
+        if (error) fail(error.message);
+        return (data ?? []).flatMap((row) => rowToMessage(row) ?? []);
+      },
+
+      async setStatus(id, status) {
+        const { error } = await supabase.from('contact_messages').update({ status }).eq('id', id);
+        if (error) fail(error.message);
+      },
+
+      async remove(id) {
+        const { error } = await supabase.from('contact_messages').delete().eq('id', id);
+        if (error) fail(error.message);
       },
     },
 

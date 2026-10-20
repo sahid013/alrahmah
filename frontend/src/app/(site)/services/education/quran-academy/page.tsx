@@ -106,7 +106,7 @@ export default function QuranAcademyPage() {
           </Reveal>
           <Reveal order={1} className="lg:col-span-7">
             <ContactForm
-              subject="Quran Academy registration"
+              form="quran-academy"
               messageLabel="About your child"
               messagePlaceholder="Your child’s name and age, and anything we should know"
             />

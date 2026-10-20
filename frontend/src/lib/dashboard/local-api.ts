@@ -205,5 +205,17 @@ export function createLocalDashboardApi(): DashboardApi {
         return settle(undefined);
       },
     },
+    // Messages only arrive from the live website's forms, so the preview has none.
+    messages: {
+      async list() {
+        return settle([]);
+      },
+      async setStatus() {
+        return settle(undefined);
+      },
+      async remove() {
+        return settle(undefined);
+      },
+    },
   };
 }

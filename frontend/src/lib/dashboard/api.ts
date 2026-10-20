@@ -7,6 +7,7 @@ import type {
   SignInNext,
   TotpEnrollment,
 } from './auth/types';
+import type { ContactMessage, MessageStatus } from '@/lib/contact/types';
 import type { KhutbahEntry } from '@/lib/khutbahs/types';
 import type { Campaign, DashboardEvent, Donation, DonationQuery, PrayerDay } from './types';
 
@@ -93,5 +94,15 @@ export interface DashboardApi {
      */
     save(entry: KhutbahEntry, previousVideoId?: string): Promise<KhutbahEntry>;
     remove(videoId: string): Promise<void>;
+  };
+  /**
+   * Contact form messages (Supabase `contact_messages`, written by `POST /api/contact`). Staff
+   * read them, change their status and delete them; nothing else about a message can change.
+   */
+  messages: {
+    /** Newest first. */
+    list(): Promise<ContactMessage[]>;
+    setStatus(id: string, status: MessageStatus): Promise<void>;
+    remove(id: string): Promise<void>;
   };
 }

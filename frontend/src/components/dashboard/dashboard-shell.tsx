@@ -12,6 +12,7 @@ import {
   GridIcon,
   HeartIcon,
   LogoutIcon,
+  MailIcon,
   MenuIcon,
   ReceiptIcon,
   RepeatIcon,
@@ -31,6 +32,7 @@ interface NavEntry {
 /** Dashboard navigation. Add a module by adding an entry and a route under app/dashboard. */
 export const DASHBOARD_NAV: NavEntry[] = [
   { label: 'Overview', href: '/dashboard', icon: GridIcon },
+  { label: 'Messages', href: '/dashboard/messages', icon: MailIcon },
   { label: 'Prayer times', href: '/dashboard/prayer-times', icon: ClockIcon },
   { label: 'Khutbahs', href: '/dashboard/khutbahs', icon: YouTubeIcon },
   { label: 'Events', href: '/dashboard/events', icon: CalendarIcon },
