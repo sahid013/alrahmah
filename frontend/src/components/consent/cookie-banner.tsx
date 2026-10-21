@@ -29,7 +29,7 @@ export function CookieBanner() {
           </h2>
           <p className="mt-2 text-sm leading-relaxed sm:text-base">
             We use cookies that the site needs to work. With your permission we&apos;d also like to
-            remember how you found us when you donate, and load the map from Google Maps. Read our{' '}
+            remember how you found us when you donate. Read our{' '}
             <Link
               href="/cookies"
               className="text-primary-500 underline underline-offset-4 hover:text-secondary-700"

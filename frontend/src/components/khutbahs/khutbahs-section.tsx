@@ -108,7 +108,7 @@ export function KhutbahsSection({ khutbahs }: { khutbahs: Khutbah[] | null }) {
         </div>
 
         {/* Right: the player (privacy-enhanced youtube-nocookie.com, loads when scrolled near). Shown
-            without asking for external-media consent (client request); listed on /cookies. */}
+            without asking for consent (client request); listed on /cookies. */}
         <Reveal order={1}>
           <div className="relative aspect-video border border-primary-100 bg-primary-900">
             <iframe

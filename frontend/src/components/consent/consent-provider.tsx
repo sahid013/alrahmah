@@ -48,7 +48,7 @@ function getSnapshot(): ConsentChoices | null {
   const raw = document.cookie;
   if (cached?.raw !== raw) {
     const stored = readConsent(raw);
-    cached = { raw, choices: stored && { analytics: stored.analytics, media: stored.media } };
+    cached = { raw, choices: stored && { analytics: stored.analytics } };
   }
   return cached.choices;
 }

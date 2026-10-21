@@ -7,13 +7,14 @@ const pair = (cookie: string) => cookie.split('; ')[0]!;
 
 describe('consent cookie', () => {
   it('round-trips a choice', () => {
-    const header = `other=1; ${pair(consentCookie({ analytics: false, media: true }, now, true))}`;
-    expect(readConsent(header)).toEqual({
-      v: 1,
-      analytics: false,
-      media: true,
-      at: '2026-10-17T12:00:00.000Z',
-    });
+    const header = `other=1; ${pair(consentCookie({ analytics: true }, now, true))}`;
+    expect(readConsent(header)).toEqual({ v: 1, analytics: true, at: '2026-10-17T12:00:00.000Z' });
+  });
+
+  it('still reads choices saved when there was an External media category', () => {
+    const saved = { v: 1, analytics: true, media: false, at: '2026-10-17T12:00:00.000Z' };
+    const header = `${CONSENT_COOKIE}=${encodeURIComponent(JSON.stringify(saved))}`;
+    expect(readConsent(header)).toEqual({ v: 1, analytics: true, at: saved.at });
   });
 
   it('treats a missing, broken or old-version cookie as no choice', () => {

@@ -19,11 +19,6 @@ export const CONSENT_CATEGORIES = {
     description:
       'Remembers how you found the site (for example a link in a newsletter or social post) for this visit, and sends it with any donation, so we know which appeals reach people. Nothing is shared with other companies.',
   },
-  media: {
-    title: 'External media',
-    description:
-      'Loads the map from Google Maps on the contact page. Google may set cookies and use them to recognise you across other sites.',
-  },
 } as const;
 export type ConsentCategory = keyof typeof CONSENT_CATEGORIES;
 export const CONSENT_CATEGORY_IDS = Object.keys(CONSENT_CATEGORIES) as ConsentCategory[];
@@ -33,14 +28,13 @@ export type ConsentChoices = Record<ConsentCategory, boolean>;
 const storedSchema = z.object({
   v: z.literal(CONSENT_VERSION),
   analytics: z.boolean(),
-  media: z.boolean(),
   /** When the choice was made (ISO), as a record of consent. */
   at: z.string(),
 });
 export type StoredConsent = z.infer<typeof storedSchema>;
 
-export const ACCEPT_ALL: ConsentChoices = { analytics: true, media: true };
-export const REJECT_ALL: ConsentChoices = { analytics: false, media: false };
+export const ACCEPT_ALL: ConsentChoices = { analytics: true };
+export const REJECT_ALL: ConsentChoices = { analytics: false };
 
 /** The visitor's saved choice from a `document.cookie` string, or null if they haven't chosen (or it's out of date). */
 export function readConsent(cookieHeader: string): StoredConsent | null {

@@ -1,27 +1,23 @@
-import { ConsentGate } from '@/components/consent/consent-gate';
 import { ArrowRightIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
 
-/** Embedded Google Map of the masjid (with external-media consent) and a directions link below. */
+/**
+ * Embedded Google Map of the masjid and a directions link below. Shown without asking for
+ * consent (client request); listed on /cookies.
+ */
 export function ContactMap() {
   const { contact } = siteConfig;
   return (
     <div className="flex h-full flex-col">
       <div className="relative min-h-[22rem] flex-1 border border-neutral-200 bg-primary-50 lg:min-h-[32rem]">
-        <ConsentGate
-          service="Google Maps"
-          content="the map"
-          fallback={{ href: contact.directionsUrl, label: 'Open in Google Maps' }}
-        >
-          <iframe
-            title={`Map showing ${siteConfig.name}, ${contact.addressLines.join(', ')}`}
-            src={contact.mapEmbedUrl}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            className="absolute inset-0 size-full"
-          />
-        </ConsentGate>
+        <iframe
+          title={`Map showing ${siteConfig.name}, ${contact.addressLines.join(', ')}`}
+          src={contact.mapEmbedUrl}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          className="absolute inset-0 size-full"
+        />
       </div>
       <ButtonLink
         href={contact.directionsUrl}
