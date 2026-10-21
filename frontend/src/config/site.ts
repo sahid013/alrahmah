@@ -61,9 +61,9 @@ export const siteConfig = {
   contact: {
     addressLines: ['6 Sheepscar Way', 'Leeds LS7 3JB'] as readonly string[],
     phone: '07508 044680' as string | undefined,
-    email: 'alrahmahleeds@gmail.com' as string | undefined,
-    /** Funeral (janazah) queries go to a separate inbox. */
-    funeralsEmail: 'info@alrahmah.org.uk',
+    email: 'info@alrahmahmasjid.co.uk' as string | undefined,
+    /** Funeral (janazah) queries; same inbox as everything else for now, kept separate to change later. */
+    funeralsEmail: 'info@alrahmahmasjid.co.uk',
     /** Google Maps embed (no API key needed) and directions link for the address. */
     mapEmbedUrl:
       'https://maps.google.com/maps?q=6%20Sheepscar%20Way%2C%20Leeds%20LS7%203JB&z=14&output=embed',
