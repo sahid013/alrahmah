@@ -16,13 +16,15 @@ import { ErrorBox } from './fields';
 
 /**
  * Stripe.js, loaded only when a payment starts, with the publishable key the server sends with
- * the session (live or test, whichever mode the donation is in). Cached per key.
+ * the session (live or test, whichever mode the donation is in). Cached per key. Stripe's
+ * developer assistant (the floating "stripe" button shown in test mode) is always off, so donors
+ * never see it.
  */
 const stripeByKey = new Map<string, Promise<Stripe | null>>();
 function loadStripeFor(publishableKey: string) {
   let stripe = stripeByKey.get(publishableKey);
   if (!stripe) {
-    stripe = loadStripe(publishableKey);
+    stripe = loadStripe(publishableKey, { developerTools: { assistant: { enabled: false } } });
     stripeByKey.set(publishableKey, stripe);
   }
   return stripe;
