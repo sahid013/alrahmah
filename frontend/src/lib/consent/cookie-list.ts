@@ -62,18 +62,26 @@ export const cookieGroups: CookieGroup[] = [
     ],
   },
   {
-    title: 'External media',
-    optional: true,
+    title: 'Khutbah video',
+    optional: false,
     description:
-      'Only with your consent. Until then the video and map show a placeholder with a link to open them on YouTube or Google Maps instead.',
+      'The weekly khutbah on the home page plays in YouTube’s privacy-enhanced mode (youtube-nocookie.com) and loads without asking first.',
     entries: [
       {
         name: 'YouTube player',
         provider: 'Google',
         purpose:
-          'Plays the weekly khutbah on the home page. Google may set cookies and similar storage when the player loads.',
+          'Plays the weekly khutbah on the home page. YouTube doesn’t set cookies until you press play, but the player may use similar browser storage, and Google receives your IP address when it loads.',
         duration: 'Set by Google',
       },
+    ],
+  },
+  {
+    title: 'External media',
+    optional: true,
+    description:
+      'Only with your consent. Until then the map shows a placeholder with a link to open it on Google Maps instead.',
+    entries: [
       {
         name: 'Google Maps',
         provider: 'Google',

@@ -22,7 +22,7 @@ export const CONSENT_CATEGORIES = {
   media: {
     title: 'External media',
     description:
-      'Loads the khutbah videos from YouTube and the map from Google Maps. Google may set cookies and use them to recognise you across other sites.',
+      'Loads the map from Google Maps on the contact page. Google may set cookies and use them to recognise you across other sites.',
   },
 } as const;
 export type ConsentCategory = keyof typeof CONSENT_CATEGORIES;
