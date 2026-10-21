@@ -5,7 +5,7 @@ import {
   REJECT_ALL,
   consentCookie,
   googleConsent,
-  isTrackingCookie,
+  trackingCookieCategory,
   readConsent,
 } from './consent';
 
@@ -50,10 +50,12 @@ describe('Google Consent Mode', () => {
     expect(Object.values(googleConsent(REJECT_ALL)).every((v) => v === 'denied')).toBe(true);
   });
 
-  it('knows which cookies to clear when consent is withdrawn', () => {
-    for (const name of ['_ga', '_ga_ABC123', '_gid', '_gat_UA-1', '_gcl_au', '_fbp', '_fbc'])
-      expect(isTrackingCookie(name)).toBe(true);
+  it('knows which category each tracking cookie belongs to', () => {
+    for (const name of ['_ga', '_ga_ABC123', '_gid', '_gat_UA-1'])
+      expect(trackingCookieCategory(name)).toBe('analytics');
+    for (const name of ['_gcl_au', '_fbp', '_fbc'])
+      expect(trackingCookieCategory(name)).toBe('marketing');
     for (const name of [CONSENT_COOKIE, '__stripe_mid', 'gallery', '_game'])
-      expect(isTrackingCookie(name)).toBe(false);
+      expect(trackingCookieCategory(name)).toBeNull();
   });
 });

@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import { Amiri, Forum, Poppins, PT_Sans_Narrow, Sacramento } from 'next/font/google';
 import localFont from 'next/font/local';
 import { JsonLd } from '@/components/seo/json-ld';
+import { env } from '@/config/env';
 import { siteConfig } from '@/config/site';
+import { gtmHeadScript, gtmNoscriptSrc } from '@/lib/consent/gtm';
 import { siteJsonLd } from '@/lib/structured-data';
 import './globals.css';
 
@@ -81,14 +83,30 @@ export const viewport: Viewport = {
   themeColor: '#363287',
 };
 
-/** Shared HTML shell (fonts, metadata, structured data). Site and dashboard add their own chrome. */
+/**
+ * Shared HTML shell (fonts, metadata, structured data, Google Tag Manager with Consent Mode
+ * defaults first). Site and dashboard add their own chrome.
+ */
 export default function RootLayout({ children }: LayoutProps<'/'>) {
+  const { gtmId } = env;
   return (
     <html
       lang="en"
       className={`${glacial.variable} ${forum.variable} ${poppins.variable} ${ptSansNarrow.variable} ${sacramento.variable} ${amiri.variable} h-full antialiased`}
     >
+      <head>{gtmId && <script dangerouslySetInnerHTML={{ __html: gtmHeadScript(gtmId) }} />}</head>
       <body className="flex min-h-full flex-col">
+        {gtmId && (
+          <noscript>
+            <iframe
+              src={gtmNoscriptSrc(gtmId)}
+              title="Google Tag Manager"
+              height="0"
+              width="0"
+              style={{ display: 'none', visibility: 'hidden' }}
+            />
+          </noscript>
+        )}
         <JsonLd data={siteJsonLd()} />
         {children}
       </body>

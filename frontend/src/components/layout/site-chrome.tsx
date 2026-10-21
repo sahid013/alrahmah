@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ConsentProvider } from '@/components/consent/consent-provider';
-import { GoogleTagManager } from '@/components/consent/google-tag-manager';
+import { ConsentModeSync } from '@/components/consent/consent-mode-sync';
 import { SourceCapture } from '@/components/giving/source-capture';
 import { PrayerBadge } from '@/components/prayer/prayer-badge';
 import { PrayerTimesProvider } from '@/components/prayer/prayer-times-provider';
@@ -39,7 +39,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
           <Footer />
           <PrayerBadge />
           <SourceCapture />
-          <GoogleTagManager />
+          <ConsentModeSync />
         </PrayerTimesProvider>
       </ConsentProvider>
     </>

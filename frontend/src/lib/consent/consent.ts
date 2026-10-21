@@ -65,9 +65,15 @@ export function googleConsent(choices: ConsentChoices) {
   } as const;
 }
 
-/** Cookies Google Analytics, Google Ads and the Meta pixel set, cleared when consent is withdrawn. */
-export const isTrackingCookie = (name: string) =>
-  /^(_ga|_ga_.+|_gid|_gat.*|_gcl_.+|_fbp|_fbc)$/.test(name);
+/**
+ * Which category a Google Analytics, Google Ads or Meta pixel cookie belongs to, so it can be
+ * cleared when that category is switched off (null: not a tracking cookie).
+ */
+export function trackingCookieCategory(name: string): 'analytics' | 'marketing' | null {
+  if (/^(_ga|_ga_.+|_gid|_gat.*)$/.test(name)) return 'analytics';
+  if (/^(_gcl_.+|_fbp|_fbc)$/.test(name)) return 'marketing';
+  return null;
+}
 
 /** The visitor's saved choice from a `document.cookie` string, or null if they haven't chosen (or it's out of date). */
 export function readConsent(cookieHeader: string): StoredConsent | null {

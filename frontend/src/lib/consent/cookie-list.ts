@@ -65,7 +65,7 @@ export const cookieGroups: CookieGroup[] = [
     title: 'Analytics',
     optional: true,
     description:
-      'Only with your consent. Loaded through Google Tag Manager, which itself sets no cookies.',
+      'Only with your consent. Google Tag Manager loads on every page but sets no cookies itself; until you allow these, Google’s tags run with consent denied, store nothing, and may send only anonymous, cookieless measurements.',
     entries: [
       {
         name: '_ga, _ga_<id>',
@@ -79,7 +79,7 @@ export const cookieGroups: CookieGroup[] = [
     title: 'Marketing',
     optional: true,
     description:
-      'Only with your consent. Loaded through Google Tag Manager, which itself sets no cookies.',
+      'Only with your consent. Until you allow these, advertising tags run with consent denied and store nothing.',
     entries: [
       {
         name: '_fbp, _fbc',
