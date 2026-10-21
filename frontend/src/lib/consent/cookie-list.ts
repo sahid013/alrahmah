@@ -62,6 +62,41 @@ export const cookieGroups: CookieGroup[] = [
     ],
   },
   {
+    title: 'Analytics',
+    optional: true,
+    description:
+      'Only with your consent. Loaded through Google Tag Manager, which itself sets no cookies.',
+    entries: [
+      {
+        name: '_ga, _ga_<id>',
+        provider: 'Google Analytics',
+        purpose: 'Tells visits apart so we can count visitors and see which pages are used.',
+        duration: '2 years',
+      },
+    ],
+  },
+  {
+    title: 'Marketing',
+    optional: true,
+    description:
+      'Only with your consent. Loaded through Google Tag Manager, which itself sets no cookies.',
+    entries: [
+      {
+        name: '_fbp, _fbc',
+        provider: 'Meta (Facebook, Instagram)',
+        purpose:
+          'Measures whether our adverts on Facebook and Instagram lead to visits and donations, and lets us show our appeals to people who have visited.',
+        duration: '3 months',
+      },
+      {
+        name: '_gcl_au',
+        provider: 'Google Ads',
+        purpose: 'Measures whether our Google adverts lead to visits and donations.',
+        duration: '3 months',
+      },
+    ],
+  },
+  {
     title: 'Video and map',
     optional: false,
     description:

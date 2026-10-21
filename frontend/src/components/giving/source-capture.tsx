@@ -10,7 +10,7 @@ import { captureSource, clearSource } from '@/lib/giving/attribution';
  */
 export function SourceCapture() {
   const { ready, allows } = useConsent();
-  const allowed = allows('analytics');
+  const allowed = allows('source');
   useEffect(() => {
     if (!ready) return;
     if (allowed) captureSource(window.location, document.referrer);
