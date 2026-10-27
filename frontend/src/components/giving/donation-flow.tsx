@@ -1,15 +1,23 @@
 'use client';
 
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowRightIcon, ChevronIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import type { DonationProgram } from '@/lib/donations/types';
 import { UK } from '@/lib/giving/countries';
 import { readSource } from '@/lib/giving/attribution';
-import { paymentsMode, previewPay } from '@/lib/giving/payments';
+import { paymentsMode, previewPay, referenceFromSession } from '@/lib/giving/payments';
 import { remainingCharges, type DailyPlan } from '@/lib/giving/schedule';
+import {
+  causeParam,
+  completionEvent,
+  donationParams,
+  newId,
+  paymentMethodParam,
+  track,
+} from '@/lib/giving/tracking';
 import {
   amountSchema,
   amountWithFrequency,
@@ -24,7 +32,7 @@ import { DonatePanel } from './donate-panel';
 import { DetailsStep } from './details-step';
 import { PaymentStep } from './payment-step';
 import { STEPS, Stepper } from './stepper';
-import { StripePayment } from './stripe-payment';
+import { StripePayment, type PaidResult } from './stripe-payment';
 import { ThankYou } from './thank-you';
 
 const EMPTY_DONOR: Donor = {
@@ -44,6 +52,8 @@ const EMPTY_DONOR: Donor = {
  * step is customised to the cause (`AmountStep`); the cause is chosen beforehand on /donate.
  * Step 3 shows Stripe's Payment Element when Stripe keys are configured (`paymentsMode`).
  * Dark theme; steps slide/fade with framer-motion (respects reduced motion).
+ * Tag Manager events (`lib/giving/tracking.ts`) fire from the code that changes the step, since
+ * every step is on the same URL.
  */
 export function DonationFlow({
   program,
@@ -66,6 +76,8 @@ export function DonationFlow({
   const [reference, setReference] = useState<string>();
   const [plan, setPlan] = useState<DailyPlan>();
   const formRef = useRef<HTMLDivElement>(null);
+  /** One id per donation attempt: InitiateCheckout / AddPaymentInfo repeat with the same id. */
+  const [attempt, setAttempt] = useState(newId);
 
   const giving = program.giving;
   const unit = giving.kind === 'daily' ? giving.unit : undefined;
@@ -83,6 +95,40 @@ export function DonationFlow({
     marketingConsent,
     // Where the donor came from (UTM / referrer / landing page), read when the request is built.
     ...(typeof window !== 'undefined' && { source: readSource() }),
+  };
+
+  useEffect(() => {
+    track(
+      { event: 'ViewContent', event_id: `ViewContent-${attempt}`, cause: causeParam(program.id) },
+      { once: true },
+    );
+    // Once per page load (a new attempt after "Give again" isn't a new page view).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [program.id]);
+
+  const trackStep = (event: 'InitiateCheckout' | 'AddPaymentInfo') =>
+    track({
+      event,
+      event_id: `${event}-${attempt}`,
+      ...donationParams(program.id, giving, choice.frequency, amount),
+    });
+
+  const paid = ({ sessionId, plan, method, instant }: PaidResult) => {
+    if (instant) {
+      const event = completionEvent({
+        sessionId,
+        campaignId: program.id,
+        giving,
+        frequency: choice.frequency,
+        amount,
+        count: plan?.count,
+        method: paymentMethodParam(method),
+      });
+      if (event) track(event, { once: true });
+    }
+    setPlan(plan);
+    setReference(referenceFromSession(sessionId));
+    goTo(3);
   };
 
   const goTo = (next: number) => {
@@ -107,11 +153,13 @@ export function DonationFlow({
     if (step === 0) {
       const r = amountSchema.safeParse(request);
       if (!r.success) return setErrors(fieldErrors(r.error));
+      trackStep('InitiateCheckout');
       return goTo(1);
     }
     if (step === 1) {
       const r = detailsSchema.safeParse(request);
       if (!r.success) return setErrors(fieldErrors(r.error));
+      trackStep('AddPaymentInfo');
       return goTo(2);
     }
     if (step === 2) {
@@ -144,6 +192,7 @@ export function DonationFlow({
   const restart = () => {
     setReference(undefined);
     setPlan(undefined);
+    setAttempt(newId());
     goTo(0);
   };
 
@@ -212,11 +261,7 @@ export function DonationFlow({
                           key={JSON.stringify(request)}
                           request={request}
                           unit={unit}
-                          onPaid={(ref, dailyPlan) => {
-                            setPlan(dailyPlan);
-                            setReference(ref);
-                            goTo(3);
-                          }}
+                          onPaid={paid}
                         />
                       ) : (
                         <p className="border border-dashed border-white/20 bg-white/5 p-6 text-primary-100">

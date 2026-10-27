@@ -1,10 +1,14 @@
+import type Stripe from 'stripe';
+import { TrackEvent } from '@/components/giving/track-event';
 import { ArrowRightIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { siteConfig } from '@/config/site';
+import { loadDonations } from '@/lib/donations/repository';
 import { referenceFromSession } from '@/lib/giving/payments';
 import { dateRange } from '@/lib/giving/schedule';
 import { finaliseDailyGiving } from '@/lib/giving/stripe-server';
+import { completionEvent, paymentMethodParam, type TrackingEvent } from '@/lib/giving/tracking';
 import { modeOfSession, stripeFor } from '@/lib/giving/stripe-mode';
 import { amountWithFrequency, type Frequency } from '@/lib/giving/types';
 import { buildMetadata } from '@/lib/seo';
@@ -15,10 +19,44 @@ export const metadata = buildMetadata({
   noindex: true,
 });
 
+/** The payment method a session was paid or saved with (cards: their Apple / Google Pay wallet). */
+function paymentMethodOf(session: Stripe.Checkout.Session) {
+  const pm = (v: string | Stripe.PaymentMethod | null | undefined) =>
+    typeof v === 'object' ? v : null;
+  const intent = typeof session.payment_intent === 'object' ? session.payment_intent : null;
+  const setup = typeof session.setup_intent === 'object' ? session.setup_intent : null;
+  const subscription = typeof session.subscription === 'object' ? session.subscription : null;
+  const method =
+    pm(intent?.payment_method) ??
+    pm(setup?.payment_method) ??
+    pm(subscription?.default_payment_method);
+  return method ? paymentMethodParam(method.type, method.card?.wallet?.type) : 'card';
+}
+
+/** Purchase / Subscribe for a donor returning here, built from the session (null if not paid). */
+async function trackingEventFor(
+  session: Stripe.Checkout.Session,
+  daily: { amount: number; count: number } | null,
+): Promise<TrackingEvent | null> {
+  const meta = session.metadata ?? {};
+  const program = (await loadDonations()).programs.find((p) => p.id === meta.campaign_id);
+  if (!program) return null;
+  return completionEvent({
+    sessionId: session.id,
+    campaignId: program.id,
+    giving: program.giving,
+    frequency: (meta.frequency as Frequency) ?? 'one-off',
+    amount: daily ? daily.amount : (session.amount_total ?? 0) / 100,
+    count: daily?.count,
+    method: paymentMethodOf(session),
+  });
+}
+
 /**
  * Where Stripe returns donors after a redirect-based step (e.g. bank authentication).
  * Shows the session's real status; the donation itself is recorded by the webhook. For daily
  * causes (card saved, nothing taken yet) it also makes sure the nightly/daily charges are scheduled.
+ * A successful instant payment also sends its Purchase / Subscribe event to Tag Manager.
  */
 export default async function DonateCompletePage({ searchParams }: PageProps<'/donate/complete'>) {
   const { session_id } = await searchParams;
@@ -26,7 +64,15 @@ export default async function DonateCompletePage({ searchParams }: PageProps<'/d
     typeof session_id === 'string' && session_id.startsWith('cs_') ? session_id : undefined;
   const session = id
     ? await Promise.resolve()
-        .then(() => stripeFor(modeOfSession(id)).checkout.sessions.retrieve(id))
+        .then(() =>
+          stripeFor(modeOfSession(id)).checkout.sessions.retrieve(id, {
+            expand: [
+              'payment_intent.payment_method',
+              'setup_intent.payment_method',
+              'subscription.default_payment_method',
+            ],
+          }),
+        )
         .catch(() => null)
     : null;
   const daily =
@@ -39,12 +85,15 @@ export default async function DonateCompletePage({ searchParams }: PageProps<'/d
       session.mode !== 'setup' &&
       session.payment_status !== 'unpaid';
   const meta = session?.metadata ?? {};
+  // Direct Debit is still processing here (unpaid), so it gets no event until the server's.
+  const event = paid && session ? await trackingEventFor(session, daily).catch(() => null) : null;
 
   return (
     <div className="bg-white">
       <Container className="max-w-3xl py-20 lg:py-28">
         {paid && session ? (
           <div className="space-y-8">
+            {event && <TrackEvent event={event} />}
             <p className="font-script text-4xl text-secondary-700">Jazakum Allahu khairan</p>
             <h1 className="text-title-3xl leading-none text-primary-900 sm:text-title-4xl">
               Thank you{meta.donor_first_name ? `, ${meta.donor_first_name}` : ''}

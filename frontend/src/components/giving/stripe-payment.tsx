@@ -6,13 +6,23 @@ import {
   useCheckoutElements,
 } from '@stripe/react-stripe-js/checkout';
 import { loadStripe, type Appearance, type Stripe } from '@stripe/stripe-js';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { HeartIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { referenceFromSession } from '@/lib/giving/payments';
 import type { DailyPlan } from '@/lib/giving/schedule';
 import { amountWithFrequency, type DonationRequest } from '@/lib/giving/types';
 import { ErrorBox } from './fields';
+
+/** A finished payment step, for the Thank you step and the Purchase / Subscribe event. */
+export interface PaidResult {
+  sessionId: string;
+  /** Set for daily causes (card saved, charges scheduled). */
+  plan?: DailyPlan;
+  /** The Payment Element's method type (card, apple_pay, bacs_debit, …). */
+  method: string;
+  /** The money was taken (or the card saved) now; false while Direct Debit is processing. */
+  instant: boolean;
+}
 
 /**
  * Stripe.js, loaded only when a payment starts, with the publishable key the server sends with
@@ -107,8 +117,7 @@ export function StripePayment({
   request: DonationRequest;
   /** Daily causes: "night" or "day" (for the button). */
   unit?: 'night' | 'day';
-  /** `plan` is set for daily causes (card saved, charges scheduled). */
-  onPaid: (reference: string, plan?: DailyPlan) => void;
+  onPaid: (result: PaidResult) => void;
 }) {
   // One session per mount; the promises are created once. If the session can't start, both
   // reject and Stripe's provider shows the error.
@@ -162,11 +171,12 @@ function PaymentForm({
 }: {
   request: DonationRequest;
   unit?: 'night' | 'day';
-  onPaid: (reference: string, plan?: DailyPlan) => void;
+  onPaid: (result: PaidResult) => void;
 }) {
   const state = useCheckoutElements();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const method = useRef('card');
 
   if (state.type === 'loading')
     return (
@@ -186,10 +196,11 @@ function PaymentForm({
     try {
       // Bank checks that need a redirect return to the session's return_url (/donate/complete).
       const result = await checkout.confirm({ redirect: 'if_required' });
-      if (result.type === 'error') setError(result.error.message);
-      else if (request.frequency === 'daily')
-        onPaid(referenceFromSession(result.session.id), await finaliseDaily(result.session.id));
-      else onPaid(referenceFromSession(result.session.id));
+      if (result.type === 'error') return setError(result.error.message);
+      const { id, status } = result.session;
+      const instant = status.type === 'complete' && status.paymentStatus !== 'unpaid';
+      const plan = request.frequency === 'daily' ? await finaliseDaily(id) : undefined;
+      onPaid({ sessionId: id, plan, method: method.current, instant });
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'The payment did not go through. Please try again.',
@@ -201,7 +212,12 @@ function PaymentForm({
 
   return (
     <div className="space-y-6">
-      <PaymentElement options={{ layout: 'tabs' }} />
+      <PaymentElement
+        options={{ layout: 'tabs' }}
+        onChange={(e) => {
+          method.current = e.value.type;
+        }}
+      />
       {error && <ErrorBox>{error}</ErrorBox>}
       <Button
         type="button"

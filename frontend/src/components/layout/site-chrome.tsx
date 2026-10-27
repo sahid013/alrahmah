@@ -8,6 +8,7 @@ import { listEvents } from '@/lib/events/repository';
 import { listPrayerOverrides } from '@/lib/prayer/overrides';
 import { Footer } from './footer';
 import { Header } from './header';
+import { PageViewTracker } from './page-view-tracker';
 import { PreFooter } from './pre-footer';
 
 /**
@@ -30,6 +31,8 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <ConsentProvider>
+        {/* First, so its PageView is pushed before the page's own events (e.g. ViewContent). */}
+        <PageViewTracker />
         <PrayerTimesProvider overrides={prayerOverrides}>
           <Header latestEvents={latestEvents} />
           <main id="main" className="flex-1">
