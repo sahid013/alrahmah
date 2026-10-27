@@ -46,8 +46,23 @@ export interface Browser {
   userAgent?: string;
 }
 
-/** `user_data` for one event; fields that are missing are left out. */
-export function userData(person: Person, browser: Browser): Record<string, string | string[]> {
+/**
+ * `user_data` for one event; fields that are missing are left out. `identify: false` (the donor
+ * declined cookies, Irfan's decision of October 2026): only IP address and user agent, so no
+ * hashed email, phone or other personal details, and no fbp/fbc.
+ */
+export function userData(
+  person: Person,
+  browser: Browser,
+  identify = true,
+): Record<string, string | string[]> {
+  if (!identify)
+    return Object.fromEntries(
+      Object.entries({
+        client_ip_address: browser.ip,
+        client_user_agent: browser.userAgent,
+      }).filter(([, v]) => v),
+    ) as Record<string, string>;
   const hashed = (v: string | undefined) => (v ? [sha256(v)] : undefined);
   const phone = person.phone && phoneWithCountryCode(person.phone, person.country ?? 'GB');
   const fields = {

@@ -14,9 +14,10 @@ import type { DonationSource } from './types';
  * metadata) because those events can be sent days or months later (Direct Debit, renewals).
  * Read from the request that starts the payment: first-party cookies, IP address, user agent.
  *
- * `consent_status` is the visitor's Marketing cookie choice. Without it nothing that identifies
- * their browser is kept (no fbp/fbc/IP/user agent) and no server events are sent for them, the
- * same rule the Meta pixel follows in Tag Manager. The GA ids are kept with Analytics consent.
+ * `consent_status` is the visitor's Marketing cookie choice. Server events are sent either way
+ * (Irfan's decision, October 2026), but without consent only the IP address and user agent go
+ * with them: no fbp/fbc and no hashed email, phone or other details (`userData(…, false)`).
+ * The GA ids are kept with Analytics consent.
  */
 export interface Visit {
   consent: boolean;
@@ -36,17 +37,17 @@ export function visitFrom(headers: Headers, source?: DonationSource): Visit {
   return {
     consent,
     analytics,
-    browser: consent
-      ? {
-          fbp: cookieValue(cookies, '_fbp'),
-          fbc: fbcFrom(cookieValue(cookies, '_fbc'), source?.fbclid, source?.fbclidAt),
-          ip:
-            headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-            headers.get('x-real-ip') ||
-            undefined,
-          userAgent: clip(headers.get('user-agent') ?? undefined),
-        }
-      : {},
+    browser: {
+      ...(consent && {
+        fbp: cookieValue(cookies, '_fbp'),
+        fbc: fbcFrom(cookieValue(cookies, '_fbc'), source?.fbclid, source?.fbclidAt),
+      }),
+      ip:
+        headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        headers.get('x-real-ip') ||
+        undefined,
+      userAgent: clip(headers.get('user-agent') ?? undefined),
+    },
     ...(analytics && {
       gaClientId: gaClientId(cookieValue(cookies, '_ga')),
       gaSessionId: gaSessionId(gaSessionCookie(cookies)),

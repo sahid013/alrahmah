@@ -11,8 +11,9 @@ import { userData } from '@/lib/meta/user-data';
 /**
  * POST from the donation form at steps 1 and 2 → the server copy of InitiateCheckout /
  * AddPaymentInfo for Meta, with the same event_id as the browser event (Meta keeps one). The
- * amount is checked against the form's limits and the cause must exist; only same-site requests, and only
- * donors with Marketing consent, are sent. Always answers 204: the form never waits on it.
+ * amount is checked against the form's limits and the cause must exist; only same-site requests
+ * are sent. Donors who declined Marketing cookies are sent too, with only IP address and user
+ * agent as user_data. Always answers 204: the form never waits on it.
  */
 const bodySchema = z.object({
   event: z.enum(['InitiateCheckout', 'AddPaymentInfo']),
@@ -31,7 +32,6 @@ export async function POST(request: NextRequest) {
   const { event, eventId, donation, donor, source } = parsed.data;
 
   const visit = visitFrom(request.headers, source);
-  if (!visit.consent) return done;
   const program = (await loadDonations()).programs.find((p) => p.id === donation.campaignId);
   if (!program || !Number.isFinite(donation.amount)) return done;
 
@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
           externalId: donor?.email?.toLowerCase(),
         },
         visit.browser,
+        visit.consent,
       ),
       custom_data: {
         ...donationParams(program.id, program.giving, donation.frequency, donation.amount),

@@ -48,6 +48,16 @@ describe('Meta user_data', () => {
     });
   });
 
+  it('sends only IP address and user agent for donors who declined cookies', () => {
+    expect(
+      userData(
+        { email: 'aisha@example.com', phone: '07700 900133', firstName: 'Aisha' },
+        { fbp: 'fb.1.1.99', ip: '203.0.113.9', userAgent: 'Mozilla/5.0' },
+        false,
+      ),
+    ).toEqual({ client_ip_address: '203.0.113.9', client_user_agent: 'Mozilla/5.0' });
+  });
+
   it('reads the GA ids from their cookies', () => {
     expect(gaClientId('GA1.1.1234567890.1700000000')).toBe('1234567890.1700000000');
     expect(gaSessionId('GS1.1.1700000000.3.1.1700000100.0.0.0')).toBe('1700000000');
@@ -74,7 +84,7 @@ describe('visit', () => {
       'user-agent': 'Mozilla/5.0',
     });
 
-  it('keeps the browser fields only with Marketing consent', () => {
+  it('keeps fbp/fbc only with Marketing consent; IP and user agent either way', () => {
     expect(readConsent(consentCookie(true))?.marketing).toBe(true);
     const yes = visitMetadata(visitFrom(headers(true)), undefined, 'https://x/donate/a');
     expect(yes).toMatchObject({
@@ -86,7 +96,12 @@ describe('visit', () => {
       ga_session_id: '1700000000',
     });
     const no = visitMetadata(visitFrom(headers(false)), undefined, 'https://x/donate/a');
-    expect(no).toMatchObject({ consent_status: 'no', fbp: '', client_ip_address: '' });
+    expect(no).toMatchObject({
+      consent_status: 'no',
+      fbp: '',
+      client_ip_address: '203.0.113.9',
+      client_user_agent: 'Mozilla/5.0',
+    });
   });
 
   it('reads cookies by name', () => {

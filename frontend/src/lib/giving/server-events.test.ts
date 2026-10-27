@@ -171,10 +171,22 @@ describe('serverEventFor', () => {
     });
   });
 
-  it('sends nothing without Marketing consent or our metadata', async () => {
-    expect(
-      await serverEventFor(invoice('subscription_cycle', { ...meta, consent_status: 'no' })),
-    ).toBeNull();
+  it('sends declined donors the same event without email, phone or other details', async () => {
+    const result = await serverEventFor(
+      invoice('subscription_cycle', { ...meta, consent_status: 'no', fbp: '' }),
+    );
+    expect(result?.event).toMatchObject({
+      event_name: 'DonationRenewal',
+      event_id: 'in_1',
+      custom_data: { value: 25, cause: 'masjid_expansion' },
+    });
+    expect(result?.event.user_data).toEqual({ client_ip_address: '203.0.113.9' });
+  });
+
+  it('skips donations without our metadata, or from before the visit was saved', async () => {
     expect(await serverEventFor(invoice('subscription_cycle', {}))).toBeNull();
+    const older: Record<string, string> = { ...meta };
+    delete older.consent_status;
+    expect(await serverEventFor(invoice('subscription_cycle', older))).toBeNull();
   });
 });

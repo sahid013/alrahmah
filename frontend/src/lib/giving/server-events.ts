@@ -24,7 +24,8 @@ import { browserFromMetadata } from './visit';
  * Direct Debit is only reported once Stripe confirms the payment (those same events fire then).
  * Purchase / Subscribe use the donation's `event_id` (shared with the browser event);
  * DonationRenewal uses the invoice id. Stripe's retries resend the same event_id, which Meta
- * deduplicates. Donors without Marketing consent get no server events (`visit.ts`).
+ * deduplicates. Donors who declined Marketing cookies get the same events with only IP address and
+ * user agent as user_data (`visit.ts`); donations from before the visit was saved are skipped.
  */
 type Meta = Record<string, string>;
 const idOf = (v: string | { id: string } | null | undefined) => (typeof v === 'string' ? v : v?.id);
@@ -34,7 +35,10 @@ export interface ServerEvent {
   live: boolean;
 }
 
-/** The donor as `user_data`, from the donation's metadata. */
+/** Saved with the donation (`visit.ts`); older donations have no visit to send. */
+const hasVisit = (m: Meta) => m.consent_status === 'yes' || m.consent_status === 'no';
+
+/** The donor as `user_data`, from the donation's metadata (identified only with consent). */
 function userFrom(m: Meta, email: string | null | undefined, customer: string | undefined) {
   return userData(
     {
@@ -48,6 +52,7 @@ function userFrom(m: Meta, email: string | null | undefined, customer: string | 
       externalId: customer ?? (email ?? m.donor_email)?.toLowerCase(),
     },
     browserFromMetadata(m),
+    m.consent_status === 'yes',
   );
 }
 
@@ -89,7 +94,7 @@ export async function serverEventFor(
     case 'checkout.session.async_payment_succeeded': {
       const s = event.data.object;
       const m = (s.metadata ?? {}) as Meta;
-      if (!m.campaign_id || m.consent_status !== 'yes') return null;
+      if (!m.campaign_id || !hasVisit(m)) return null;
       const email = s.customer_details?.email ?? s.customer_email;
       const common = {
         ...base,
@@ -160,7 +165,7 @@ export async function serverEventFor(
         await stripe.paymentIntents.update(paymentIntent, {
           metadata: { ...fields, payment_sequence: sequence },
         });
-      if (m.consent_status !== 'yes') return null;
+      if (!hasVisit(m)) return null;
 
       const value = pounds(inv.amount_paid);
       const method = await paymentMethodOf(stripe, paymentIntent);
