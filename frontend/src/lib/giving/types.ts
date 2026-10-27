@@ -20,6 +20,8 @@ export const FREQUENCY_LABELS: Record<Frequency, string> = {
 export const MAX_PEOPLE = 50;
 
 export const PRESET_AMOUNTS = [10, 25, 50, 100] as const;
+/** Pre-selected on regular causes without a suggested amount (Masjid Expansion: the ads' "£50 from 4,000 people"). */
+export const DEFAULT_AMOUNT = 50;
 export const MIN_AMOUNT = 1;
 export const MAX_AMOUNT = 25_000;
 

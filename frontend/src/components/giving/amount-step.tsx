@@ -3,6 +3,7 @@ import { ChevronIcon } from '@/components/icons';
 import type { DailyGiving, DonationProgram } from '@/lib/donations/types';
 import { dateRange, formatClock, remainingCharges, unitLabel } from '@/lib/giving/schedule';
 import {
+  DEFAULT_AMOUNT,
   FREQUENCY_LABELS,
   PRESET_AMOUNTS,
   REGULAR_FREQUENCIES,
@@ -29,7 +30,7 @@ export function initialAmount(program: DonationProgram): AmountValue {
   const period = program.price?.period;
   return {
     frequency: period === 'week' ? 'weekly' : period === 'month' ? 'monthly' : 'one-off',
-    amountText: String(program.price?.amount ?? 25),
+    amountText: String(program.price?.amount ?? DEFAULT_AMOUNT),
     people: 1,
   };
 }
