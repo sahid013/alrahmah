@@ -1,16 +1,19 @@
 import type Stripe from 'stripe';
+import { ThankYou } from '@/components/giving/thank-you';
 import { TrackEvent } from '@/components/giving/track-event';
 import { ArrowRightIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { siteConfig } from '@/config/site';
-import { loadDonations } from '@/lib/donations/repository';
+import type { DonationProgram } from '@/lib/donations/types';
+import { loadDonations, loadVisibleDonations } from '@/lib/donations/repository';
+import { nextPaymentDate, type DonationConfirmation } from '@/lib/giving/confirmation';
 import { referenceFromSession } from '@/lib/giving/payments';
-import { dateRange } from '@/lib/giving/schedule';
+import type { DailyPlan } from '@/lib/giving/schedule';
 import { finaliseDailyGiving } from '@/lib/giving/stripe-server';
 import { completionEvent, paymentMethodParam, type TrackingEvent } from '@/lib/giving/tracking';
 import { modeOfSession, stripeFor } from '@/lib/giving/stripe-mode';
-import { amountWithFrequency, type Frequency } from '@/lib/giving/types';
+import type { Frequency } from '@/lib/giving/types';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
@@ -34,13 +37,12 @@ function paymentMethodOf(session: Stripe.Checkout.Session) {
 }
 
 /** Purchase / Subscribe for a donor returning here, built from the session (null if not paid). */
-async function trackingEventFor(
+function trackingEventFor(
   session: Stripe.Checkout.Session,
-  daily: { amount: number; count: number } | null,
-): Promise<TrackingEvent | null> {
+  program: DonationProgram,
+  daily: DailyPlan | null,
+): TrackingEvent | null {
   const meta = session.metadata ?? {};
-  const program = (await loadDonations()).programs.find((p) => p.id === meta.campaign_id);
-  if (!program) return null;
   return completionEvent({
     sessionId: session.id,
     eventId: meta.event_id || `Purchase-${session.id}`,
@@ -86,65 +88,54 @@ export default async function DonateCompletePage({ searchParams }: PageProps<'/d
       session.mode !== 'setup' &&
       session.payment_status !== 'unpaid';
   const meta = session?.metadata ?? {};
+  const program = paid
+    ? (await loadDonations()).programs.find((p) => p.id === meta.campaign_id)
+    : undefined;
   // Direct Debit is still processing here (unpaid), so it gets no event until the server's.
-  const event = paid && session ? await trackingEventFor(session, daily).catch(() => null) : null;
+  const event = session && program ? trackingEventFor(session, program, daily) : null;
+  const frequency = (meta.frequency as Frequency) || 'one-off';
+  const confirmation: DonationConfirmation | null =
+    session && program
+      ? {
+          firstName: meta.donor_first_name || undefined,
+          email: meta.donor_email || session.customer_details?.email || undefined,
+          amount: daily ? daily.amount : (session.amount_total ?? 0) / 100,
+          frequency,
+          people: Number(meta.people) || undefined,
+          reference: referenceFromSession(session.id),
+          plan: daily ?? undefined,
+          nextPayment: nextPaymentDate(frequency, new Date(session.created * 1000)),
+        }
+      : null;
+
+  if (program && confirmation)
+    return (
+      <div className="bg-primary-950 [color-scheme:dark]">
+        <Container className="max-w-3xl py-20 lg:py-28">
+          {event && <TrackEvent event={event} />}
+          <ThankYou
+            pageHeading
+            confirmation={confirmation}
+            program={program}
+            makeMonthly={{ href: `/donate/${program.id}?frequency=monthly` }}
+            canChangeCause={(await loadVisibleDonations()).programs.length > 1}
+          />
+        </Container>
+      </div>
+    );
 
   return (
     <div className="bg-white">
       <Container className="max-w-3xl py-20 lg:py-28">
-        {paid && session ? (
-          <div className="space-y-8">
-            {event && <TrackEvent event={event} />}
-            <p className="font-script text-4xl text-secondary-700">Jazakum Allahu khairan</p>
-            <h1 className="text-title-3xl leading-none text-primary-900 sm:text-title-4xl">
-              Thank you{meta.donor_first_name ? `, ${meta.donor_first_name}` : ''}
-            </h1>
-            {daily ? (
-              <p className="text-lg text-neutral-600">
-                Your donation of{' '}
-                <strong className="font-ui text-primary-900">
-                  {amountWithFrequency(daily.amount, 'daily')}
-                </strong>{' '}
-                to{' '}
-                <strong className="text-primary-900">
-                  {meta.campaign_title ?? siteConfig.name}
-                </strong>{' '}
-                is set up: {daily.count} payments,{' '}
-                {dateRange([new Date(daily.firstCharge), new Date(daily.lastCharge)])}. Nothing has
-                been taken today.
-              </p>
-            ) : (
-              <p className="text-lg text-neutral-600">
-                Your donation of{' '}
-                <strong className="font-ui text-primary-900">
-                  {amountWithFrequency(
-                    (session.amount_total ?? 0) / 100,
-                    (meta.frequency as Frequency) ?? 'one-off',
-                  )}
-                </strong>{' '}
-                to{' '}
-                <strong className="text-primary-900">
-                  {meta.campaign_title ?? siteConfig.name}
-                </strong>{' '}
-                has been received.
-              </p>
-            )}
-            <p className="text-sm text-neutral-500">
-              Reference:{' '}
-              <span className="font-ui text-primary-900">{referenceFromSession(session.id)}</span>
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <h1 className="text-title-3xl leading-none text-primary-900">Payment not completed</h1>
-            <p className="text-lg text-neutral-600">
-              Your donation didn&apos;t go through and you have not been charged. Please try again.
-            </p>
-          </div>
-        )}
+        <div className="space-y-6">
+          <h1 className="text-title-3xl leading-none text-primary-900">Payment not completed</h1>
+          <p className="text-lg text-neutral-600">
+            Your donation didn&apos;t go through and you have not been charged. Please try again.
+          </p>
+        </div>
         <div className="mt-10 flex flex-wrap gap-4">
           <ButtonLink href={siteConfig.links.donations} variant="outline">
-            {paid ? 'More ways to give' : 'Back to donations'}
+            Back to donations
             <ArrowRightIcon className="size-4" />
           </ButtonLink>
         </div>

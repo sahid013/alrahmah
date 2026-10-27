@@ -1,12 +1,13 @@
 'use client';
 
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ArrowRightIcon, ChevronIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import type { DonationProgram } from '@/lib/donations/types';
 import { UK } from '@/lib/giving/countries';
+import { nextPaymentDate } from '@/lib/giving/confirmation';
 import { readSource } from '@/lib/giving/attribution';
 import { paymentsMode, previewPay, referenceFromSession } from '@/lib/giving/payments';
 import { remainingCharges, type DailyPlan } from '@/lib/giving/schedule';
@@ -19,6 +20,7 @@ import {
   track,
 } from '@/lib/giving/tracking';
 import {
+  REGULAR_PRESETS,
   amountSchema,
   amountWithFrequency,
   detailsSchema,
@@ -34,6 +36,9 @@ import { PaymentStep } from './payment-step';
 import { STEPS, Stepper } from './stepper';
 import { StripePayment, type PaidResult } from './stripe-payment';
 import { ThankYou } from './thank-you';
+
+/** The URL's query doesn't change while the form is open. */
+const noSubscribe = () => () => {};
 
 const EMPTY_DONOR: Donor = {
   type: 'personal',
@@ -74,6 +79,8 @@ export function DonationFlow({
   const [busy, setBusy] = useState(false);
   const [payError, setPayError] = useState<string>();
   const [reference, setReference] = useState<string>();
+  /** When the payment went through (for the next payment date). */
+  const [paidAt, setPaidAt] = useState<Date>();
   const [plan, setPlan] = useState<DailyPlan>();
   const formRef = useRef<HTMLDivElement>(null);
   /** One id per donation attempt: InitiateCheckout / AddPaymentInfo repeat with the same id. */
@@ -152,6 +159,7 @@ export function DonationFlow({
     }
     setPlan(plan);
     setReference(referenceFromSession(sessionId));
+    setPaidAt(new Date());
     goTo(3);
   };
 
@@ -202,6 +210,7 @@ export function DonationFlow({
           });
         }
         setReference(reference);
+        setPaidAt(new Date());
         goTo(3);
       } catch (e) {
         setPayError(
@@ -219,6 +228,33 @@ export function DonationFlow({
     setAttempt(newId());
     goTo(0);
   };
+
+  /** "Make it monthly" on the thank-you screen: the form again, on Monthly with its preset. */
+  const startMonthly = () => {
+    setChoice((c) => ({
+      ...c,
+      frequency: 'monthly',
+      amountText: String(REGULAR_PRESETS.monthly.preselected),
+    }));
+    restart();
+  };
+
+  // Arriving with ?frequency=monthly (the return page's "Make it monthly" link): start on Monthly.
+  // Read after hydration (the page is static), applied once while rendering.
+  const linkedMonthly = useSyncExternalStore(
+    noSubscribe,
+    () => new URLSearchParams(window.location.search).get('frequency') === 'monthly',
+    () => false,
+  );
+  const [linkApplied, setLinkApplied] = useState(false);
+  if (linkedMonthly && !linkApplied && giving.kind === 'regular') {
+    setLinkApplied(true);
+    setChoice((c) => ({
+      ...c,
+      frequency: 'monthly',
+      amountText: String(REGULAR_PRESETS.monthly.preselected),
+    }));
+  }
 
   const nextLabel =
     step === 2
@@ -297,10 +333,18 @@ export function DonationFlow({
                   )}
                   {step === 3 && reference && (
                     <ThankYou
-                      request={request}
+                      confirmation={{
+                        firstName: request.donor.firstName,
+                        email: request.donor.email,
+                        amount: plan?.amount ?? amount,
+                        frequency: choice.frequency,
+                        people: request.people,
+                        reference,
+                        plan,
+                        nextPayment: paidAt && nextPaymentDate(choice.frequency, paidAt),
+                      }}
                       program={program}
-                      plan={plan}
-                      reference={reference}
+                      makeMonthly={{ onClick: startMonthly }}
                       canChangeCause={canChangeCause}
                       onAgain={restart}
                     />

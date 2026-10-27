@@ -3,13 +3,20 @@ import { ChevronIcon } from '@/components/icons';
 import type { DailyGiving, DonationProgram } from '@/lib/donations/types';
 import { dateRange, formatClock, remainingCharges, unitLabel } from '@/lib/giving/schedule';
 import {
-  DEFAULT_AMOUNT,
   FREQUENCY_LABELS,
-  PRESET_AMOUNTS,
+  RECOMMENDED_FREQUENCY,
   REGULAR_FREQUENCIES,
+  REGULAR_PRESETS,
   formatGbp,
   type Frequency,
 } from '@/lib/giving/types';
+import {
+  amountAfterSwitch,
+  frequencyOfPeriod,
+  presetsFor,
+  suggested,
+  type RegularFrequency,
+} from '@/lib/giving/presets';
 import { cn } from '@/lib/utils/cn';
 import { Choice, StepTitle } from './fields';
 
@@ -27,10 +34,10 @@ export function initialAmount(program: DonationProgram): AmountValue {
   if (g.kind === 'per-person') return { frequency: 'one-off', amountText: '', people: 1 };
   if (g.kind === 'daily')
     return { frequency: 'daily', amountText: String(g.presets[1] ?? g.presets[0]), people: 1 };
-  const period = program.price?.period;
+  const frequency = program.price ? frequencyOfPeriod(program.price.period) : 'one-off';
   return {
-    frequency: period === 'week' ? 'weekly' : period === 'month' ? 'monthly' : 'one-off',
-    amountText: String(program.price?.amount ?? DEFAULT_AMOUNT),
+    frequency,
+    amountText: String(suggested(program, frequency) ?? REGULAR_PRESETS[frequency].preselected),
     people: 1,
   };
 }
@@ -99,23 +106,53 @@ export function AmountStep({
           <fieldset>
             <legend className={legendClass}>How often</legend>
             <div className="grid grid-cols-3 gap-3">
-              {REGULAR_FREQUENCIES.map((f) => (
-                <Choice
-                  key={f}
-                  selected={value.frequency === f}
-                  onClick={() => onChange({ frequency: f })}
-                  className="font-label text-base tracking-[0.08em] uppercase"
-                >
-                  {FREQUENCY_LABELS[f]}
-                </Choice>
-              ))}
+              {REGULAR_FREQUENCIES.map((f) => {
+                const selected = value.frequency === f;
+                const recommended = f === RECOMMENDED_FREQUENCY;
+                return (
+                  <Choice
+                    key={f}
+                    selected={selected}
+                    onClick={() =>
+                      value.frequency !== f &&
+                      onChange({
+                        frequency: f,
+                        amountText: amountAfterSwitch(
+                          program,
+                          value.frequency as RegularFrequency,
+                          f,
+                          value.amountText,
+                        ),
+                      })
+                    }
+                    className={cn(
+                      'relative font-label text-base tracking-[0.08em] uppercase',
+                      recommended && !selected && 'border-secondary-400',
+                    )}
+                  >
+                    {FREQUENCY_LABELS[f]}
+                    {recommended && (
+                      <span
+                        className={cn(
+                          'absolute -top-2.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 font-label text-[0.625rem] leading-none tracking-[0.12em] whitespace-nowrap',
+                          selected
+                            ? 'bg-white text-primary-950'
+                            : 'bg-secondary-500 text-primary-950',
+                        )}
+                      >
+                        <span className="sr-only">, </span>Most impact
+                      </span>
+                    )}
+                  </Choice>
+                );
+              })}
             </div>
             <p className="mt-3 text-primary-200" aria-live="polite">
               {value.frequency !== 'daily' && chargeNote[value.frequency](shown)}
             </p>
           </fieldset>
           <AmountPicker
-            presets={presetsFor(program)}
+            presets={presetsFor(program, value.frequency as RegularFrequency)}
             value={value.amountText}
             error={errors.amount}
             onChange={(amountText) => onChange({ amountText })}
@@ -188,12 +225,6 @@ export function AmountStep({
       )}
     </div>
   );
-}
-
-function presetsFor(program: DonationProgram) {
-  return [...new Set([...(program.price ? [program.price.amount] : []), ...PRESET_AMOUNTS])]
-    .sort((a, b) => a - b)
-    .slice(0, 4);
 }
 
 function DailySummary({ giving, amount }: { giving: DailyGiving; amount: number }) {

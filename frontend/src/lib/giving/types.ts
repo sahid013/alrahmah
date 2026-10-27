@@ -19,9 +19,20 @@ export const FREQUENCY_LABELS: Record<Frequency, string> = {
 };
 export const MAX_PEOPLE = 50;
 
-export const PRESET_AMOUNTS = [10, 25, 50, 100] as const;
-/** Pre-selected on regular causes without a suggested amount (Masjid Expansion: the ads' "£50 from 4,000 people"). */
-export const DEFAULT_AMOUNT = 50;
+/**
+ * Amount tiles for regular causes (Masjid Expansion), per frequency, and the one pre-selected
+ * (launch, October 2026: one-off £50, matching the ads' "£50 from 4,000 people"; monthly £20).
+ * One-off is the default frequency; Monthly is highlighted ("Most impact", `RECOMMENDED_FREQUENCY`).
+ */
+export const REGULAR_PRESETS: Record<
+  (typeof REGULAR_FREQUENCIES)[number],
+  { amounts: readonly number[]; preselected: number }
+> = {
+  'one-off': { amounts: [25, 50, 100, 250], preselected: 50 },
+  weekly: { amounts: [10, 25, 50, 100], preselected: 10 },
+  monthly: { amounts: [10, 20, 50, 100], preselected: 20 },
+};
+export const RECOMMENDED_FREQUENCY = 'monthly' satisfies Frequency;
 export const MIN_AMOUNT = 1;
 export const MAX_AMOUNT = 25_000;
 
