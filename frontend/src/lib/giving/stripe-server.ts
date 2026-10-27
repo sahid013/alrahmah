@@ -1,11 +1,14 @@
 import 'server-only';
+import { randomUUID } from 'node:crypto';
 import Stripe from 'stripe';
 import { isCauseVisible, loadDonations } from '@/lib/donations/repository';
 import { countryName } from './countries';
 import { chargeFor, DonationInputError } from './causes';
 import { remainingCharges, type DailyPlan } from './schedule';
 import { currentStripeMode, keysFor, modeOfSession, stripeFor } from './stripe-mode';
+import { causeParam, donationTypeParam } from './tracking';
 import { donationRequestSchema, type DonationRequest } from './types';
+import { visitFrom, visitMetadata } from './visit';
 
 /**
  * Server-only Stripe calls for donations. Which keys (live or test) come from `stripe-mode.ts`:
@@ -24,8 +27,9 @@ const idOf = (v: string | { id: string } | null | undefined) => (typeof v === 's
 /**
  * Metadata stored on the session and on the PaymentIntent / Subscription it creates. The webhook
  * builds the dashboard's donation record from it (`lib/giving/record.ts`), so it carries the
- * donor exactly as the form collected them, plus where they came from. Stripe allows 500
- * characters per value.
+ * donor exactly as the form collected them, plus where they came from. Stripe allows 50 keys and
+ * 500 characters per value; the visit fields (`visitMetadata`) and the tracking `event_id`,
+ * `cause` and `donation_type` are for the Meta server events (`lib/giving/server-events.ts`).
  */
 function donationMetadata(r: DonationRequest, campaignTitle: string): Stripe.MetadataParam {
   const d = r.donor;
@@ -63,7 +67,7 @@ function donationMetadata(r: DonationRequest, campaignTitle: string): Stripe.Met
  * saves the card; `finaliseDailyGiving` then schedules one charge per night/day.
  * Everything is re-validated here; the browser can't change the amount, cause or schedule.
  */
-export async function createDonationSession(input: unknown, origin: string) {
+export async function createDonationSession(input: unknown, origin: string, headers: Headers) {
   const parsed = donationRequestSchema.safeParse(input);
   if (!parsed.success)
     throw new DonationInputError(parsed.error.issues[0]?.message ?? 'Invalid donation.');
@@ -75,7 +79,15 @@ export async function createDonationSession(input: unknown, origin: string) {
     throw new DonationInputError('That cause is no longer available.');
 
   const charge = chargeFor(r, campaign.giving);
-  const metadata = donationMetadata(r, campaign.title);
+  // The browser's Purchase / Subscribe uses the same event_id, so Meta counts the donation once.
+  const eventId = randomUUID();
+  const metadata = {
+    ...donationMetadata(r, campaign.title),
+    event_id: eventId,
+    cause: causeParam(campaign.id),
+    donation_type: donationTypeParam(r.frequency, campaign.giving),
+    ...visitMetadata(visitFrom(headers, r.source), r.source, `${origin}/donate/${campaign.id}`),
+  };
   const mode = await currentStripeMode();
   const stripe = stripeFor(mode);
   const keys = keysFor(mode)!;
@@ -170,7 +182,10 @@ export async function createDonationSession(input: unknown, origin: string) {
         },
       ],
       metadata,
-      payment_intent_data: { metadata, description: product.name },
+      payment_intent_data: {
+        metadata: { ...metadata, payment_sequence: 'first' },
+        description: product.name,
+      },
     });
   }
 
@@ -180,6 +195,7 @@ export async function createDonationSession(input: unknown, origin: string) {
     clientSecret: session.client_secret,
     sessionId: session.id,
     publishableKey: keys.publishableKey,
+    eventId,
   };
 }
 

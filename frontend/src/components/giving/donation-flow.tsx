@@ -106,17 +106,41 @@ export function DonationFlow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [program.id]);
 
-  const trackStep = (event: 'InitiateCheckout' | 'AddPaymentInfo') =>
+  /** Browser event, plus its server copy for Meta with the same event_id (`/api/giving/event`). */
+  const trackStep = (event: 'InitiateCheckout' | 'AddPaymentInfo') => {
+    const eventId = `${event}-${attempt}`;
     track({
       event,
-      event_id: `${event}-${attempt}`,
+      event_id: eventId,
       ...donationParams(program.id, giving, choice.frequency, amount),
     });
+    const { donor, source, ...donation } = request;
+    void fetch('/api/giving/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({
+        event,
+        eventId,
+        donation: {
+          campaignId: donation.campaignId,
+          frequency: donation.frequency,
+          amount: donation.amount,
+          people: donation.people,
+        },
+        ...(event === 'AddPaymentInfo' && { donor }),
+        source,
+      }),
+    }).catch(() => {
+      /* tracking only: the form carries on regardless */
+    });
+  };
 
-  const paid = ({ sessionId, plan, method, instant }: PaidResult) => {
+  const paid = ({ sessionId, eventId, plan, method, instant }: PaidResult) => {
     if (instant) {
       const event = completionEvent({
         sessionId,
+        eventId,
         campaignId: program.id,
         giving,
         frequency: choice.frequency,

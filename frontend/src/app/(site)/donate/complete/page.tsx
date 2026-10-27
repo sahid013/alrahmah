@@ -43,6 +43,7 @@ async function trackingEventFor(
   if (!program) return null;
   return completionEvent({
     sessionId: session.id,
+    eventId: meta.event_id || `Purchase-${session.id}`,
     campaignId: program.id,
     giving: program.giving,
     frequency: (meta.frequency as Frequency) ?? 'one-off',

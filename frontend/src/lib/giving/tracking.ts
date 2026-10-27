@@ -15,9 +15,9 @@ import type { Frequency } from './types';
  *   Subscribe         a daily cause's card was saved (charges scheduled)
  *
  * Purchase and Subscribe fire in the browser only for instant methods: Direct Debit takes days to
- * clear, so it's left to the server events. Their `event_id` is built from the Checkout Session
- * id (`Purchase-cs_live_…`), so a server event made from the same session can carry the same id
- * and Meta counts the donation once.
+ * clear, so it's left to the server events. Their `event_id` is a UUID the server makes with the
+ * payment session and saves in its Stripe metadata, so the server event (`server-events.ts`)
+ * carries the same id and Meta counts the donation once.
  */
 export type DonationEventName =
   'ViewContent' | 'InitiateCheckout' | 'AddPaymentInfo' | 'Purchase' | 'Subscribe';
@@ -122,6 +122,8 @@ export function donationParams(
 
 export interface Completion {
   sessionId: string;
+  /** The donation's event_id from the server (Stripe metadata `event_id`). */
+  eventId: string;
   campaignId: string;
   giving: Giving;
   frequency: Frequency;
@@ -151,14 +153,14 @@ export function completionEvent(c: Completion): TrackingEvent | null {
       value: round(c.amount * (c.count ?? c.giving.count)),
       ...common,
     };
-    return { event: 'Subscribe', event_id: `Subscribe-${c.sessionId}`, ...params };
+    return { event: 'Subscribe', event_id: c.eventId, ...params };
   }
   const params: CompletionParams = {
     ...base,
     annual_value: annualValue(c.amount, c.frequency),
     ...common,
   };
-  return { event: 'Purchase', event_id: `Purchase-${c.sessionId}`, ...params };
+  return { event: 'Purchase', event_id: c.eventId, ...params };
 }
 
 /** A random id (one per donation attempt or page view). */

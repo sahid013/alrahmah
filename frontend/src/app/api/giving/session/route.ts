@@ -2,8 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createDonationSession, DonationInputError } from '@/lib/giving/stripe-server';
 
 /**
- * POST a DonationRequest → { clientSecret, publishableKey } for the on-page Stripe Payment Element
- * (the key matches the session's mode, live or test).
+ * POST a DonationRequest → { clientSecret, publishableKey, eventId } for the on-page Stripe Payment
+ * Element (the key matches the session's mode, live or test; eventId is for Purchase/Subscribe).
  */
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -13,11 +13,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
   }
   try {
-    const { clientSecret, publishableKey } = await createDonationSession(
+    const { clientSecret, publishableKey, eventId } = await createDonationSession(
       body,
       request.nextUrl.origin,
+      request.headers,
     );
-    return NextResponse.json({ clientSecret, publishableKey });
+    return NextResponse.json({ clientSecret, publishableKey, eventId });
   } catch (error) {
     if (error instanceof DonationInputError)
       return NextResponse.json({ error: error.message }, { status: 400 });

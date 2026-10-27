@@ -1,20 +1,29 @@
 import { sourceSchema, type DonationSource } from './types';
 
 /**
- * Where a visitor came from (UTM tags, referring site, landing page), kept for the browser
- * session so it can be sent with a donation. Arriving with UTM tags replaces what was stored;
+ * Where a visitor came from (UTM tags, ad click ids, referring site, landing page), kept for the
+ * browser session so it can be sent with a donation: these only appear on the page the donor lands
+ * on. Arriving with UTM tags or a click id replaces what was stored;
  * otherwise the first page of the visit is kept. Storage can be unavailable (private mode):
  * everything here then quietly does nothing.
  */
 const KEY = 'alrahmah.source';
 
-export function captureSource(location: Location, referrer: string) {
+export function captureSource(location: Location, referrer: string, now = Date.now()) {
   try {
     const params = new URLSearchParams(location.search);
+    const get = (name: string) => params.get(name) || undefined;
+    const fbclid = get('fbclid');
     const utm = {
-      utmSource: params.get('utm_source') ?? undefined,
-      utmMedium: params.get('utm_medium') ?? undefined,
-      utmCampaign: params.get('utm_campaign') ?? undefined,
+      utmSource: get('utm_source'),
+      utmMedium: get('utm_medium'),
+      utmCampaign: get('utm_campaign'),
+      utmContent: get('utm_content'),
+      fbclid,
+      fbclidAt: fbclid ? now : undefined,
+      gclid: get('gclid'),
+      gbraid: get('gbraid'),
+      wbraid: get('wbraid'),
     };
     const hasUtm = Object.values(utm).some(Boolean);
     if (!hasUtm && sessionStorage.getItem(KEY)) return;

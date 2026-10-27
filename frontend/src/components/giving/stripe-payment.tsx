@@ -16,6 +16,8 @@ import { ErrorBox } from './fields';
 /** A finished payment step, for the Thank you step and the Purchase / Subscribe event. */
 export interface PaidResult {
   sessionId: string;
+  /** The donation's event_id (made by the server, shared with the Meta server event). */
+  eventId: string;
   /** Set for daily causes (card saved, charges scheduled). */
   plan?: DailyPlan;
   /** The Payment Element's method type (card, apple_pay, bacs_debit, …). */
@@ -89,6 +91,7 @@ async function finaliseDaily(sessionId: string): Promise<DailyPlan> {
 interface PaymentSession {
   clientSecret: string;
   publishableKey: string;
+  eventId: string;
 }
 
 async function startSession(request: DonationRequest): Promise<PaymentSession> {
@@ -100,9 +103,13 @@ async function startSession(request: DonationRequest): Promise<PaymentSession> {
   const data = (await res.json().catch(() => ({}))) as Partial<PaymentSession> & {
     error?: string;
   };
-  if (!res.ok || !data.clientSecret || !data.publishableKey)
+  if (!res.ok || !data.clientSecret || !data.publishableKey || !data.eventId)
     throw new Error(data.error ?? 'Could not start the payment.');
-  return { clientSecret: data.clientSecret, publishableKey: data.publishableKey };
+  return {
+    clientSecret: data.clientSecret,
+    publishableKey: data.publishableKey,
+    eventId: data.eventId,
+  };
 }
 
 /**
@@ -121,11 +128,12 @@ export function StripePayment({
 }) {
   // One session per mount; the promises are created once. If the session can't start, both
   // reject and Stripe's provider shows the error.
-  const [{ stripe, clientSecret }] = useState(() => {
+  const [{ stripe, clientSecret, eventId }] = useState(() => {
     const session = startSession(request);
     return {
       stripe: session.then((s) => loadStripeFor(s.publishableKey)),
       clientSecret: session.then((s) => s.clientSecret),
+      eventId: session.then((s) => s.eventId),
     };
   });
   const options = useMemo(
@@ -159,7 +167,7 @@ export function StripePayment({
 
   return (
     <CheckoutElementsProvider stripe={stripe} options={options}>
-      <PaymentForm request={request} unit={unit} onPaid={onPaid} />
+      <PaymentForm request={request} unit={unit} eventId={eventId} onPaid={onPaid} />
     </CheckoutElementsProvider>
   );
 }
@@ -167,10 +175,13 @@ export function StripePayment({
 function PaymentForm({
   request,
   unit,
+  eventId,
   onPaid,
 }: {
   request: DonationRequest;
   unit?: 'night' | 'day';
+  /** Resolved before the form shows (it comes with the session). */
+  eventId: Promise<string>;
   onPaid: (result: PaidResult) => void;
 }) {
   const state = useCheckoutElements();
@@ -200,7 +211,7 @@ function PaymentForm({
       const { id, status } = result.session;
       const instant = status.type === 'complete' && status.paymentStatus !== 'unpaid';
       const plan = request.frequency === 'daily' ? await finaliseDaily(id) : undefined;
-      onPaid({ sessionId: id, plan, method: method.current, instant });
+      onPaid({ sessionId: id, eventId: await eventId, plan, method: method.current, instant });
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'The payment did not go through. Please try again.',

@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { recordStripeEvent } from '@/lib/giving/record';
+import { serverEventFor } from '@/lib/giving/server-events';
+import type { DailyPlan } from '@/lib/giving/schedule';
+import { sendMetaEventSafely } from '@/lib/meta/capi';
 import { DonationInputError, finaliseDailyGiving } from '@/lib/giving/stripe-server';
 import { webhookSecrets } from '@/lib/giving/stripe-mode';
 
@@ -10,7 +13,9 @@ import { webhookSecrets } from '@/lib/giving/stripe-mode';
  * the payment mode never breaks either (see `lib/giving/stripe-mode.ts`).
  * Subscribe the endpoint to: checkout.session.completed, checkout.session.async_payment_succeeded,
  * checkout.session.async_payment_failed, invoice.paid, invoice.payment_failed, charge.refunded,
- * customer.subscription.deleted. Donations are recorded in Supabase (`lib/giving/record.ts`).
+ * customer.subscription.deleted. Donations are recorded in Supabase (`lib/giving/record.ts`),
+ * then reported to Meta (`lib/giving/server-events.ts`); a Meta failure is logged, never retried
+ * through Stripe, so it can't hold up recording.
  */
 export async function POST(request: NextRequest) {
   const secrets = webhookSecrets();
@@ -35,9 +40,10 @@ export async function POST(request: NextRequest) {
 
   // Daily causes: the card was saved; schedule the nightly/daily charges (backup for the browser,
   // which normally does this straight away; idempotent).
+  let plan: DailyPlan | null = null;
   if (event.type === 'checkout.session.completed' && event.data.object.mode === 'setup') {
     try {
-      await finaliseDailyGiving(event.data.object.id);
+      plan = await finaliseDailyGiving(event.data.object.id);
     } catch (error) {
       // A closed cause won't succeed on retry; anything else returns 500 so Stripe retries.
       console.error(
@@ -59,6 +65,17 @@ export async function POST(request: NextRequest) {
       error instanceof Error ? error.message : error,
     );
     return NextResponse.json({ error: 'Recording failed' }, { status: 500 });
+  }
+
+  try {
+    const server = await serverEventFor(event, plan);
+    if (server) await sendMetaEventSafely(server.event, server.live);
+  } catch (error) {
+    console.error(
+      '[meta] could not build server event',
+      event.type,
+      error instanceof Error ? error.message : error,
+    );
   }
   return NextResponse.json({ received: true });
 }

@@ -66,9 +66,13 @@ describe('tracking parameters', () => {
 });
 
 describe('completionEvent', () => {
-  const base = { sessionId: 'cs_live_a1b2c3RFXENE31', campaignId: 'masjid-expansion' };
+  const base = {
+    sessionId: 'cs_live_a1b2c3RFXENE31',
+    eventId: '6f1c1e0a-8f0e-4a51-9d55-1d1b8f2f4b11',
+    campaignId: 'masjid-expansion',
+  };
 
-  it('is a Purchase for one-off and regular gifts, with the session-based event_id', () => {
+  it('is a Purchase for one-off and regular gifts, with the donation event_id', () => {
     expect(
       completionEvent({
         ...base,
@@ -79,7 +83,7 @@ describe('completionEvent', () => {
       }),
     ).toEqual({
       event: 'Purchase',
-      event_id: 'Purchase-cs_live_a1b2c3RFXENE31',
+      event_id: '6f1c1e0a-8f0e-4a51-9d55-1d1b8f2f4b11',
       value: 10,
       currency: 'GBP',
       cause: 'masjid_expansion',
@@ -103,7 +107,7 @@ describe('completionEvent', () => {
     });
     expect(event).toMatchObject({
       event: 'Subscribe',
-      event_id: 'Subscribe-cs_live_a1b2c3RFXENE31',
+      event_id: '6f1c1e0a-8f0e-4a51-9d55-1d1b8f2f4b11',
       value: 35,
       donation_type: 'nightly_10',
       payment_sequence: 'first',

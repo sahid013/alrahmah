@@ -93,13 +93,21 @@ export const donorSchema = donorFields.superRefine((d, ctx) => {
 export type Donor = z.infer<typeof donorSchema>;
 
 /**
- * Where the donor came from, captured when they first arrive on the site (UTM tags, referring
- * site, landing page) and sent with the donation, so the dashboard can report sources.
+ * Where the donor came from, captured when they first arrive on the site (UTM tags, ad click ids,
+ * referring site, landing page) and sent with the donation, so the dashboard can report sources
+ * and the Meta server events can be matched to the ad click (`fbclid`).
  */
 export const sourceSchema = z.object({
   utmSource: z.string().max(100).optional(),
   utmMedium: z.string().max(100).optional(),
   utmCampaign: z.string().max(100).optional(),
+  utmContent: z.string().max(100).optional(),
+  fbclid: z.string().max(400).optional(),
+  /** When the fbclid arrived (ms), for building `fbc` if the _fbc cookie is missing. */
+  fbclidAt: z.number().int().positive().optional(),
+  gclid: z.string().max(200).optional(),
+  gbraid: z.string().max(200).optional(),
+  wbraid: z.string().max(200).optional(),
   referrer: z.string().max(300).optional(),
   landingPage: z.string().max(300).optional(),
 });
