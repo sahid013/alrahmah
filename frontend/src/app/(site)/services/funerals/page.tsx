@@ -7,7 +7,11 @@ import { Reveal } from '@/components/ui/reveal';
 import { JsonLd } from '@/components/seo/json-ld';
 import { siteConfig } from '@/config/site';
 import { buildMetadata } from '@/lib/seo';
+import { services } from '@/lib/services/data';
 import { servicePageJsonLd } from '@/lib/structured-data';
+
+/** The photo is shared with the home page and `/services` (`lib/services/data.ts`). */
+const funerals = services.find((s) => s.href === '/services/funerals')!;
 
 const description =
   'Funeral (janazah) queries for Al-Rahmah Masjid, Leeds. Email, call or send us a message and we will help your family.';
@@ -54,17 +58,19 @@ export default function ServicesFuneralsPage() {
               <ContactForm form="funerals" />
             </Reveal>
           </div>
-          <Reveal order={1} className="lg:col-span-6">
-            <div className="relative aspect-[648/566] overflow-hidden bg-primary-50 lg:sticky lg:top-24">
-              <Image
-                src="/images/services/funeral-washing-room.webp"
-                alt="The masjid's washing room, with a body prepared in a white shroud on the table"
-                fill
-                sizes="(min-width: 1024px) 45vw, 100vw"
-                className="object-cover"
-              />
-            </div>
-          </Reveal>
+          {funerals.image && (
+            <Reveal order={1} className="lg:col-span-6">
+              <div className="relative aspect-[648/566] overflow-hidden bg-primary-50 lg:sticky lg:top-24">
+                <Image
+                  src={funerals.image.src}
+                  alt={funerals.image.alt}
+                  fill
+                  sizes="(min-width: 1024px) 45vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            </Reveal>
+          )}
         </Container>
       </section>
     </>
