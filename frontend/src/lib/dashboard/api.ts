@@ -9,6 +9,7 @@ import type {
 } from './auth/types';
 import type { ContactMessage, MessageStatus } from '@/lib/contact/types';
 import type { KhutbahEntry } from '@/lib/khutbahs/types';
+import type { MailingContact } from '@/lib/mailing-list/types';
 import type { Campaign, DashboardEvent, Donation, DonationQuery, PrayerDay } from './types';
 
 /**
@@ -104,5 +105,16 @@ export interface DashboardApi {
     list(): Promise<ContactMessage[]>;
     setStatus(id: string, status: MessageStatus): Promise<void>;
     remove(id: string): Promise<void>;
+  };
+  /**
+   * The email mailing list (Supabase `mailing_list`): donors who ticked "Keep me updated" on the
+   * donation form, added by the Stripe webhook when the donation succeeds. Staff unsubscribe or
+   * resubscribe people and delete them (erasure requests); the consent record itself can't change.
+   */
+  mailingList: {
+    /** Newest opt-in first. */
+    list(): Promise<MailingContact[]>;
+    setSubscribed(email: string, subscribed: boolean): Promise<void>;
+    remove(email: string): Promise<void>;
   };
 }

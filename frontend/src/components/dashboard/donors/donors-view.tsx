@@ -71,7 +71,7 @@ export function DonorsView() {
     {
       title: 'Opted-in contacts',
       description:
-        'Donors who agreed to email updates (their latest choice), for the mailing list.',
+        'Donors in this period whose latest donation agreed to email updates. The full list, with unsubscribes, is under Mailing list.',
       count: contacts.length,
       run: () => downloadCsv(`contacts-opted-in_${suffix}.csv`, toCsv(contacts, contactColumns)),
     },

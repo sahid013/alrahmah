@@ -8,6 +8,7 @@ import {
 import { EVENT_COLUMNS, eventToRow, rowToEvent, type EventRow } from '@/lib/events/rows';
 import { MESSAGE_COLUMNS, rowToMessage, type MessageRow } from '@/lib/contact/rows';
 import { khutbahEntrySchema, type KhutbahEntry } from '@/lib/khutbahs/types';
+import { MAILING_COLUMNS, rowToContact, type MailingRow } from '@/lib/mailing-list/rows';
 import { fromRow, PRAYER_DAY_COLUMNS, toRow, type PrayerDayRow } from '@/lib/prayer/rows';
 import { accessToken, getSupabase } from '@/lib/supabase/client';
 import type { DashboardApi } from './api';
@@ -43,6 +44,8 @@ import {
  *  - khutbahs: the `khutbahs` table (home page "Latest Khutbahs").
  *  - events: the `events` table; posters in Storage (`event-posters`).
  *  - donations: the `donations` table, written by the Stripe webhook (staff read only).
+ *  - mailingList: the `mailing_list` table, written by the Stripe webhook (staff read,
+ *    (un)subscribe, delete).
  */
 
 interface KhutbahRow {
@@ -523,6 +526,33 @@ export function createSupabaseDashboardApi(): DashboardApi {
 
       async remove(id) {
         const { error } = await supabase.from('contact_messages').delete().eq('id', id);
+        if (error) fail(error.message);
+      },
+    },
+
+    mailingList: {
+      async list() {
+        const { data, error } = await supabase
+          .from('mailing_list')
+          .select(MAILING_COLUMNS)
+          .order('consented_at', { ascending: false })
+          .limit(10000)
+          .returns<MailingRow[]>();
+        if (error) fail(error.message);
+        return (data ?? []).flatMap((row) => rowToContact(row) ?? []);
+      },
+
+      async setSubscribed(email, subscribed) {
+        const now = new Date().toISOString();
+        const { error } = await supabase
+          .from('mailing_list')
+          .update({ subscribed, unsubscribed_at: subscribed ? null : now, updated_at: now })
+          .eq('email', email);
+        if (error) fail(error.message);
+      },
+
+      async remove(email) {
+        const { error } = await supabase.from('mailing_list').delete().eq('email', email);
         if (error) fail(error.message);
       },
     },

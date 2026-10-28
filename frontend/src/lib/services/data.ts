@@ -1,6 +1,6 @@
 /**
- * Masjid services — the single source for the navbar "Services" menu and the home page
- * services section.
+ * Masjid services — the single source for the navbar "Services" menu, the home page services
+ * section and the all-services page (`/services`, one section per top-level service).
  *
  * TODO: summaries are DRAFTS (replace with the masjid's wording), and swap the placeholder
  * masjid photos below for a real photo of each service.
@@ -30,6 +30,7 @@ export const services: Service[] = [
     icon: 'funeral',
     summary:
       'Support for families at a difficult time, from washing and shrouding to the janazah prayer and burial arrangements.',
+    facts: ['Washing & shrouding', 'Janazah prayer', 'Burial arrangements'],
   },
   {
     title: 'Education',
@@ -88,9 +89,13 @@ export const services: Service[] = [
     icon: 'nikah',
     summary:
       'Nikah ceremonies conducted at the masjid, with guidance for couples and their families.',
+    facts: ['At the masjid', 'Book 4 weeks ahead'],
   },
 ];
 
 /** Leaf services (parents replaced by their children), in display order. */
 export const flattenServices = (list: Service[] = services): Service[] =>
   list.flatMap((s) => (s.children ? flattenServices(s.children) : [s]));
+
+/** In-page anchor for a service on `/services`, from the last part of its URL ("funerals"). */
+export const serviceAnchor = (service: Service) => service.href.split('/').pop()!;

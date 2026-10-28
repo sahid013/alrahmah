@@ -1,5 +1,6 @@
 import { countryName } from '@/lib/giving/countries';
 import { DONOR_TYPE_LABELS } from '@/lib/giving/types';
+import type { MailingContact } from '@/lib/mailing-list/types';
 import { sourceOf, type DonorSummary, type RegularGift } from './queries';
 import { SUBSCRIPTION_STATUS_LABELS, type Campaign, type Donation } from './types';
 
@@ -100,6 +101,39 @@ export const contactColumns: CsvColumn<DonorSummary>[] = [
   { header: 'Organisation', value: (d) => d.organisation },
   { header: 'Town / City', value: (d) => d.city },
   { header: 'Consent given (last donation)', value: (d) => d.lastGift },
+];
+
+/** The mailing list with its record of consent (Dashboard → Mailing list). */
+export const mailingColumns = (campaigns: Campaign[]): CsvColumn<MailingContact>[] => {
+  const title = new Map(campaigns.map((c) => [c.id, c.title]));
+  return [
+    { header: 'First name', value: (c) => c.firstName },
+    { header: 'Last name', value: (c) => c.lastName },
+    { header: 'Email', value: (c) => c.email },
+    { header: 'Organisation', value: (c) => c.organisation },
+    { header: 'Town / City', value: (c) => c.city },
+    { header: 'Country', value: (c) => c.country && countryName(c.country) },
+    { header: 'Status', value: (c) => (c.subscribed ? 'Subscribed' : 'Unsubscribed') },
+    { header: 'Opted in', value: (c) => c.consentedAt.slice(0, 10) },
+    {
+      header: 'Opted in while giving to',
+      value: (c) => c.consentCampaignId && (title.get(c.consentCampaignId) ?? c.consentCampaignId),
+    },
+    { header: 'Unsubscribed', value: (c) => c.unsubscribedAt?.slice(0, 10) },
+    { header: 'Payment reference', value: (c) => c.consentRef },
+    { header: 'Test payment', value: (c) => (c.livemode ? '' : 'Yes') },
+    { header: 'Consent wording', value: (c) => c.consentText },
+  ];
+};
+
+/**
+ * Just what an email tool (Mailchimp, Brevo, …) imports: their column names match these, so
+ * the file maps itself on import.
+ */
+export const emailToolColumns: CsvColumn<MailingContact>[] = [
+  { header: 'Email Address', value: (c) => c.email },
+  { header: 'First Name', value: (c) => c.firstName },
+  { header: 'Last Name', value: (c) => c.lastName },
 ];
 
 export const regularGiftColumns = (campaigns: Campaign[]): CsvColumn<RegularGift>[] => {

@@ -1,5 +1,6 @@
 import type { DashboardApi } from './api';
 import { createLocalAuth } from './auth/local-auth';
+import { contactsFromDonations } from './mailing-list';
 import { filterDonations } from './queries';
 import { sampleCampaigns, sampleDonations } from './sample-data';
 import { byNewest, khutbahEntrySchema, type KhutbahEntry } from '@/lib/khutbahs/types';
@@ -70,6 +71,8 @@ const now = () => new Date().toISOString();
 
 export function createLocalDashboardApi(): DashboardApi {
   const donations = sampleDonations();
+  /** Sample opt-ins, kept in memory (unsubscribes and deletes last until the page reloads). */
+  let contacts = contactsFromDonations(donations);
   /** Stored events, or the site's events to start from (all published, in order). */
   const events = (): DashboardEvent[] =>
     read().events ??
@@ -206,6 +209,23 @@ export function createLocalDashboardApi(): DashboardApi {
       },
     },
     // Messages only arrive from the live website's forms, so the preview has none.
+    mailingList: {
+      async list() {
+        return settle(contacts);
+      },
+      async setSubscribed(email, subscribed) {
+        contacts = contacts.map((c) =>
+          c.email === email
+            ? { ...c, subscribed, unsubscribedAt: subscribed ? undefined : now() }
+            : c,
+        );
+        return settle(undefined);
+      },
+      async remove(email) {
+        contacts = contacts.filter((c) => c.email !== email);
+        return settle(undefined);
+      },
+    },
     messages: {
       async list() {
         return settle([]);

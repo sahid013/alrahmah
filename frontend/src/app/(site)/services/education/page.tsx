@@ -1,8 +1,6 @@
 import type { CSSProperties } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRightIcon } from '@/components/icons';
 import { JsonLd } from '@/components/seo/json-ld';
+import { CourseCard } from '@/components/services/course-card';
 import { Container } from '@/components/ui/container';
 import { PageHero } from '@/components/ui/page-hero';
 import { Reveal } from '@/components/ui/reveal';
@@ -44,45 +42,12 @@ export default function ServicesEducationPage() {
           <StaggerGroup>
             <ul className="mt-14 grid gap-8 md:grid-cols-3 lg:gap-10">
               {courses.map((course, i) => (
-                <li
+                <CourseCard
                   key={course.href}
+                  course={course}
                   className="stagger-item"
                   style={{ '--i': i } as CSSProperties}
-                >
-                  <Link
-                    href={course.href}
-                    className="group flex h-full flex-col border border-neutral-200 bg-white transition-colors duration-500 hover:border-primary-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-secondary-500"
-                  >
-                    {course.image && (
-                      <div className="relative aspect-[4/3] overflow-hidden bg-primary-50">
-                        <Image
-                          src={course.image.src}
-                          alt={course.image.alt}
-                          fill
-                          sizes="(min-width: 768px) 33vw, 100vw"
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="flex flex-1 flex-col p-6 sm:p-8">
-                      {course.facts && (
-                        <ul className="flex flex-wrap gap-x-4 gap-y-1 font-label text-xs font-bold tracking-[0.12em] text-secondary-700 uppercase">
-                          {course.facts.map((fact) => (
-                            <li key={fact}>{fact}</li>
-                          ))}
-                        </ul>
-                      )}
-                      <h3 className="mt-3 text-title-2xl leading-tight text-primary-900">
-                        {course.title}
-                      </h3>
-                      <p className="mt-3 leading-relaxed text-neutral-600">{course.summary}</p>
-                      <span className="mt-auto inline-flex items-center gap-2 pt-6 font-label text-sm font-bold tracking-[0.12em] text-primary-500 uppercase transition-colors group-hover:text-secondary-700">
-                        Learn more
-                        <ArrowRightIcon className="size-4" />
-                      </span>
-                    </div>
-                  </Link>
-                </li>
+                />
               ))}
             </ul>
           </StaggerGroup>

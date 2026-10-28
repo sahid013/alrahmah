@@ -14,6 +14,7 @@ import {
   LogoutIcon,
   MailIcon,
   MenuIcon,
+  PeopleIcon,
   ReceiptIcon,
   RepeatIcon,
   YouTubeIcon,
@@ -40,6 +41,7 @@ export const DASHBOARD_NAV: NavEntry[] = [
   { label: 'Donations', href: '/dashboard/donations', icon: ReceiptIcon },
   { label: 'Regular giving', href: '/dashboard/regular-giving', icon: RepeatIcon },
   { label: 'Donors & exports', href: '/dashboard/donors', icon: DownloadIcon },
+  { label: 'Mailing list', href: '/dashboard/mailing-list', icon: PeopleIcon },
   // Users & account settings only exist while sign-in is switched on.
   ...(AUTH_ENABLED ? [{ label: 'Settings', href: '/dashboard/settings', icon: GearIcon }] : []),
 ];

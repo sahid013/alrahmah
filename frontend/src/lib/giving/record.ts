@@ -1,5 +1,6 @@
 import 'server-only';
 import type Stripe from 'stripe';
+import { recordMarketingConsent } from '@/lib/mailing-list/record';
 import { adminClient } from '@/lib/supabase/server';
 import { stripeFor } from './stripe-mode';
 
@@ -15,6 +16,9 @@ import { stripeFor } from './stripe-mode';
  * Rows are keyed by `payment_ref` (PaymentIntent or Invoice id), so Stripe's retries never create
  * duplicates. Payments without our metadata (e.g. made elsewhere in Stripe) are ignored.
  * Test-mode payments are recorded with `livemode: false`, so they can be deleted before go-live.
+ * Donors who ticked "Keep me updated" join the mailing list (`lib/mailing-list/record.ts`) when
+ * the donation form's payment succeeds: one-off payment, first weekly/monthly invoice, or a daily
+ * cause's card saved. Renewals don't touch it.
  */
 
 type Meta = Record<string, string>;
@@ -72,10 +76,23 @@ export async function recordStripeEvent(event: Stripe.Event): Promise<void> {
     case 'checkout.session.completed':
     case 'checkout.session.async_payment_succeeded': {
       const s = event.data.object;
-      // Subscriptions are recorded per invoice; setup (daily causes) has no payment yet.
-      if (s.mode !== 'payment' || s.payment_status !== 'paid') return;
       const m = (s.metadata ?? {}) as Meta;
       if (!m.campaign_id) return;
+      const email = s.customer_details?.email ?? s.customer_email;
+      // Daily causes: the card is saved (no payment yet), which completes the form.
+      if (s.mode === 'setup') {
+        if (s.status === 'complete')
+          await recordMarketingConsent({
+            meta: m,
+            email,
+            at: at(event),
+            ref: s.id,
+            livemode: event.livemode,
+          });
+        return;
+      }
+      // Subscriptions are recorded per invoice.
+      if (s.mode !== 'payment' || s.payment_status !== 'paid') return;
       const paymentIntent = idOf(s.payment_intent);
       await upsert({
         payment_ref: paymentIntent ?? s.id,
@@ -87,10 +104,17 @@ export async function recordStripeEvent(event: Stripe.Event): Promise<void> {
         frequency: null,
         campaign_id: m.campaign_id,
         status: 'succeeded',
-        donor: donorFrom(m, s.customer_details?.email ?? s.customer_email),
+        donor: donorFrom(m, email),
         marketing_consent: m.marketing_consent === 'yes',
         source: sourceFrom(m),
         stripe_customer: idOf(s.customer) ?? null,
+        livemode: event.livemode,
+      });
+      await recordMarketingConsent({
+        meta: m,
+        email,
+        at: at(event),
+        ref: paymentIntent ?? s.id,
         livemode: event.livemode,
       });
       return;
@@ -130,6 +154,15 @@ export async function recordStripeEvent(event: Stripe.Event): Promise<void> {
       });
       // A successful payment means the regular gift is active again (e.g. after a failure).
       await updateWhere('subscription_id', subscription, { subscription_status: 'active' });
+      // The first weekly/monthly payment completes the form (daily causes: at the card's setup).
+      if (inv.billing_reason === 'subscription_create' && m.giving_kind !== 'daily')
+        await recordMarketingConsent({
+          meta: m,
+          email: inv.customer_email,
+          at: at(event),
+          ref: inv.id,
+          livemode: event.livemode,
+        });
       return;
     }
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { siteConfig } from '@/config/site';
+import { MARKETING_CONSENT } from '@/lib/giving/consent';
 import { COUNTRY_OPTIONS, UK } from '@/lib/giving/countries';
 import {
   DONOR_TYPE_LABELS,
@@ -135,8 +135,7 @@ export function DetailsStep({
       {/* Marketing / data consent: optional, unticked by default. */}
       <section aria-label="Keeping in touch" className="space-y-3">
         <Checkbox checked={marketingConsent} onChange={onConsent}>
-          <strong>Keep me updated.</strong> I&apos;d like to hear from {siteConfig.name} by email
-          about news, events and appeals. I can unsubscribe at any time.
+          <strong>{MARKETING_CONSENT.title}</strong> {MARKETING_CONSENT.body}
         </Checkbox>
         <p className="text-sm text-primary-200">
           We use your details to process your donation and send your receipt. We never sell or share

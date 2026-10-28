@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { checkoutHref, moveId, prepareCampaign, raisedByCampaign, slugify } from './campaigns';
-import { toCsv } from './csv';
+import { emailToolColumns, mailingColumns, toCsv } from './csv';
+import { contactsFromDonations, filterContacts } from './mailing-list';
+import { mailingContactSchema } from '@/lib/mailing-list/types';
 import { timetableDay, copyDayTo, isFriday, sameTimes, validateDay } from './prayer';
 import {
   donationTotals,
@@ -190,5 +192,41 @@ describe("default Jumu'ah", () => {
     expect(friday.jumuah).toEqual([friday.times.dhuhr.adhan]);
     expect(timetableDay('2026-10-03').jumuah).toBeUndefined();
     expect(validateDay(friday)).toEqual({});
+  });
+});
+
+describe('mailing list', () => {
+  const contacts = contactsFromDonations(donations);
+
+  it('has one contact per donor who opted in, from their latest opt-in', () => {
+    const optedIn = new Set(
+      donations.filter((d) => d.marketingConsent).map((d) => d.donor.email.toLowerCase()),
+    );
+    expect(contacts.map((c) => c.email).sort()).toEqual([...optedIn].sort());
+    expect(() => mailingContactSchema.array().parse(contacts)).not.toThrow();
+    for (const c of contacts) {
+      const latest = donations
+        .filter((d) => d.marketingConsent && d.donor.email.toLowerCase() === c.email)
+        .reduce((a, b) => (a.createdAt > b.createdAt ? a : b));
+      expect(c.consentedAt).toBe(latest.createdAt);
+    }
+  });
+
+  it('filters by status and search', () => {
+    const [first, second] = contacts;
+    const list = [first!, { ...second!, subscribed: false }];
+    expect(filterContacts(list, 'subscribed')).toEqual([first]);
+    expect(filterContacts(list, 'unsubscribed')).toHaveLength(1);
+    expect(filterContacts(list, 'all', first!.email.toUpperCase())).toEqual([first]);
+  });
+
+  it('exports email-tool columns and the record of consent', () => {
+    const [c] = contacts;
+    expect(toCsv([c!], emailToolColumns).split('\r\n')[0]).toBe(
+      'Email Address,First Name,Last Name',
+    );
+    const full = toCsv([c!], mailingColumns(sampleCampaigns()));
+    expect(full).toContain('Consent wording');
+    expect(full).toContain('Keep me updated.');
   });
 });
