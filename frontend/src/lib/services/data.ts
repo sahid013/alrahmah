@@ -83,8 +83,8 @@ export const services: Service[] = [
     title: 'Nikah (Marriage)',
     href: '/services/nikah',
     image: {
-      src: '/images/services/Nikah.webp',
-      alt: 'A nikah ceremony: the couple seated at a flower-covered table with the imam and family',
+      src: '/images/services/Nikah Image.webp',
+      alt: 'A groom in white placing a ring on his bride’s finger in warm evening light',
     },
     icon: 'nikah',
     summary:

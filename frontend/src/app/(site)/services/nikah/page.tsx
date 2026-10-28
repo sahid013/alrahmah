@@ -1,4 +1,5 @@
-import { ArrowRightIcon, RingsIcon } from '@/components/icons';
+import Image from 'next/image';
+import { ArrowRightIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { PageHero } from '@/components/ui/page-hero';
@@ -6,7 +7,11 @@ import { Reveal } from '@/components/ui/reveal';
 import { JsonLd } from '@/components/seo/json-ld';
 import { siteConfig } from '@/config/site';
 import { buildMetadata } from '@/lib/seo';
+import { services } from '@/lib/services/data';
 import { servicePageJsonLd } from '@/lib/structured-data';
+
+/** The photo is shared with the home page and `/services` (`lib/services/data.ts`). */
+const nikah = services.find((s) => s.href === '/services/nikah')!;
 
 const description =
   'Complete Nikah and marriage services at Al-Rahmah Masjid Leeds. Book at least four weeks in advance, especially in summer.';
@@ -70,16 +75,19 @@ export default function ServicesNikahPage() {
             </div>
           </div>
 
-          {/* TODO: replace with the nikah certificate photo (public/images/services/nikah-certificate.webp). */}
-          <Reveal order={1} className="lg:col-span-6">
-            <div
-              aria-hidden
-              className="relative isolate flex aspect-[4/3] items-center justify-center overflow-hidden bg-primary-700"
-            >
-              <div className="bg-islamic-pattern absolute inset-0 -z-10 opacity-[0.07]" />
-              <RingsIcon className="size-40 text-secondary-300 sm:size-56" strokeWidth={0.75} />
-            </div>
-          </Reveal>
+          {nikah.image && (
+            <Reveal order={1} className="lg:col-span-6">
+              <div className="relative aspect-[4/3] overflow-hidden bg-primary-100">
+                <Image
+                  src={nikah.image.src}
+                  alt={nikah.image.alt}
+                  fill
+                  sizes="(min-width: 1024px) 45vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            </Reveal>
+          )}
         </Container>
       </section>
     </>
