@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils/cn';
 import { CourseCard } from './course-card';
 
 /**
- * One top-level service on the all-services page (`/services`): photo beside its number, title,
- * summary, key facts and a link to its page; sub-services (Education's courses) follow as cards.
+ * One top-level service on the all-services page (`/services`): its number and title across the top,
+ * then photo beside the summary, key facts and a link to its page; sub-services (Education's courses) follow as cards.
  * `index` alternates the photo side and the background.
  */
 export function ServiceCategory({ service, index }: { service: Service; index: number }) {
@@ -25,6 +25,19 @@ export function ServiceCategory({ service, index }: { service: Service; index: n
       className={cn('scroll-mt-24 py-20 sm:py-24 lg:scroll-mt-40', flip && 'bg-primary-50')}
     >
       <Container>
+        <Reveal className="mb-10 border-b border-neutral-200 pb-8 sm:mb-14">
+          <p className="font-ui text-sm font-semibold text-secondary-700 tabular-nums">
+            {String(index + 1).padStart(2, '0')}
+          </p>
+          <span aria-hidden className="mt-3 block h-0.5 w-12 bg-secondary-500" />
+          <h2
+            id={`${id}-title`}
+            className="mt-5 text-title-3xl leading-none text-primary-900 sm:text-title-4xl"
+          >
+            {service.title}
+          </h2>
+        </Reveal>
+
         <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-16">
           {service.image && (
             <Reveal className={cn('lg:col-span-6', flip && 'lg:order-last')}>
@@ -41,20 +54,8 @@ export function ServiceCategory({ service, index }: { service: Service; index: n
           )}
 
           <div className="lg:col-span-6">
-            <Reveal>
-              <p className="font-ui text-sm font-semibold text-secondary-700 tabular-nums">
-                {String(index + 1).padStart(2, '0')}
-              </p>
-              <span aria-hidden className="mt-3 block h-0.5 w-12 bg-secondary-500" />
-              <h2
-                id={`${id}-title`}
-                className="mt-5 text-title-3xl leading-none text-primary-900 sm:text-title-4xl"
-              >
-                {service.title}
-              </h2>
-            </Reveal>
             <Reveal order={1}>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-pretty text-neutral-600 sm:text-xl">
+              <p className="max-w-xl text-lg leading-relaxed text-pretty text-neutral-600 sm:text-xl">
                 {service.summary}
               </p>
             </Reveal>
