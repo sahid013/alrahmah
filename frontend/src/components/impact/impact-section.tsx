@@ -50,8 +50,17 @@ function Group({
   );
 }
 
-/** Yearly impact in numbers: intro + volunteering, middle figures, highlighted community panel. */
-export function ImpactSection({ report }: { report: ImpactReport }) {
+/**
+ * Yearly impact in numbers: intro + volunteering, middle figures, highlighted community panel.
+ * `emblem`: where the brand emblem sits in the space under the middle figures.
+ */
+export function ImpactSection({
+  report,
+  emblem = 'bottom',
+}: {
+  report: ImpactReport;
+  emblem?: 'bottom' | 'middle';
+}) {
   return (
     <section
       aria-labelledby="impact-title"
@@ -104,8 +113,12 @@ export function ImpactSection({ report }: { report: ImpactReport }) {
                 />
               ))}
             </div>
-            {/* Emblem sits at the bottom of the column. */}
-            <div className="mt-16 flex flex-1 items-end justify-center lg:mt-12">
+            <div
+              className={cn(
+                'mt-16 flex flex-1 justify-center lg:mt-12',
+                emblem === 'bottom' ? 'items-end' : 'items-center lg:pb-28',
+              )}
+            >
               <Image
                 src={siteConfig.logoMarkLight}
                 alt=""
