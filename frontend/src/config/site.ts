@@ -59,10 +59,10 @@ export const siteConfig = {
     method: 'MoonsightingCommittee',
     madhab: 'hanafi',
   },
-  /** Contact details shown in the footer and on /contact. Optional fields render only when set. */
+  /** Contact details shown in the footer and on /contact. Optional fields render only when set.
+   * No phone number anywhere on the site (client request, October 2026): email and the forms only. */
   contact: {
     addressLines: ['6 Sheepscar Way', 'Leeds LS7 3JB'] as readonly string[],
-    phone: '07508 044680' as string | undefined,
     email: 'info@alrahmahmasjid.co.uk' as string | undefined,
     /** Funeral (janazah) queries; same inbox as everything else for now, kept separate to change later. */
     funeralsEmail: 'info@alrahmahmasjid.co.uk',
@@ -102,13 +102,12 @@ export const siteConfig = {
    * left out of the structured data (`sameAs`); drop the flag once the real link is in.
    */
   socials: [
-    { platform: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/alrahmahleeds/' },
+    { platform: 'tiktok', name: 'TikTok', href: 'https://www.tiktok.com/@alrahmahmasjid_' },
     { platform: 'youtube', name: 'YouTube', href: 'https://www.youtube.com/@alrahmahmasjid' },
     {
       platform: 'instagram',
       name: 'Instagram',
-      href: 'https://www.instagram.com/',
-      placeholder: true,
+      href: 'https://www.instagram.com/alrahmahmasjid_/',
     },
     {
       platform: 'whatsapp',

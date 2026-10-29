@@ -39,8 +39,8 @@ export default async function HomePage() {
       <GreetingSection />
       <EventsSection events={events.slice(0, 3)} />
       <ImpactSection report={impactReport} />
-      <ServicesSection />
       <KhutbahsSection khutbahs={khutbahs} />
+      <ServicesSection />
     </>
   );
 }

@@ -32,7 +32,7 @@ export function DonatePanel() {
               {p}
             </p>
           ))}
-          {(contact.email || contact.phone) && (
+          {contact.email && (
             <p className="leading-relaxed">
               Questions?{' '}
               {contact.email && (
@@ -41,15 +41,6 @@ export function DonatePanel() {
                   className="text-white underline-offset-4 hover:underline"
                 >
                   {contact.email}
-                </a>
-              )}
-              {contact.email && contact.phone && ' · '}
-              {contact.phone && (
-                <a
-                  href={`tel:${contact.phone.replace(/\s/g, '')}`}
-                  className="font-ui whitespace-nowrap text-white underline-offset-4 hover:underline"
-                >
-                  {contact.phone}
                 </a>
               )}
             </p>

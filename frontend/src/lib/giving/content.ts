@@ -18,7 +18,6 @@ export const donatePanel = {
   ],
   contact: {
     email: siteConfig.contact.email,
-    phone: siteConfig.contact.phone,
   },
   closing: 'Jazakum Allahu khairan',
 };

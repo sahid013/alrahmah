@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode, SVGProps } from 'react';
-import { MailIcon, MapPinIcon, PhoneIcon } from '@/components/icons';
+import { MailIcon, MapPinIcon } from '@/components/icons';
 import { socialIcons } from '@/components/layout/socials-menu';
 import { siteConfig } from '@/config/site';
 
@@ -30,16 +30,13 @@ function DetailRow({
 interface ContactDetailsProps {
   /** Defaults to the masjid's main contact email. */
   email?: string;
-  /** Defaults to the masjid's main phone number. */
-  phone?: string;
   showAddress?: boolean;
   showSocials?: boolean;
 }
 
-/** Email, address and phone with square icon tiles, then the social channels. */
+/** Email and address with square icon tiles, then the social channels. */
 export function ContactDetails({
   email = siteConfig.contact.email,
-  phone = siteConfig.contact.phone,
   showAddress = true,
   showSocials = true,
 }: ContactDetailsProps) {
@@ -62,16 +59,6 @@ export function ContactDetails({
           {showAddress && (
             <DetailRow icon={MapPinIcon} label="Address">
               {contact.addressLines.join(', ')}
-            </DetailRow>
-          )}
-          {phone && (
-            <DetailRow icon={PhoneIcon} label="Phone">
-              <a
-                href={`tel:${phone.replace(/\s/g, '')}`}
-                className="font-ui text-primary-900 tabular-nums transition-colors duration-300 hover:text-secondary-700"
-              >
-                {phone}
-              </a>
             </DetailRow>
           )}
         </ul>

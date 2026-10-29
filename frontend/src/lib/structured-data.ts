@@ -26,9 +26,6 @@ const address = {
 
 const areaServed = { '@type': 'City', name: siteConfig.address.locality };
 
-/** UK number in international format, e.g. "07508 044680" → "+44 7508 044680". */
-const internationalPhone = (phone: string) => phone.replace(/^0/, '+44 ');
-
 /** The masjid and the website, rendered once on every page by the root layout. */
 export const siteJsonLd = () => ({
   '@context': CONTEXT,
@@ -43,7 +40,6 @@ export const siteJsonLd = () => ({
       logo: absolute(siteConfig.logo.src),
       image: absolute(siteConfig.photo),
       foundingDate: String(siteConfig.foundingYear),
-      telephone: siteConfig.contact.phone && internationalPhone(siteConfig.contact.phone),
       email: siteConfig.contact.email,
       address,
       areaServed,

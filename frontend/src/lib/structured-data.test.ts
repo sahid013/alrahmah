@@ -50,9 +50,10 @@ describe('eventJsonLd', () => {
 describe('site structured data', () => {
   it('leaves placeholder social links out of sameAs', () => {
     const mosque = siteJsonLd()['@graph'][0]!;
-    expect(mosque.sameAs).not.toContain('https://www.instagram.com/');
-    expect(mosque.sameAs).toContain('https://www.facebook.com/alrahmahleeds/');
-    expect(mosque.telephone).toBe('+44 7508 044680');
+    expect(mosque.sameAs).toContain('https://www.tiktok.com/@alrahmahmasjid_');
+    expect(mosque.sameAs).toContain('https://www.instagram.com/alrahmahmasjid_/');
+    expect(mosque.sameAs).not.toContain('https://whatsapp.com/channel/');
+    expect(mosque).not.toHaveProperty('telephone');
   });
 
   it('starts every breadcrumb trail at Home', () => {

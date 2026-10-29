@@ -1,11 +1,11 @@
 import type { ComponentType, SVGProps } from 'react';
-import { FacebookIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon } from '@/components/icons';
+import { InstagramIcon, TikTokIcon, WhatsAppIcon, YouTubeIcon } from '@/components/icons';
 import { siteConfig, type SocialLink } from '@/config/site';
 
 export const socialIcons: Record<SocialLink['platform'], ComponentType<SVGProps<SVGSVGElement>>> = {
   whatsapp: WhatsAppIcon,
   instagram: InstagramIcon,
-  facebook: FacebookIcon,
+  tiktok: TikTokIcon,
   youtube: YouTubeIcon,
 };
 

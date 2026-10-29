@@ -69,16 +69,8 @@ export function Footer() {
               </span>
             ))}
           </p>
-          {(contact.phone || contact.email) && (
+          {contact.email && (
             <p className="mt-4 space-y-1 text-primary-200">
-              {contact.phone && (
-                <a
-                  href={`tel:${contact.phone.replace(/\s/g, '')}`}
-                  className="block hover:text-white"
-                >
-                  {contact.phone}
-                </a>
-              )}
               {contact.email && (
                 <a href={`mailto:${contact.email}`} className="block hover:text-white">
                   {contact.email}

@@ -5,7 +5,6 @@ import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { PageHero } from '@/components/ui/page-hero';
 import { Reveal } from '@/components/ui/reveal';
-import { siteConfig } from '@/config/site';
 import { services } from '@/lib/services/data';
 import { buildMetadata } from '@/lib/seo';
 import { breadcrumbJsonLd } from '@/lib/structured-data';
@@ -16,8 +15,6 @@ export const metadata = buildMetadata({
     'Funerals, Islamic education for children and adults, and nikah ceremonies at Al-Rahmah Masjid, Leeds. Find the service you need and how to get in touch.',
   path: '/services',
 });
-
-const { phone } = siteConfig.contact;
 
 /**
  * All services, grouped as in the navbar "Services" menu (`lib/services/data.ts`): one titled
@@ -48,19 +45,7 @@ export default function ServicesPage() {
               Not sure where to start?
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-primary-100">
-              Get in touch and we’ll point you to the right person
-              {phone && (
-                <>
-                  , or call us on{' '}
-                  <a
-                    href={`tel:${phone.replace(/\s/g, '')}`}
-                    className="font-ui whitespace-nowrap text-secondary-300 hover:text-white"
-                  >
-                    {phone}
-                  </a>
-                </>
-              )}
-              .
+              Get in touch and we’ll point you to the right person.
             </p>
           </Reveal>
           <Reveal order={1}>
