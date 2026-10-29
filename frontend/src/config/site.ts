@@ -83,12 +83,14 @@ export const siteConfig = {
     /** Official online donation page for the appeal. */
     appealDonate: 'https://fundraising.alrahmah.org.uk/makespace',
     // TODO: replace with the real WhatsApp channel invite link.
-    whatsappChannel: 'https://whatsapp.com/channel/',
+    /** The masjid's WhatsApp community (invite link); every WhatsApp button uses it. */
+    whatsappChannel: 'https://chat.whatsapp.com/JBmHavm9v7qBeDlEzItaGk',
     /** External Google Form for volunteer applications. */
     volunteerForm:
       'https://docs.google.com/forms/d/e/1FAIpQLSf5V-Dtcq81qOWISDskeZNn5htAAoJboX9Zg7-qurTkz-KZvQ/viewform',
-    // TODO: replace with the nikah booking / certificate form link.
-    nikahBooking: '/contact',
+    /** External Google Form for nikah bookings (the nikah certificate details). */
+    nikahBooking:
+      'https://docs.google.com/forms/d/e/1FAIpQLSeEoYMAjxOIh11N9MqCvBy0GGGSkPsCnSoXGZaDHTQma3jOVg/viewform?usp=header',
   },
   /** YouTube channel, and its "Weekly Khutbah Videos" playlist (newest first) shown on the home page. */
   youtube: {
@@ -97,9 +99,8 @@ export const siteConfig = {
   },
   /**
    * Social channels promoted in the "Follow Us" nav dropdown.
-   * TODO: replace every placeholder URL with Al-Rahmah's real profile links (remove any the
-   * masjid doesn't use — the dropdown adapts to however many remain). `placeholder` entries are
-   * left out of the structured data (`sameAs`); drop the flag once the real link is in.
+   * All real (October 2026); the dropdown adapts to however many there are. Mark a link that
+   * isn't real yet with `placeholder: true` to keep it out of the structured data (`sameAs`).
    */
   socials: [
     { platform: 'tiktok', name: 'TikTok', href: 'https://www.tiktok.com/@alrahmahmasjid_' },
@@ -112,8 +113,7 @@ export const siteConfig = {
     {
       platform: 'whatsapp',
       name: 'WhatsApp',
-      href: 'https://whatsapp.com/channel/',
-      placeholder: true,
+      href: 'https://chat.whatsapp.com/JBmHavm9v7qBeDlEzItaGk',
     },
   ],
 } as const;

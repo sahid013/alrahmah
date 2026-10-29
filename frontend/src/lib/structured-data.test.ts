@@ -52,7 +52,7 @@ describe('site structured data', () => {
     const mosque = siteJsonLd()['@graph'][0]!;
     expect(mosque.sameAs).toContain('https://www.tiktok.com/@alrahmahmasjid_');
     expect(mosque.sameAs).toContain('https://www.instagram.com/alrahmahmasjid_/');
-    expect(mosque.sameAs).not.toContain('https://whatsapp.com/channel/');
+    expect(mosque.sameAs).not.toContain('https://chat.whatsapp.com/JBmHavm9v7qBeDlEzItaGk');
     expect(mosque).not.toHaveProperty('telephone');
   });
 

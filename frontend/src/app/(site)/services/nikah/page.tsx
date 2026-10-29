@@ -61,7 +61,13 @@ export default function ServicesNikahPage() {
                   Participants in a Nikah are asked to fill out their details on the nikah
                   certificate which can be accessed below.
                 </p>
-                <ButtonLink href={siteConfig.links.nikahBooking} size="lg" className="mt-6">
+                <ButtonLink
+                  href={siteConfig.links.nikahBooking}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="lg"
+                  className="mt-6"
+                >
                   Book now
                   <ArrowRightIcon />
                 </ButtonLink>

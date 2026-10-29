@@ -43,7 +43,10 @@ export const siteJsonLd = () => ({
       email: siteConfig.contact.email,
       address,
       areaServed,
-      sameAs: siteConfig.socials.filter((s) => !('placeholder' in s)).map((s) => s.href),
+      // Public profiles only: not placeholders, and not the WhatsApp group's invite link.
+      sameAs: siteConfig.socials
+        .filter((s) => !('placeholder' in s) && s.platform !== 'whatsapp')
+        .map((s) => s.href),
     },
     {
       '@type': 'WebSite',
