@@ -1,5 +1,4 @@
 import { EVENTS_PAGE, getEventHref, type EventItem } from '@/lib/events';
-import { impactReport } from '@/lib/impact/data';
 import { flattenServices, services, type Service } from '@/lib/services/data';
 import { siteConfig } from './site';
 
@@ -39,6 +38,7 @@ export const buildMainNav = (latestEvents: EventItem[]): NavItem[] => [
       { label: 'Contact Us', href: '/contact' },
       { label: 'Vision & Mission', href: '/vision-mission' },
       { label: 'Meet The Team', href: '/team' },
+      { label: 'Impact Reports', href: '/impact-reports' },
     ],
   },
   {
@@ -74,7 +74,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
       { label: 'About Us', href: '/about' },
       { label: 'Vision & Mission', href: '/vision-mission' },
       { label: 'Meet The Team', href: '/team' },
-      { label: 'Impact Report', href: `/impact/${impactReport.year}` },
+      { label: 'Impact Reports', href: '/impact-reports' },
       { label: 'Contact Us', href: '/contact' },
     ],
   },

@@ -42,6 +42,7 @@ export const siteConfig = {
     '/services/funerals',
     '/services/nikah',
     '/team',
+    '/impact-reports',
     '/vision-mission',
     '/volunteering',
     '/cookies',
