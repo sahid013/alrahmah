@@ -34,7 +34,9 @@ function Group({
             {/* Visual order: number then caption; <dt>/<dd> keep the caption as the term. */}
             <dt className="order-2 mt-1 text-lg text-primary-100">{stat.caption}</dt>
             <dd className="order-1 font-heading text-title-4xl leading-none tracking-heading text-white sm:text-title-5xl">
+              {stat.prefix}
               {new Intl.NumberFormat('en-GB').format(stat.value)}
+              {stat.unit}
               {stat.suffix && (
                 <span className="ml-1 align-top text-title-2xl text-secondary-300">
                   {stat.suffix}
@@ -64,7 +66,7 @@ export function ImpactSection({ report }: { report: ImpactReport }) {
       <StaggerGroup>
         <Container className="grid gap-16 pt-20 sm:pt-28 lg:grid-cols-12 lg:gap-12">
           {/* Left: intro + primary group */}
-          <div className="flex flex-col gap-16 lg:col-span-4">
+          <div className="flex flex-col gap-16 lg:col-span-4 lg:pb-28">
             <Reveal>
               <h2 id="impact-title" className="text-title-3xl text-white sm:text-title-4xl">
                 {report.year} Impact
@@ -72,6 +74,7 @@ export function ImpactSection({ report }: { report: ImpactReport }) {
               <p className="mt-5 max-w-md text-lg leading-relaxed text-pretty text-primary-100">
                 {report.intro}
               </p>
+              {report.note && <p className="mt-4 text-sm text-primary-200">{report.note}</p>}
               {report.reportUrl && (
                 <ButtonLink
                   href={report.reportUrl}

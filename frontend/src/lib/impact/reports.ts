@@ -1,3 +1,5 @@
+import type { ImpactReport } from './data';
+
 /**
  * Published impact reports, newest first, shown on `/impact-reports`. Add a report by adding an
  * entry: its PDF goes in `public/impact reports/`, and a WebP of its first page (the preview) in
@@ -12,6 +14,8 @@ export interface PublishedReport {
   pdf: { href: string; fileName: string };
   /** The report's first page. */
   cover: { src: string; alt: string; width: number; height: number };
+  /** Key figures from the report, shown in the impact stat section. */
+  figures?: ImpactReport;
 }
 
 export const impactReports: PublishedReport[] = [
@@ -30,6 +34,45 @@ export const impactReports: PublishedReport[] = [
       alt: 'Cover of the Al-Rahmah Faith Centre Impact & Vision Report 2026: Make Space For Rahmah',
       width: 1600,
       height: 1131,
+    },
+    // From the report (pages 3, 4, 5, 7 and 10), as printed.
+    figures: {
+      year: 2026,
+      intro:
+        'Established in Leeds in 2018, Al-Rahmah is active throughout the week, in the masjid and online. Our community is growing, and we urgently need more space to pray, learn and grow together.',
+      note: 'Figures correct as at October 2026.',
+      primary: {
+        label: 'Online reach',
+        stats: [
+          { value: 25000, suffix: '+', caption: 'YouTube subscribers' },
+          { value: 34000, suffix: '+', caption: 'TikTok followers' },
+          { value: 1000, suffix: '+', caption: 'WhatsApp community members' },
+        ],
+      },
+      secondary: [
+        {
+          label: 'Views',
+          stats: [
+            { value: 2.8, unit: 'm', caption: 'YouTube views (approx.)' },
+            { value: 3, unit: 'm', suffix: '+', caption: 'TikTok views' },
+          ],
+        },
+        {
+          label: 'In the masjid',
+          stats: [
+            { value: 35, caption: 'Shahadahs taken at our masjid' },
+            { value: 150, caption: 'Madrasah students' },
+          ],
+        },
+      ],
+      featured: {
+        label: 'The next chapter',
+        stats: [
+          { value: 1000, suffix: '+', caption: 'Worshippers, up from about 350 today' },
+          { value: 200, suffix: '+', caption: 'Students, with 50+ children waiting' },
+          { prefix: '£', value: 585000, caption: 'Raised so far, 54% of the milestone' },
+        ],
+      },
     },
   },
 ];

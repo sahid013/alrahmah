@@ -7,6 +7,10 @@
 
 export interface ImpactStat {
   value: number;
+  /** e.g. "£" for "£585,000". */
+  prefix?: string;
+  /** Full-size unit after the number, e.g. "m" for "2.8m". */
+  unit?: string;
   /** e.g. "+" for "3000+". */
   suffix?: string;
   caption: string;
@@ -20,6 +24,8 @@ export interface ImpactGroup {
 export interface ImpactReport {
   year: number;
   intro: string;
+  /** Small print under the intro, e.g. when the figures were correct. */
+  note?: string;
   /** PDF or page for the full report; the button only shows when set. */
   reportUrl?: string;
   /** Left column. */

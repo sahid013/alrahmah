@@ -1,3 +1,4 @@
+import { ImpactSection } from '@/components/impact/impact-section';
 import { ReportCard } from '@/components/impact/report-card';
 import { Container } from '@/components/ui/container';
 import { PageHero } from '@/components/ui/page-hero';
@@ -13,6 +14,7 @@ export const metadata = buildMetadata({
 });
 
 export default function ImpactReportsPage() {
+  const latest = impactReports[0];
   return (
     <>
       <PageHero eyebrow={siteConfig.name} title="Impact Reports" />
@@ -25,6 +27,7 @@ export default function ImpactReportsPage() {
           ))}
         </Container>
       </section>
+      {latest?.figures && <ImpactSection report={latest.figures} />}
     </>
   );
 }
