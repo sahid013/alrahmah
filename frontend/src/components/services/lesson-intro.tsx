@@ -11,15 +11,15 @@ interface LessonIntroProps {
   label: string;
   title: string;
   description: string;
-  /** Lesson poster at its natural ratio; a patterned placeholder shows until it's supplied. */
-  poster?: { src: string; alt: string; width: number; height: number };
+  /** The lesson's photo (the same one as its preview card), in a 4:3 frame. */
+  image?: { src: string; alt: string };
 }
 
 /**
  * Education lesson page body: a sticky text column (label, title, intro, link to all events)
- * beside the lesson poster.
+ * beside the lesson's photo, or a patterned placeholder without one.
  */
-export function LessonIntro({ id, label, title, description, poster }: LessonIntroProps) {
+export function LessonIntro({ id, label, title, description, image }: LessonIntroProps) {
   const headingId = `${id}-title`;
   return (
     <section aria-labelledby={headingId} className="py-20 sm:py-28">
@@ -46,19 +46,20 @@ export function LessonIntro({ id, label, title, description, poster }: LessonInt
           </Reveal>
         </div>
         <Reveal order={1} className="lg:col-span-6">
-          {poster ? (
-            <Image
-              src={poster.src}
-              alt={poster.alt}
-              width={poster.width}
-              height={poster.height}
-              sizes="(min-width: 1024px) 45vw, 100vw"
-              className="mx-auto w-full max-w-xl lg:mr-0 lg:ml-auto"
-            />
+          {image ? (
+            <div className="relative aspect-4/3 overflow-hidden bg-primary-50">
+              <Image
+                src={image.src}
+                alt={image.alt}
+                fill
+                sizes="(min-width: 1024px) 45vw, 100vw"
+                className="object-cover"
+              />
+            </div>
           ) : (
             <div
               aria-hidden
-              className="relative isolate mx-auto flex aspect-[5/7] w-full max-w-xl items-center justify-center overflow-hidden bg-primary-700 lg:mr-0 lg:ml-auto"
+              className="relative isolate flex aspect-4/3 w-full items-center justify-center overflow-hidden bg-primary-700"
             >
               <div className="bg-islamic-pattern absolute inset-0 -z-10 opacity-[0.07]" />
               <PeopleIcon className="size-40 text-secondary-300" strokeWidth={0.75} />

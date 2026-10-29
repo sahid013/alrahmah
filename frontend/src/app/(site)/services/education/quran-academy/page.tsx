@@ -5,6 +5,7 @@ import { PageHero } from '@/components/ui/page-hero';
 import { Reveal } from '@/components/ui/reveal';
 import { JsonLd } from '@/components/seo/json-ld';
 import { buildMetadata } from '@/lib/seo';
+import { flattenServices } from '@/lib/services/data';
 import { servicePageJsonLd } from '@/lib/structured-data';
 
 const description =
@@ -15,6 +16,9 @@ export const metadata = buildMetadata({
   description,
   path: '/services/education/quran-academy',
 });
+
+/** Same photo as the academy's preview card (`lib/services/data.ts`). */
+const academy = flattenServices().find((s) => s.href === '/services/education/quran-academy')!;
 
 const structuredData = servicePageJsonLd({
   name: 'Al-Rahmah Quran Academy',
@@ -76,16 +80,19 @@ export default function QuranAcademyPage() {
               </dl>
             </Reveal>
           </div>
-          <Reveal order={1} className="lg:col-span-6">
-            <Image
-              src="/images/services/quran-academy-logo.webp"
-              alt="Al Rahmah Quran Academy, Leeds, UK — gold crest logo"
-              width={1024}
-              height={680}
-              sizes="(min-width: 1024px) 45vw, 100vw"
-              className="w-full"
-            />
-          </Reveal>
+          {academy.image && (
+            <Reveal order={1} className="lg:col-span-6">
+              <div className="relative aspect-4/3 overflow-hidden bg-primary-50">
+                <Image
+                  src={academy.image.src}
+                  alt={academy.image.alt}
+                  fill
+                  sizes="(min-width: 1024px) 45vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            </Reveal>
+          )}
         </Container>
       </section>
 

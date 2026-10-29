@@ -2,6 +2,7 @@ import { LessonIntro } from '@/components/services/lesson-intro';
 import { PageHero } from '@/components/ui/page-hero';
 import { JsonLd } from '@/components/seo/json-ld';
 import { buildMetadata } from '@/lib/seo';
+import { flattenServices } from '@/lib/services/data';
 import { servicePageJsonLd } from '@/lib/structured-data';
 
 const description =
@@ -12,6 +13,9 @@ export const metadata = buildMetadata({
   description,
   path: '/services/education/sunday-lessons',
 });
+
+/** Same photo as the lesson's preview card (`lib/services/data.ts`). */
+const lesson = flattenServices().find((s) => s.href === '/services/education/sunday-lessons')!;
 
 const structuredData = servicePageJsonLd({
   name: 'Sunday Weekly Lessons',
@@ -30,12 +34,7 @@ export default function ServicesEducationSundayLessonsPage() {
         label="Every Sunday evening"
         title="Sunday Weekly Lessons"
         description="Every Sunday evening we provide knowledge-based interactive lessons for the community focusing on key Islamic beliefs and practices. Lessons are engaging and interactive for all."
-        poster={{
-          src: '/images/events/names-of-allaah-poster.webp',
-          alt: 'Understanding the Beautiful Names of Allaah — lesson poster from Al-Rahmah Faith Centre',
-          width: 1000,
-          height: 1399,
-        }}
+        image={lesson.image}
       />
     </>
   );

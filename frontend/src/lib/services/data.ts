@@ -59,7 +59,7 @@ export const services: Service[] = [
         href: '/services/education/sunday-lessons',
         image: {
           src: '/images/services/Sunday weekly lesson.webp',
-          alt: 'A teacher leading a lesson with a seated circle of students in the masjid',
+          alt: 'An open Qur’an on a carved wooden stand in the lamp-lit prayer hall',
         },
         icon: 'weekly',
         summary:
@@ -71,7 +71,7 @@ export const services: Service[] = [
         href: '/services/education/sisters-lessons',
         image: {
           src: '/images/services/sisters only lesson.webp',
-          alt: 'A sisters’ class, with a teacher reading to women seated in the prayer hall',
+          alt: 'An open Qur’an on a stand among cushions, notebooks and flowers in a warmly lit prayer hall',
         },
         icon: 'sisters',
         summary: 'A welcoming space for sisters to learn, ask questions and grow together.',
