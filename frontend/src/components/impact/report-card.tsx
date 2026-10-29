@@ -3,6 +3,7 @@ import { DownloadIcon } from '@/components/icons';
 import { buttonStyles } from '@/components/ui/button';
 import { Reveal } from '@/components/ui/reveal';
 import type { PublishedReport } from '@/lib/impact/reports';
+import { cn } from '@/lib/utils/cn';
 
 /** One published report: its first page as the preview, beside the title and a PDF download. */
 export function ReportCard({ report }: { report: PublishedReport }) {
@@ -48,19 +49,14 @@ export function ReportCard({ report }: { report: PublishedReport }) {
           </p>
         </Reveal>
         <Reveal order={3}>
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <a
-              href={report.pdf.href}
-              download={report.pdf.fileName}
-              className={buttonStyles({ variant: 'primary' })}
-            >
-              <DownloadIcon className="size-5" />
-              Download PDF
-            </a>
-            <p className="font-ui text-sm text-neutral-500">
-              PDF · {report.pdf.pages} pages · {report.pdf.sizeLabel}
-            </p>
-          </div>
+          <a
+            href={report.pdf.href}
+            download={report.pdf.fileName}
+            className={cn(buttonStyles({ variant: 'primary' }), 'mt-8')}
+          >
+            <DownloadIcon className="size-5" />
+            Download PDF
+          </a>
         </Reveal>
       </div>
     </article>

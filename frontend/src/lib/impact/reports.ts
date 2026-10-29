@@ -9,7 +9,7 @@ export interface PublishedReport {
   year: number;
   summary: string;
   /** The PDF, as served from `public/` (URL-encoded). */
-  pdf: { href: string; fileName: string; pages: number; sizeLabel: string };
+  pdf: { href: string; fileName: string };
   /** The report's first page. */
   cover: { src: string; alt: string; width: number; height: number };
 }
@@ -24,8 +24,6 @@ export const impactReports: PublishedReport[] = [
     pdf: {
       href: '/impact%20reports/Al%20Rahmah%20Impact%20Report%20Website.pdf',
       fileName: 'Al-Rahmah-Impact-and-Vision-Report-2026.pdf',
-      pages: 16,
-      sizeLabel: '22 MB',
     },
     cover: {
       src: '/images/impact/impact-vision-report-2026.webp',
