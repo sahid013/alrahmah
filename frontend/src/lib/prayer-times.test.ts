@@ -44,6 +44,22 @@ describe('published 2026 timetable (WEBSITE 2026.xlsx, Sheet1)', () => {
     expect(formatSalahTime(day.salah[3]!.time)).toBe('16:47');
   });
 
+  it("sets Jumu'ah at 12:45 on 2026 Fridays, and nowhere else", () => {
+    const fridays = ['2026-01-02', '2026-03-27', '2026-10-30', '2026-12-25'];
+    for (const date of fridays) {
+      const day = getDayTimetable(new Date(`${date}T12:00:00Z`));
+      expect(day.jumuah?.map(formatSalahTime)).toEqual(['12:45']);
+      expect(formatSalahTime(day.salah[1]!.jamaah!)).toBe('12:45');
+    }
+    // British Summer Time: Dhuhr begins after 12:45, so the published times stay.
+    const summer = getDayTimetable(new Date('2026-06-26T12:00:00Z'));
+    expect(summer.jumuah).toBeUndefined();
+    expect(formatSalahTime(summer.salah[1]!.time)).toBe('13:09');
+    expect(formatSalahTime(summer.salah[1]!.jamaah!)).toBe('13:30');
+    expect(getDayTimetable(new Date('2026-10-29T12:00:00Z')).jumuah).toBeUndefined(); // Thursday
+    expect(getDayTimetable(new Date('2027-01-01T12:00:00Z')).jumuah).toBeUndefined(); // 2027
+  });
+
   it("names Dhuhr Jumu'ah on Fridays", () => {
     expect(times('2026-01-02T12:00:00Z').names[1]).toBe("Jumu'ah"); // Friday
     expect(times('2026-01-03T12:00:00Z').names[1]).toBe('Dhuhr');

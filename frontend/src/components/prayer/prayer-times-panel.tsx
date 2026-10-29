@@ -191,7 +191,7 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
             </div>
             <div className="text-right">
               <p className="font-label text-[0.65rem] font-bold tracking-[0.15em] text-primary-300 uppercase">
-                {friday.jumuah?.length ? 'Khutbah' : 'Dhuhr begins'}
+                {friday.jumuah?.length ? "Jama'ah" : 'Dhuhr begins'}
               </p>
               <p className="font-ui text-xl font-medium tabular-nums">
                 {(friday.jumuah?.length ? friday.jumuah : [friday.salah[1]!.time])

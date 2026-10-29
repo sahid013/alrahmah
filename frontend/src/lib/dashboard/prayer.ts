@@ -4,7 +4,8 @@ import { PRAYER_LABELS, PRAYERS, type PrayerDay, type PrayerKey } from './types'
 /**
  * The default timetable for an ISO date (masjid time zone), used when no override is stored: the
  * masjid's published timetable (start + jama'ah) where there is one, otherwise calculated times.
- * Fridays include one Jumu'ah time by default: the Dhuhr time, matching what the website shows.
+ * Fridays include one Jumu'ah time by default: the year's fixed Jumu'ah time where there is one
+ * (12:45 in 2026), otherwise the Dhuhr time, matching what the website shows.
  */
 export function timetableDay(date: string): PrayerDay {
   const t = getDayTimetable(new Date(`${date}T12:00:00Z`));
@@ -15,7 +16,6 @@ export function timetableDay(date: string): PrayerDay {
       ...(salah.jamaah && { jamaah: formatSalahTime(salah.jamaah) }),
     };
   };
-  const at = (id: 'dhuhr') => times(id).adhan;
   return {
     date,
     times: {
@@ -26,7 +26,9 @@ export function timetableDay(date: string): PrayerDay {
       maghrib: times('maghrib'),
       isha: times('isha'),
     },
-    ...(isFriday(date) && { jumuah: [at('dhuhr')] }),
+    ...(isFriday(date) && {
+      jumuah: t.jumuah?.map(formatSalahTime) ?? [times('dhuhr').adhan],
+    }),
   };
 }
 

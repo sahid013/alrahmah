@@ -81,7 +81,7 @@ describe('prayer helpers', () => {
   });
 
   it("validates order and jama'ah times", () => {
-    const day = timetableDay('2026-10-02');
+    const day = timetableDay('2026-09-30');
     expect(validateDay(day)).toEqual({});
     day.times.asr = { adhan: day.times.dhuhr.adhan, jamaah: '00:01' };
     const errors = validateDay(day);
@@ -186,12 +186,19 @@ describe('exports', () => {
 });
 
 describe("default Jumu'ah", () => {
-  it("gives every Friday one Jumu'ah time (its Dhuhr time) and other days none", () => {
-    const friday = timetableDay('2026-10-02');
-    expect(isFriday('2026-10-02')).toBe(true);
-    expect(friday.jumuah).toEqual([friday.times.dhuhr.adhan]);
-    expect(timetableDay('2026-10-03').jumuah).toBeUndefined();
+  it("gives every 2026 Friday the fixed 12:45 Jumu'ah, also as its Dhuhr jama'ah", () => {
+    const friday = timetableDay('2026-11-06');
+    expect(isFriday('2026-11-06')).toBe(true);
+    expect(friday.jumuah).toEqual(['12:45']);
+    expect(friday.times.dhuhr.jamaah).toBe('12:45');
+    expect(timetableDay('2026-11-07').jumuah).toBeUndefined();
     expect(validateDay(friday)).toEqual({});
+  });
+
+  it("falls back to the Dhuhr time in a year without a fixed Jumu'ah", () => {
+    const friday = timetableDay('2027-01-01');
+    expect(isFriday('2027-01-01')).toBe(true);
+    expect(friday.jumuah).toEqual([friday.times.dhuhr.adhan]);
   });
 });
 

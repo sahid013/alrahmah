@@ -33,7 +33,7 @@ export interface DayTimetable {
   sunrise: Date;
   /** `published` = the masjid's own timetable (or dashboard edit); `calculated` = astronomical fallback. */
   source: 'published' | 'calculated';
-  /** Fridays: Jumu'ah (khutbah) times set in the dashboard. */
+  /** Fridays: Jumu'ah times (the year's fixed time, or as set in the dashboard). */
   jumuah?: Date[];
   /** A note for the day from the dashboard, e.g. "Eid prayer at 8am". */
   note?: string;
@@ -41,6 +41,14 @@ export interface DayTimetable {
 
 /** Published timetables by year: "MM-DD" → space-separated UK clock times (see the generator). */
 const PUBLISHED: Record<number, Record<string, string>> = { 2026: PRAYER_TIMETABLE_2026 };
+
+/**
+ * Jumu'ah time (UK clock) for every Friday of a published year, set by the masjid. It's that
+ * Friday's Jumu'ah time and its Dhuhr jama'ah, except on Fridays when it would come before Dhuhr
+ * begins (British Summer Time): those keep the published Dhuhr jama'ah and show "Dhuhr begins".
+ * A dashboard edit of a Friday still takes precedence.
+ */
+const PUBLISHED_JUMUAH: Record<number, string> = { 2026: '12:45' };
 
 const { latitude, longitude, timeZone, method, madhab } = siteConfig.prayer;
 const coordinates = new Coordinates(latitude, longitude);
@@ -118,9 +126,13 @@ function publishedDay(day: ReturnType<typeof localDay>): DayTimetable | undefine
   const row = PUBLISHED[day.year]?.[key];
   if (!row) return undefined;
   const at = (hhmm: string) => atLocalTime(day.year, day.month, day.day, hhmm);
-  const [fajr, fajrJ, sunrise, dhuhr, dhuhrJ, asr, asrJ, maghrib, isha, ishaJ] = row
+  const [fajr, fajrJ, sunrise, dhuhr, publishedDhuhrJ, asr, asrJ, maghrib, isha, ishaJ] = row
     .split(' ')
     .map(at);
+  const jumuahTime = day.isFriday ? PUBLISHED_JUMUAH[day.year] : undefined;
+  const fixed = jumuahTime ? at(jumuahTime) : undefined;
+  const jumuah = fixed && fixed >= dhuhr! ? fixed : undefined;
+  const dhuhrJ = jumuah ?? publishedDhuhrJ;
   const salah = (id: SalahId, time: Date, jamaah?: Date): Salah => ({
     id,
     name: named(id, day.isFriday),
@@ -139,6 +151,7 @@ function publishedDay(day: ReturnType<typeof localDay>): DayTimetable | undefine
       salah('maghrib', maghrib!),
       salah('isha', isha!, ishaJ),
     ],
+    ...(jumuah && { jumuah: [jumuah] }),
   };
 }
 
