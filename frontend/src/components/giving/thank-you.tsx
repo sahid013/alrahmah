@@ -8,7 +8,7 @@ import {
   type DonationConfirmation,
 } from '@/lib/giving/confirmation';
 import { formatClock } from '@/lib/giving/schedule';
-import { amountWithFrequency, FREQUENCY_LABELS, formatGbp } from '@/lib/giving/types';
+import { amountWithFrequency, FREQUENCY_LABELS, formatGbp, givingUnit } from '@/lib/giving/types';
 import { cn } from '@/lib/utils/cn';
 import { NextStep, type MakeMonthly } from './thank-you-next-step';
 
@@ -40,7 +40,7 @@ export function ThankYou({
   pageHeading?: boolean;
 }) {
   const g = program.giving;
-  const unit = g.kind === 'daily' ? g.unit : undefined;
+  const unit = givingUnit(g);
   const Title = pageHeading ? 'h1' : 'h2';
   const firstDaily = c.plan && new Date(c.plan.firstCharge);
 
@@ -53,14 +53,16 @@ export function ThankYou({
     ],
     [
       'Frequency',
-      c.plan && unit
-        ? `Every ${unit}, ${c.plan.count} payments (${formatGbp(c.plan.amount * c.plan.count)} in total)`
-        : FREQUENCY_LABELS[c.frequency],
+      c.plan?.everyFriday
+        ? 'Every Friday, until you cancel'
+        : c.plan && unit
+          ? `Every ${unit}, ${c.plan.count} payments (${formatGbp(c.plan.amount * c.plan.count)} in total)`
+          : FREQUENCY_LABELS[c.frequency],
     ],
     ['Reference', c.reference],
   ];
   if (c.nextPayment) rows.push(['Next payment', formatLongDate(c.nextPayment)]);
-  else if (firstDaily && g.kind === 'daily')
+  else if (firstDaily && (g.kind === 'daily' || g.kind === 'jumuah'))
     rows.push(['First payment', `${formatLongDate(firstDaily)}, ${formatClock(g.chargeTime)}`]);
 
   return (

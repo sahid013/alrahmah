@@ -136,3 +136,34 @@ describe('dataLayerEntry', () => {
     expect(entry).toMatchObject({ event: 'ViewContent', cause: 'x' });
   });
 });
+
+describe("Jumu'ah giving events", () => {
+  const fridays: Giving = { kind: 'jumuah', chargeTime: '12:00', presets: [5, 10, 20] };
+
+  it('is a weekly donation', () => {
+    expect(donationTypeParam('weekly', fridays)).toBe('weekly');
+    expect(causeParam('jumuah-giving')).toBe('jumuah_giving');
+  });
+
+  it('is a Subscribe when the card is saved: one Friday, and a year of Fridays', () => {
+    expect(
+      completionEvent({
+        sessionId: 'cs_live_a1b2c3RFXENE31',
+        eventId: 'uuid-friday',
+        campaignId: 'jumuah-giving',
+        giving: fridays,
+        frequency: 'weekly',
+        amount: 10,
+        method: 'card',
+      }),
+    ).toMatchObject({
+      event: 'Subscribe',
+      event_id: 'uuid-friday',
+      value: 10,
+      annual_value: 520,
+      donation_type: 'weekly',
+      cause: 'jumuah_giving',
+      payment_sequence: 'first',
+    });
+  });
+});

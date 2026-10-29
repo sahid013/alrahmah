@@ -154,8 +154,13 @@ export async function recordStripeEvent(event: Stripe.Event): Promise<void> {
       });
       // A successful payment means the regular gift is active again (e.g. after a failure).
       await updateWhere('subscription_id', subscription, { subscription_status: 'active' });
-      // The first weekly/monthly payment completes the form (daily causes: at the card's setup).
-      if (inv.billing_reason === 'subscription_create' && m.giving_kind !== 'daily')
+      // The first weekly/monthly payment completes the form (daily causes and Jumu'ah giving: at
+      // the card's setup).
+      if (
+        inv.billing_reason === 'subscription_create' &&
+        m.giving_kind !== 'daily' &&
+        m.giving_kind !== 'jumuah'
+      )
         await recordMarketingConsent({
           meta: m,
           email: inv.customer_email,

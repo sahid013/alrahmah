@@ -1,4 +1,4 @@
-import type { DailyGiving } from '@/lib/donations/types';
+import type { DailyGiving, JumuahGiving } from '@/lib/donations/types';
 import { atLocalTime } from '@/lib/prayer-times';
 
 /**
@@ -6,12 +6,16 @@ import { atLocalTime } from '@/lib/prayer-times';
  * at the cause's `chargeTime` in UK time. Pure functions, shared by the form and the server.
  */
 
-/** What a daily donor has signed up for (ISO times; shown on the thank-you screens). */
+/**
+ * What a donor whose card was saved has signed up for (ISO times; shown on the thank-you
+ * screens): a daily cause's payments, or Jumu'ah giving (`everyFriday`: count 0, no last charge).
+ */
 export interface DailyPlan {
   amount: number;
   count: number;
   firstCharge: string;
   lastCharge: string;
+  everyFriday?: boolean;
 }
 
 const DAY_MS = 86_400_000;
@@ -36,6 +40,32 @@ export function chargeTimes(giving: DailyGiving): Date[] {
 /** Payments still to come (each at least 15 minutes away). */
 export const remainingCharges = (giving: DailyGiving, now = new Date()) =>
   chargeTimes(giving).filter((t) => t.getTime() - now.getTime() >= LEAD_MS);
+
+const ukWeekday = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/London',
+  weekday: 'short',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+});
+
+/** Jumu'ah giving: the first payment, the next Friday at `chargeTime` (UK) at least 15 min away. */
+export function nextFridayCharge(giving: JumuahGiving, now = new Date()): Date {
+  for (let i = 0; i < 15; i++) {
+    const parts = Object.fromEntries(
+      ukWeekday.formatToParts(new Date(now.getTime() + i * DAY_MS)).map((p) => [p.type, p.value]),
+    );
+    if (parts.weekday !== 'Fri') continue;
+    const at = atLocalTime(
+      Number(parts.year),
+      Number(parts.month),
+      Number(parts.day),
+      giving.chargeTime,
+    );
+    if (at.getTime() - now.getTime() >= LEAD_MS) return at;
+  }
+  throw new Error('No Friday found in the next two weeks.');
+}
 
 export type DailyStatus = 'upcoming' | 'running' | 'closed';
 

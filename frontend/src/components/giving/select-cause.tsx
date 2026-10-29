@@ -1,6 +1,13 @@
 import Link from 'next/link';
 import type { ComponentType, SVGProps } from 'react';
-import { ArrowRightIcon, MoonIcon, MosqueIcon, PeopleIcon, SunIcon } from '@/components/icons';
+import {
+  ArrowRightIcon,
+  CalendarIcon,
+  MoonIcon,
+  MosqueIcon,
+  PeopleIcon,
+  SunIcon,
+} from '@/components/icons';
 import { Container } from '@/components/ui/container';
 import type { DonationProgram } from '@/lib/donations/types';
 import { checkoutHref } from '@/lib/giving/links';
@@ -16,6 +23,7 @@ const ICONS: Record<
   people: PeopleIcon,
   moon: MoonIcon,
   sun: SunIcon,
+  calendar: CalendarIcon,
 };
 
 /** The short "how you give" line under each cause, e.g. "£5 per person · one-off". */
@@ -23,6 +31,7 @@ export function causeTerms(program: DonationProgram, now = new Date()): string {
   const g = program.giving;
   if (g.kind === 'regular') return 'One-off, weekly or monthly';
   if (g.kind === 'per-person') return `${formatGbp(g.unitAmount)} per person · one-off`;
+  if (g.kind === 'jumuah') return 'Every Friday · until you cancel';
   const range = dateRange(chargeTimes(g));
   return dailyStatus(g, now) === 'closed'
     ? `Closed · returns next year`

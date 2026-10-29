@@ -1,5 +1,5 @@
 import type { Giving } from '@/lib/donations/types';
-import { remainingCharges } from './schedule';
+import { nextFridayCharge, remainingCharges } from './schedule';
 import { REGULAR_FREQUENCIES, type DonationRequest } from './types';
 
 /** A donation the server can't accept as sent (shown to the donor). */
@@ -12,7 +12,9 @@ export type Charge =
   /** Weekly or monthly until the donor cancels. */
   | { kind: 'recurring'; interval: 'week' | 'month'; amount: number }
   /** `amount` on each of the `charges` (card saved now, nothing taken today). */
-  | { kind: 'daily'; amount: number; charges: Date[] };
+  | { kind: 'daily'; amount: number; charges: Date[] }
+  /** `amount` every Friday from `firstCharge` until cancelled (card saved now, nothing today). */
+  | { kind: 'jumuah'; amount: number; firstCharge: Date };
 
 const cents = (n: number) => Math.round(n * 100);
 
@@ -46,6 +48,11 @@ export function chargeFor(r: DonationRequest, giving: Giving, now = new Date()):
       if (!charges.length)
         throw new DonationInputError(`Donations for ${giving.periodLabel} have closed.`);
       return { kind: 'daily', amount: r.amount, charges };
+    }
+    case 'jumuah': {
+      if (r.frequency !== 'weekly')
+        throw new DonationInputError('This donation is taken every Friday.');
+      return { kind: 'jumuah', amount: r.amount, firstCharge: nextFridayCharge(giving, now) };
     }
   }
 }

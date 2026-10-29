@@ -152,15 +152,27 @@ const PER: Record<Exclude<Frequency, 'one-off'>, string> = {
   daily: 'day',
 };
 
-/** "£50", "£50 a week", "£50 a month", "£5 a night" (`unit` names a daily cause's payment). */
+/**
+ * "£50", "£50 a week", "£50 a month", "£5 a night", "£10 every Friday" (`unit` names a daily
+ * cause's payment, or `Friday` for Jumu'ah giving).
+ */
 export const amountWithFrequency = (
   amount: number,
   frequency: Frequency,
-  unit?: 'night' | 'day',
-) =>
-  frequency === 'one-off'
-    ? formatGbp(amount)
-    : `${formatGbp(amount)} a ${frequency === 'daily' && unit ? unit : PER[frequency]}`;
+  unit?: 'night' | 'day' | 'Friday',
+) => {
+  if (frequency === 'one-off') return formatGbp(amount);
+  if (unit === 'Friday') return `${formatGbp(amount)} every Friday`;
+  return `${formatGbp(amount)} a ${frequency === 'daily' && unit ? unit : PER[frequency]}`;
+};
+
+/** The `unit` for `amountWithFrequency` for a cause's kind of giving. */
+export const givingUnit = (giving: { kind: string; unit?: 'night' | 'day' }) =>
+  giving.kind === 'daily'
+    ? giving.unit
+    : giving.kind === 'jumuah'
+      ? ('Friday' as const)
+      : undefined;
 
 /** Field errors keyed by path ("donor.email", "people"). */
 export function fieldErrors(error: z.ZodError): Record<string, string> {

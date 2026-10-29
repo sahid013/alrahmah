@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import { ChevronIcon } from '@/components/icons';
-import type { DailyGiving, DonationProgram } from '@/lib/donations/types';
-import { dateRange, formatClock, remainingCharges, unitLabel } from '@/lib/giving/schedule';
+import type { DailyGiving, DonationProgram, JumuahGiving } from '@/lib/donations/types';
+import {
+  dateRange,
+  formatClock,
+  nextFridayCharge,
+  remainingCharges,
+  unitLabel,
+} from '@/lib/giving/schedule';
 import {
   FREQUENCY_LABELS,
   RECOMMENDED_FREQUENCY,
@@ -34,6 +40,8 @@ export function initialAmount(program: DonationProgram): AmountValue {
   if (g.kind === 'per-person') return { frequency: 'one-off', amountText: '', people: 1 };
   if (g.kind === 'daily')
     return { frequency: 'daily', amountText: String(g.presets[1] ?? g.presets[0]), people: 1 };
+  if (g.kind === 'jumuah')
+    return { frequency: 'weekly', amountText: String(g.presets[1] ?? g.presets[0]), people: 1 };
   const frequency = program.price ? frequencyOfPeriod(program.price.period) : 'one-off';
   return {
     frequency,
@@ -60,7 +68,8 @@ const legendClass = 'mb-3 font-label text-sm font-bold tracking-[0.12em] text-wh
  * Step 1, customised to the cause (the cause itself is chosen on /donate):
  *  - regular (Masjid Expansion): one-off / weekly / monthly + amount.
  *  - per-person (Fitrana): number of people; the total is £ per person × people.
- *  - daily (Last 10 Nights, Dhul Hijjah): amount per night/day, with the dates it's taken.
+ *  - daily (Last 10 Nights, Ramadan Daily, Dhul Hijjah): amount per night/day, with the dates.
+ *  - jumuah (Jumu'ah Giving): amount every Friday, with the first Friday it's taken.
  */
 export function AmountStep({
   program,
@@ -223,6 +232,46 @@ export function AmountStep({
           <DailySummary giving={g} amount={amount} />
         </>
       )}
+
+      {g.kind === 'jumuah' && (
+        <>
+          <AmountPicker
+            legend="Amount each Friday"
+            presets={g.presets}
+            value={value.amountText}
+            error={errors.amount}
+            onChange={(amountText) => onChange({ amountText })}
+          />
+          <FridaySummary giving={g} amount={amount} />
+        </>
+      )}
+    </div>
+  );
+}
+
+const fridayDate = new Intl.DateTimeFormat('en-GB', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  timeZone: 'Europe/London',
+});
+
+function FridaySummary({ giving, amount }: { giving: JumuahGiving; amount: number }) {
+  const valid = Number.isFinite(amount) && amount > 0;
+  return (
+    <div className="space-y-3 border-y border-white/10 py-5" aria-live="polite">
+      <p className="text-lg text-primary-100">
+        {valid ? <strong className="font-ui text-white">{formatGbp(amount)}</strong> : 'A donation'}{' '}
+        every Friday, starting{' '}
+        <span className="font-ui whitespace-nowrap">
+          {fridayDate.format(nextFridayCharge(giving))}
+        </span>
+        .
+      </p>
+      <p className="text-primary-200">
+        Nothing is taken today. Your card is saved securely and charged every Friday at{' '}
+        {formatClock(giving.chargeTime)} (UK time) until you cancel. To stop, just contact us.
+      </p>
     </div>
   );
 }

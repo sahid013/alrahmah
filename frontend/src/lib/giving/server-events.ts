@@ -18,7 +18,9 @@ import { browserFromMetadata } from './visit';
  *                                                                    async_payment_succeeded)
  *   first weekly / monthly payment succeeded    → Purchase         (invoice.paid, subscription_create)
  *   daily cause's card saved                    → Subscribe        (checkout.session.completed, setup)
- *   any later payment (incl. every daily one)   → DonationRenewal  (invoice.paid)
+ *   Jumu'ah giving's card saved                 → Subscribe        (same; value = one Friday)
+ *   any later payment (incl. every daily one,   → DonationRenewal  (invoice.paid)
+ *   and every Jumu'ah Friday)
  *   failed, cancelled, refunded                 → nothing
  *
  * Direct Debit is only reported once Stripe confirms the payment (those same events fire then).
@@ -103,8 +105,8 @@ export async function serverEventFor(
         user_data: userFrom(m, email, idOf(s.customer)),
       };
 
-      // Daily causes: the card is saved and the nightly/daily charges scheduled.
-      if (s.mode === 'setup' && m.giving_kind === 'daily') {
+      // Daily causes / Jumu'ah giving: the card is saved and the charges scheduled.
+      if (s.mode === 'setup' && (m.giving_kind === 'daily' || m.giving_kind === 'jumuah')) {
         if (event.type !== 'checkout.session.completed' || !plan) return null;
         const setup = await stripe.setupIntents.retrieve(idOf(s.setup_intent) ?? '', {
           expand: ['payment_method'],
@@ -116,7 +118,11 @@ export async function serverEventFor(
             ...common,
             event_name: 'Subscribe',
             custom_data: {
-              value: Math.round(plan.amount * plan.count * 100) / 100,
+              // Daily: the total pledged. Jumu'ah: one Friday, plus a year of Fridays.
+              value: plan.everyFriday
+                ? plan.amount
+                : Math.round(plan.amount * plan.count * 100) / 100,
+              ...(plan.everyFriday && { annual_value: annualValue(plan.amount, 'weekly') }),
               currency: 'GBP',
               ...donationFields(m),
               payment_sequence: 'first',
@@ -157,7 +163,11 @@ export async function serverEventFor(
 
       const payments = await stripe.invoicePayments.list({ invoice: inv.id, limit: 1 });
       const paymentIntent = idOf(payments.data[0]?.payment.payment_intent);
-      const first = inv.billing_reason === 'subscription_create' && m.giving_kind !== 'daily';
+      // Daily causes and Jumu'ah giving were reported when the card was saved (Subscribe).
+      const first =
+        inv.billing_reason === 'subscription_create' &&
+        m.giving_kind !== 'daily' &&
+        m.giving_kind !== 'jumuah';
       const fields = donationFields(m);
       const sequence = first ? 'first' : 'renewal';
       // The spec asks for these on every payment in Stripe too.

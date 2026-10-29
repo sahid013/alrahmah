@@ -12,7 +12,7 @@ import type { Frequency } from './types';
  *   InitiateCheckout  step 1 (Amount) → Next
  *   AddPaymentInfo    step 2 (Details) → Next
  *   Purchase          one-off gift, or the first payment of a weekly/monthly one, succeeded
- *   Subscribe         a daily cause's card was saved (charges scheduled)
+ *   Subscribe         a daily cause's or Jumu'ah giving's card was saved (charges scheduled)
  *
  * Purchase and Subscribe fire in the browser only for instant methods: Direct Debit takes days to
  * clear, so it's left to the server events. Their `event_id` is a UUID the server makes with the
@@ -71,10 +71,11 @@ const CAUSE_NAMES: Record<string, string> = {
 export const causeParam = (campaignId: string) =>
   CAUSE_NAMES[campaignId] ?? campaignId.replace(/-/g, '_');
 
-/** one_off / weekly / monthly, or nightly_10 / daily_10 for daily causes. */
+/** one_off / weekly / monthly (Jumu'ah giving: weekly), or nightly_10 / daily_10 for daily causes. */
 export function donationTypeParam(frequency: Frequency, giving: Giving): string {
   if (giving.kind === 'daily')
     return `${giving.unit === 'night' ? 'nightly' : 'daily'}_${giving.count}`;
+  if (giving.kind === 'jumuah') return 'weekly';
   return frequency === 'one-off' ? 'one_off' : frequency;
 }
 
@@ -146,6 +147,15 @@ export function completionEvent(c: Completion): TrackingEvent | null {
     payment_method: c.method,
     order_id: referenceFromSession(c.sessionId),
   };
+  if (c.giving.kind === 'jumuah') {
+    // Subscribe: one Friday's amount (nothing is taken today), plus a year of Fridays.
+    const params: CompletionParams = {
+      ...base,
+      annual_value: annualValue(c.amount, 'weekly'),
+      ...common,
+    };
+    return { event: 'Subscribe', event_id: c.eventId, ...params };
+  }
   if (c.giving.kind === 'daily') {
     // Subscribe: the total pledged, e.g. £5 × 10 = £50.
     const params: CompletionParams = {

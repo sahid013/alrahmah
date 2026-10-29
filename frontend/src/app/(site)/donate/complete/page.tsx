@@ -58,7 +58,8 @@ function trackingEventFor(
 /**
  * Where Stripe returns donors after a redirect-based step (e.g. bank authentication).
  * Shows the session's real status; the donation itself is recorded by the webhook. For daily
- * causes (card saved, nothing taken yet) it also makes sure the nightly/daily charges are scheduled.
+ * causes and Jumu'ah giving (card saved, nothing taken yet) it also makes sure the charges are
+ * scheduled.
  * A successful instant payment also sends its Purchase / Subscribe event to Tag Manager.
  */
 export default async function DonateCompletePage({ searchParams }: PageProps<'/donate/complete'>) {
@@ -104,7 +105,10 @@ export default async function DonateCompletePage({ searchParams }: PageProps<'/d
           people: Number(meta.people) || undefined,
           reference: referenceFromSession(session.id),
           plan: daily ?? undefined,
-          nextPayment: nextPaymentDate(frequency, new Date(session.created * 1000)),
+          // Cards saved for later (daily, Jumu'ah) show their first payment instead.
+          nextPayment: daily
+            ? undefined
+            : nextPaymentDate(frequency, new Date(session.created * 1000)),
         }
       : null;
 

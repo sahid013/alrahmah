@@ -1,9 +1,16 @@
 import type { ReactNode } from 'react';
 import { siteConfig } from '@/config/site';
 import type { DonationProgram } from '@/lib/donations/types';
-import { dateRange, remainingCharges } from '@/lib/giving/schedule';
+import { dateRange, nextFridayCharge, remainingCharges } from '@/lib/giving/schedule';
 import { FREQUENCY_LABELS, formatGbp, type DonationRequest } from '@/lib/giving/types';
 import { ErrorBox, StepTitle } from './fields';
+
+const fridayDate = new Intl.DateTimeFormat('en-GB', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  timeZone: 'Europe/London',
+});
 
 /** The summary rows for the cause's kind of giving. */
 function donationRows(request: DonationRequest, program: DonationProgram): [string, string][] {
@@ -26,6 +33,14 @@ function donationRows(request: DonationRequest, program: DonationProgram): [stri
       ['Taken today', formatGbp(0)],
     ];
   }
+  if (g.kind === 'jumuah') {
+    return [
+      ['Cause', program.title],
+      ['Each Friday', formatGbp(request.amount)],
+      ['First payment', fridayDate.format(nextFridayCharge(g))],
+      ['Taken today', formatGbp(0)],
+    ];
+  }
   return [
     ['Donation', formatGbp(request.amount)],
     ['How often', FREQUENCY_LABELS[request.frequency]],
@@ -45,7 +60,8 @@ export function PaymentStep({
   error?: string;
   children: ReactNode;
 }) {
-  const daily = program.giving.kind === 'daily';
+  /** Daily causes and Jumu'ah giving save the card; nothing is taken today. */
+  const daily = program.giving.kind === 'daily' || program.giving.kind === 'jumuah';
   const rows: [string, string][] = [
     ...donationRows(request, program),
     ...(request.donor.type === 'organisation'

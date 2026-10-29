@@ -190,3 +190,39 @@ describe('serverEventFor', () => {
     expect(await serverEventFor(invoice('subscription_cycle', older))).toBeNull();
   });
 });
+
+describe("serverEventFor: Jumu'ah giving", () => {
+  const fridays = {
+    ...meta,
+    campaign_id: 'jumuah-giving',
+    cause: 'jumuah_giving',
+    giving_kind: 'jumuah',
+    frequency: 'weekly',
+    donation_type: 'weekly',
+  };
+
+  it('sends a Subscribe for one Friday (and a year of Fridays) when the card is saved', async () => {
+    const result = await serverEventFor(
+      stripeEvent('checkout.session.completed', {
+        id: 'cs_live_ccccFRIDAY01',
+        mode: 'setup',
+        setup_intent: 'seti_1',
+        customer: 'cus_1',
+        metadata: fridays,
+      }),
+      { amount: 10, count: 0, firstCharge: '', lastCharge: '', everyFriday: true },
+    );
+    expect(result?.event).toMatchObject({
+      event_name: 'Subscribe',
+      event_id: 'uuid-1',
+      custom_data: { value: 10, annual_value: 520, donation_type: 'weekly' },
+    });
+  });
+
+  it('counts every Friday payment, the first included, as a renewal', async () => {
+    const first = await serverEventFor(invoice('subscription_create', fridays));
+    expect(first?.event.event_name).toBe('DonationRenewal');
+    const later = await serverEventFor(invoice('subscription_cycle', fridays));
+    expect(later?.event.event_name).toBe('DonationRenewal');
+  });
+});

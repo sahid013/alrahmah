@@ -37,6 +37,16 @@ export const seedDonations: z.input<typeof donationsDataSchema> = {
       icon: 'mosque',
     },
     {
+      id: 'jumuah-giving',
+      title: 'Jumu’ah Giving',
+      summary:
+        'Give every Friday, the best day of the week. A small weekly gift that supports the masjid all year round.',
+      cta: { label: 'Donate', href: checkoutHref('jumuah-giving') },
+      // Taken each Friday before Jumu'ah, until the donor cancels.
+      giving: { kind: 'jumuah', chargeTime: '12:00', presets: [5, 10, 20] },
+      icon: 'calendar',
+    },
+    {
       id: 'fitrana',
       title: 'Fitrana',
       summary: 'Zakat al-Fitr, paid for each member of your household before the Eid prayer.',
@@ -58,6 +68,23 @@ export const seedDonations: z.input<typeof donationsDataSchema> = {
         unit: 'night',
         chargeTime: '21:00',
         periodLabel: 'the last 10 nights of Ramadan',
+        presets: [1, 5, 10, 20],
+      },
+      icon: 'moon',
+    },
+    {
+      id: 'ramadan-daily',
+      title: 'Ramadan Daily',
+      summary: 'Give every night of Ramadan, from the first night to the last.',
+      cta: { label: 'Donate', href: checkoutHref('ramadan-daily') },
+      giving: {
+        kind: 'daily',
+        // Night 1 of Ramadan 1448 begins on the evening of 7 Feb 2027 (30 nights to 8 Mar).
+        firstDate: '2027-02-07',
+        count: 30,
+        unit: 'night',
+        chargeTime: '21:00',
+        periodLabel: 'the 30 nights of Ramadan',
         presets: [1, 5, 10, 20],
       },
       icon: 'moon',

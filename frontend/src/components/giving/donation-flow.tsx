@@ -10,7 +10,7 @@ import { UK } from '@/lib/giving/countries';
 import { nextPaymentDate } from '@/lib/giving/confirmation';
 import { readSource } from '@/lib/giving/attribution';
 import { paymentsMode, previewPay, referenceFromSession } from '@/lib/giving/payments';
-import { remainingCharges, type DailyPlan } from '@/lib/giving/schedule';
+import { nextFridayCharge, remainingCharges, type DailyPlan } from '@/lib/giving/schedule';
 import {
   causeParam,
   completionEvent,
@@ -28,6 +28,7 @@ import {
   normalisePostcode,
   type DonationRequest,
   type Donor,
+  givingUnit,
 } from '@/lib/giving/types';
 import { AmountStep, amountFor, initialAmount, type AmountValue } from './amount-step';
 import { DonatePanel } from './donate-panel';
@@ -87,7 +88,7 @@ export function DonationFlow({
   const [attempt, setAttempt] = useState(newId);
 
   const giving = program.giving;
-  const unit = giving.kind === 'daily' ? giving.unit : undefined;
+  const unit = givingUnit(giving);
   const amount = amountFor(program, choice);
   const request: DonationRequest = {
     campaignId: program.id,
@@ -209,6 +210,14 @@ export function DonationFlow({
             lastCharge: charges.at(-1)?.toISOString() ?? '',
           });
         }
+        if (giving.kind === 'jumuah')
+          setPlan({
+            amount,
+            count: 0,
+            firstCharge: nextFridayCharge(giving).toISOString(),
+            lastCharge: '',
+            everyFriday: true,
+          });
         setReference(reference);
         setPaidAt(new Date());
         goTo(3);
@@ -341,7 +350,9 @@ export function DonationFlow({
                         people: request.people,
                         reference,
                         plan,
-                        nextPayment: paidAt && nextPaymentDate(choice.frequency, paidAt),
+                        // Cards saved for later (daily, Jumu'ah) show their first payment instead.
+                        nextPayment:
+                          !plan && paidAt ? nextPaymentDate(choice.frequency, paidAt) : undefined,
                       }}
                       program={program}
                       makeMonthly={{ onClick: startMonthly }}

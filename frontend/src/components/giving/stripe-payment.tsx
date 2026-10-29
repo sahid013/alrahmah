@@ -75,7 +75,7 @@ const appearance: Appearance = {
   },
 };
 
-/** Daily causes: schedule the nightly/daily charges for the saved card (idempotent). */
+/** Daily causes / Jumu'ah giving: schedule the charges for the saved card (idempotent). */
 async function finaliseDaily(sessionId: string): Promise<DailyPlan> {
   const res = await fetch('/api/giving/finalise', {
     method: 'POST',
@@ -123,7 +123,7 @@ export function StripePayment({
 }: {
   request: DonationRequest;
   /** Daily causes: "night" or "day" (for the button). */
-  unit?: 'night' | 'day';
+  unit?: 'night' | 'day' | 'Friday';
   onPaid: (result: PaidResult) => void;
 }) {
   // One session per mount; the promises are created once. If the session can't start, both
@@ -179,7 +179,7 @@ function PaymentForm({
   onPaid,
 }: {
   request: DonationRequest;
-  unit?: 'night' | 'day';
+  unit?: 'night' | 'day' | 'Friday';
   /** Resolved before the form shows (it comes with the session). */
   eventId: Promise<string>;
   onPaid: (result: PaidResult) => void;
@@ -210,7 +210,9 @@ function PaymentForm({
       if (result.type === 'error') return setError(result.error.message);
       const { id, status } = result.session;
       const instant = status.type === 'complete' && status.paymentStatus !== 'unpaid';
-      const plan = request.frequency === 'daily' ? await finaliseDaily(id) : undefined;
+      // Daily causes and Jumu'ah giving: the card is saved; schedule its charges.
+      const savesCard = request.frequency === 'daily' || unit === 'Friday';
+      const plan = savesCard ? await finaliseDaily(id) : undefined;
       onPaid({ sessionId: id, eventId: await eventId, plan, method: method.current, instant });
     } catch (e) {
       setError(
@@ -242,7 +244,7 @@ function PaymentForm({
         <HeartIcon className="size-4" />
         {busy
           ? 'Processing…'
-          : `${request.frequency === 'daily' ? 'Confirm' : 'Donate'} ${amountWithFrequency(request.amount, request.frequency, unit)}`}
+          : `${request.frequency === 'daily' || unit === 'Friday' ? 'Confirm' : 'Donate'} ${amountWithFrequency(request.amount, request.frequency, unit)}`}
       </Button>
     </div>
   );

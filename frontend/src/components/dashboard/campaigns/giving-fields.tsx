@@ -10,6 +10,7 @@ const ICON_LABELS: Record<(typeof CAUSE_ICONS)[number], string> = {
   people: 'People',
   moon: 'Moon (nights)',
   sun: 'Sun (days)',
+  calendar: 'Calendar (weekly)',
 };
 
 const num = (value: string) => (value === '' ? Number.NaN : Number(value));
@@ -27,12 +28,14 @@ const STARTERS: Record<Giving['kind'], Giving> = {
     periodLabel: 'the last 10 nights of Ramadan',
     presets: [1, 5, 10, 20],
   },
+  jumuah: { kind: 'jumuah', chargeTime: '12:00', presets: [5, 10, 20] },
 };
 
 /**
  * "How people give": the form donors see for this cause. Standard (one-off / weekly / monthly),
- * per person (e.g. Fitrana: £ × people) or daily (one payment each night/day between two dates,
- * e.g. the last 10 nights). Errors are keyed by zod path ("giving.firstDate").
+ * per person (e.g. Fitrana: £ × people), daily (one payment each night/day between two dates,
+ * e.g. the last 10 nights) or every Friday (Jumu'ah giving, until the donor cancels). Errors are
+ * keyed by zod path ("giving.firstDate").
  */
 export function GivingFields({
   draft,
@@ -67,6 +70,7 @@ export function GivingFields({
             <option value="regular">Standard: one-off, weekly or monthly</option>
             <option value="per-person">Per person: amount × number of people (one-off)</option>
             <option value="daily">Daily: once each night or day between two dates</option>
+            <option value="jumuah">Every Friday: weekly until the donor cancels</option>
           </Select>
         </Field>
         <Field label="Icon" hint="Shown on the Select your cause page.">
@@ -102,6 +106,40 @@ export function GivingFields({
                 step="1"
                 value={Number.isNaN(g.maxPeople) ? '' : g.maxPeople}
                 onChange={(e) => set({ maxPeople: num(e.target.value) })}
+                className="font-ui"
+              />
+            </Field>
+          </>
+        )}
+
+        {g.kind === 'jumuah' && (
+          <>
+            <Field
+              label="Time each Friday's payment is taken (UK)"
+              hint="Nothing is taken at sign-up; the first payment is the coming Friday."
+              error={err('chargeTime')}
+            >
+              <Input
+                type="time"
+                value={g.chargeTime}
+                onChange={(e) => set({ chargeTime: e.target.value })}
+              />
+            </Field>
+            <Field
+              label="Suggested amounts each Friday (£)"
+              hint="Up to four, separated by commas. Donors can also enter their own."
+              error={err('presets')}
+            >
+              <Input
+                defaultValue={g.presets.join(', ')}
+                onChange={(e) =>
+                  set({
+                    presets: e.target.value
+                      .split(',')
+                      .map((x) => Number(x.trim()))
+                      .filter((x) => Number.isFinite(x) && x > 0),
+                  })
+                }
                 className="font-ui"
               />
             </Field>
