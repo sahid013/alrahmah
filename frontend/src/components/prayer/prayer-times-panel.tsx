@@ -7,7 +7,6 @@ import { siteConfig } from '@/config/site';
 import { useSalahCountdown } from '@/lib/hooks/use-salah-countdown';
 import {
   addDays,
-  formatHijriDate,
   formatLongDate,
   formatSalahTime,
   formatShortDate,
@@ -120,7 +119,6 @@ export function PrayerTimesPanel({ onClose }: { onClose: () => void }) {
             </button>
           )}
         </div>
-        <p className="mt-3 text-sm text-primary-200">{formatHijriDate(day.date)}</p>
 
         {/* Two columns: the five salah plus Jumu'ah fill a 2 × 3 grid. */}
         <ul
