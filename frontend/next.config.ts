@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // The placeholder report page was replaced by /impact-reports (October 2026).
+      { source: '/impact/:year', destination: '/impact-reports', permanent: true },
       // The donation flow moved from /give to /donate.
       { source: '/give', destination: '/donate', permanent: true },
       { source: '/give/:path*', destination: '/donate/:path*', permanent: true },

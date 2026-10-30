@@ -8,7 +8,7 @@ import { HeroMobile } from '@/components/home/hero-mobile';
 import { HeroSlideshow } from '@/components/home/hero-slideshow';
 import { siteConfig } from '@/config/site';
 import { listEvents } from '@/lib/events/repository';
-import { impactReport } from '@/lib/impact/data';
+import { impactReports } from '@/lib/impact/reports';
 import { listKhutbahs } from '@/lib/khutbahs/repository';
 import { buildMetadata } from '@/lib/seo';
 
@@ -25,6 +25,7 @@ export const metadata = buildMetadata({
 
 export default async function HomePage() {
   const [events, khutbahs] = await Promise.all([listEvents(), listKhutbahs()]);
+  const latestReport = impactReports[0];
 
   return (
     <>
@@ -39,7 +40,13 @@ export default async function HomePage() {
 
       <GreetingSection />
       <EventsSection events={events.slice(0, 3)} />
-      <ImpactSection report={impactReport} />
+      {latestReport?.figures && (
+        // The newest report's figures (as on /impact-reports); the cover and button open its PDF.
+        <ImpactSection
+          report={{ ...latestReport.figures, reportUrl: latestReport.pdf.href }}
+          cover={latestReport.cover}
+        />
+      )}
       <KhutbahsSection khutbahs={khutbahs} />
       <ServicesSection />
     </>

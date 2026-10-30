@@ -35,7 +35,8 @@ export const impactReports: PublishedReport[] = [
       width: 1600,
       height: 1131,
     },
-    // From the report (pages 3, 4, 5, 7 and 10), as printed.
+    // From the report (pages 3, 4, 5, 7 and 10), as printed. The YouTube and TikTok view counts
+    // were left out at the client's request (October 2026).
     figures: {
       year: 2026,
       intro:
@@ -50,13 +51,6 @@ export const impactReports: PublishedReport[] = [
         ],
       },
       secondary: [
-        {
-          label: 'Views',
-          stats: [
-            { value: 2.8, unit: 'm', caption: 'YouTube views (approx.)' },
-            { value: 3, unit: 'm', suffix: '+', caption: 'TikTok views' },
-          ],
-        },
         {
           label: 'In the masjid',
           stats: [
