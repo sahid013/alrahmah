@@ -58,7 +58,7 @@ export const services: Service[] = [
         title: 'Sunday Weekly Lessons',
         href: '/services/education/sunday-lessons',
         image: {
-          src: '/images/services/Sunday weekly lesson.webp',
+          src: '/images/services/sunday-weekly-lesson.webp',
           alt: 'An open Qur’an on a carved wooden stand in the lamp-lit prayer hall',
         },
         icon: 'weekly',
