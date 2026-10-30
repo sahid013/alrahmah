@@ -52,9 +52,8 @@ function LearnMore({ event, tone }: { event: EventItem; tone: 'light' | 'dark' }
       variant={tone === 'dark' ? 'tertiary-light' : 'tertiary'}
       size="xs"
       className="self-start"
-      aria-label={`Learn more about ${event.title}`}
     >
-      Learn more
+      Learn more<span className="sr-only"> about {event.title}</span>
       <ArrowRightIcon className="size-3.5" />
     </ButtonLink>
   );

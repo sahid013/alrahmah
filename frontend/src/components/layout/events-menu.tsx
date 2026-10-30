@@ -66,9 +66,8 @@ export function EventsMenu({
                   size="xs"
                   className="mt-1 self-start"
                   onClick={onNavigate}
-                  aria-label={`Learn more about ${event.title}`}
                 >
-                  Learn more
+                  Learn more<span className="sr-only"> about {event.title}</span>
                   <ArrowRightIcon className="size-3.5" />
                 </ButtonLink>
               </div>

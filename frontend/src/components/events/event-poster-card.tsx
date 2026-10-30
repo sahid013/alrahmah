@@ -54,13 +54,8 @@ export function EventPosterCard({ event }: { event: EventItem }) {
           {event.summary}
         </p>
         <div className={`${fade} mt-5 group-hover:delay-300`}>
-          <ButtonLink
-            href={getEventHref(event)}
-            variant="secondary"
-            size="sm"
-            aria-label={`Learn more about ${event.title}`}
-          >
-            Learn more
+          <ButtonLink href={getEventHref(event)} variant="secondary" size="sm">
+            Learn more<span className="sr-only"> about {event.title}</span>
             <ArrowRightIcon className="size-4" />
           </ButtonLink>
         </div>
@@ -72,14 +67,8 @@ export function EventPosterCard({ event }: { event: EventItem }) {
         <h3 className="mt-1 font-heading text-title-lg leading-tight tracking-heading text-primary-900 uppercase">
           {event.title}
         </h3>
-        <ButtonLink
-          href={getEventHref(event)}
-          variant="tertiary"
-          size="xs"
-          className="mt-2"
-          aria-label={`Learn more about ${event.title}`}
-        >
-          Learn more
+        <ButtonLink href={getEventHref(event)} variant="tertiary" size="xs" className="mt-2">
+          Learn more<span className="sr-only"> about {event.title}</span>
           <ArrowRightIcon className="size-3.5" />
         </ButtonLink>
       </div>

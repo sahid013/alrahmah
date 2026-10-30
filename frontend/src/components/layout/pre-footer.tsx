@@ -20,7 +20,7 @@ export function PreFooter() {
               Join the Al-Rahmah family
             </h2>
             <ButtonLink href="/volunteering" variant="secondary" size="sm" className="mt-8">
-              Learn more
+              Learn more<span className="sr-only"> about volunteering</span>
               <ArrowRightIcon className="size-4" />
             </ButtonLink>
           </div>

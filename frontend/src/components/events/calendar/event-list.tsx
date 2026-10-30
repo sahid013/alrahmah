@@ -105,9 +105,8 @@ export function EventList({
                         variant="tertiary-light"
                         size="xs"
                         className="mt-1"
-                        aria-label={`Learn more about ${event.title}`}
                       >
-                        Learn more
+                        Learn more<span className="sr-only"> about {event.title}</span>
                         <ArrowRightIcon className="size-3.5" />
                       </ButtonLink>
                     </div>
