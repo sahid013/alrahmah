@@ -1,5 +1,6 @@
 import 'server-only';
 import type Stripe from 'stripe';
+import { GIFT_AID_TEXT } from '@/lib/giving/consent';
 import { recordMarketingConsent } from '@/lib/mailing-list/record';
 import { adminClient } from '@/lib/supabase/server';
 import { stripeFor } from './stripe-mode';
@@ -19,6 +20,11 @@ import { stripeFor } from './stripe-mode';
  * Donors who ticked "Keep me updated" join the mailing list (`lib/mailing-list/record.ts`) when
  * the donation form's payment succeeds: one-off payment, first weekly/monthly invoice, or a daily
  * cause's card saved. Renewals don't touch it.
+ *
+ * Gift Aid: every payment of a donation with a declaration (Stripe metadata `gift_aid: yes`, only
+ * ever set for personal donations) is recorded with `gift_aid`, when it was declared and the
+ * wording agreed to (`GIFT_AID_TEXT`), the charity's record for HMRC. Regular gifts carry the
+ * declaration on every payment.
  */
 
 type Meta = Record<string, string>;
@@ -57,6 +63,16 @@ function sourceFrom(m: Meta) {
 }
 
 const at = (event: Stripe.Event) => new Date(event.created * 1000).toISOString();
+
+/** The donation's Gift Aid declaration, as stored on each of its payments. */
+function giftAidFrom(m: Meta) {
+  const declared = m.gift_aid === 'yes' && m.donor_type !== 'organisation';
+  return {
+    gift_aid: declared,
+    gift_aid_declared_at: declared ? (opt(m.gift_aid_declared_at) ?? null) : null,
+    gift_aid_declaration: declared ? GIFT_AID_TEXT : null,
+  };
+}
 
 async function upsert(row: Record<string, unknown>) {
   const { error } = await adminClient()
@@ -106,6 +122,7 @@ export async function recordStripeEvent(event: Stripe.Event): Promise<void> {
         status: 'succeeded',
         donor: donorFrom(m, email),
         marketing_consent: m.marketing_consent === 'yes',
+        ...giftAidFrom(m),
         source: sourceFrom(m),
         stripe_customer: idOf(s.customer) ?? null,
         livemode: event.livemode,
@@ -146,6 +163,7 @@ export async function recordStripeEvent(event: Stripe.Event): Promise<void> {
         status: 'succeeded',
         donor: donorFrom(m, inv.customer_email),
         marketing_consent: m.marketing_consent === 'yes',
+        ...giftAidFrom(m),
         subscription_id: subscription,
         subscription_status: 'active',
         source: sourceFrom(m),

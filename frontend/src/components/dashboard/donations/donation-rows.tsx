@@ -66,6 +66,11 @@ export function DonationTable({
                 ) : (
                   <Badge>One-off</Badge>
                 )}
+                {d.giftAid && (
+                  <span className="ml-1">
+                    <Badge tone="indigo">Gift Aid</Badge>
+                  </span>
+                )}
               </td>
               {!compact && <td className={`${td} text-xs`}>{sourceOf(d)}</td>}
               <td className={`${td} text-right font-ui whitespace-nowrap tabular-nums`}>

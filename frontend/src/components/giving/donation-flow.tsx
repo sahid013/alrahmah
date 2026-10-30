@@ -76,6 +76,7 @@ export function DonationFlow({
   const [choice, setChoice] = useState<AmountValue>(() => initialAmount(program));
   const [donor, setDonor] = useState<Donor>(EMPTY_DONOR);
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [giftAid, setGiftAid] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [payError, setPayError] = useState<string>();
@@ -101,6 +102,7 @@ export function DonationFlow({
       postcode: donor.country === UK ? normalisePostcode(donor.postcode) : donor.postcode.trim(),
     },
     marketingConsent,
+    giftAid: { declared: giftAid && donor.type === 'personal' },
     // Where the donor came from (UTM / referrer / landing page), read when the request is built.
     ...(typeof window !== 'undefined' && { source: readSource() }),
   };
@@ -315,12 +317,18 @@ export function DonationFlow({
                     <DetailsStep
                       donor={donor}
                       marketingConsent={marketingConsent}
+                      giftAid={giftAid}
+                      amount={amount}
                       errors={errors}
                       onDonor={(patch) => {
                         setDonor((d) => ({ ...d, ...patch }));
                         clear(Object.keys(patch).map((k) => `donor.${k}`));
                       }}
                       onConsent={setMarketingConsent}
+                      onGiftAid={(declared) => {
+                        setGiftAid(declared);
+                        clear(['giftAid.declared']);
+                      }}
                     />
                   )}
                   {step === 2 && (
@@ -350,6 +358,7 @@ export function DonationFlow({
                         people: request.people,
                         reference,
                         plan,
+                        giftAid: request.giftAid.declared,
                         // Cards saved for later (daily, Jumu'ah) show their first payment instead.
                         nextPayment:
                           !plan && paidAt ? nextPaymentDate(choice.frequency, paidAt) : undefined,

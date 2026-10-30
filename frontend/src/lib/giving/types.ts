@@ -124,19 +124,49 @@ export const sourceSchema = z.object({
 });
 export type DonationSource = z.infer<typeof sourceSchema>;
 
+/**
+ * Gift Aid declaration (individual UK taxpayers only). The donor's name and home address from
+ * the form are what HMRC needs (house name or number + postcode, `houseFromAddress`).
+ */
+export const giftAidSchema = z.object({ declared: z.boolean() });
+
 const detailsShape = {
   donor: donorSchema,
+  giftAid: giftAidSchema,
   /** Opt-in to email updates (unticked by default, separate from the donation). */
   marketingConsent: z.boolean(),
   source: sourceSchema.optional(),
 };
 
-/** Step 2 (Details) on its own. */
-export const detailsSchema = z.object(detailsShape);
+/** Gift Aid is for individual taxpayers only, not companies or groups. */
+const checkGiftAid = (
+  r: { donor: { type: DonorType }; giftAid: { declared: boolean } },
+  ctx: z.RefinementCtx,
+) => {
+  if (r.giftAid.declared && r.donor.type !== 'personal')
+    ctx.addIssue({
+      code: 'custom',
+      path: ['giftAid', 'declared'],
+      message: 'Gift Aid can only be added to personal donations',
+    });
+};
 
-export const donationRequestSchema = amountSchema.extend(detailsShape);
+/** Step 2 (Details) on its own. */
+export const detailsSchema = z.object(detailsShape).superRefine(checkGiftAid);
+
+export const donationRequestSchema = amountSchema.extend(detailsShape).superRefine(checkGiftAid);
 export type DonationRequest = z.infer<typeof donationRequestSchema>;
 export type AmountStep = z.infer<typeof amountSchema>;
+
+/** "House name or number" for HMRC's Gift Aid schedule: the first part of the address. */
+export function houseFromAddress(address: string): string {
+  const first = address.split(/[\n,]/)[0]!.trim();
+  // "6 Sheepscar Way" → "6", "12A High St" → "12A"; otherwise it's a house name ("Rose Cottage").
+  return first.match(/^\d+[a-z]?\b/i)?.[0] ?? first.slice(0, 40);
+}
+
+/** Gift Aid adds 25p for every £1 (basic-rate tax reclaimed from HMRC). */
+export const giftAidBonus = (amount: number) => Math.round(amount * 25) / 100;
 
 export const formatGbp = (n: number) =>
   new Intl.NumberFormat('en-GB', {

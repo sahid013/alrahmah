@@ -264,3 +264,67 @@ describe('the mailing list ("Keep me updated")', () => {
     expect(listWrites()).toHaveLength(1);
   });
 });
+
+describe('recording Gift Aid', () => {
+  it('records the declaration, when it was made and its wording with the payment', async () => {
+    await recordStripeEvent(
+      event('checkout.session.completed', {
+        mode: 'payment',
+        payment_status: 'paid',
+        payment_intent: 'pi_ga',
+        amount_total: 5000,
+        metadata: {
+          ...meta,
+          frequency: 'one-off',
+          gift_aid: 'yes',
+          gift_aid_declared_at: '2026-10-29T18:00:00.000Z',
+        },
+      }),
+    );
+    expect(donationWrites()[0]!.row).toMatchObject({
+      gift_aid: true,
+      gift_aid_declared_at: '2026-10-29T18:00:00.000Z',
+      gift_aid_declaration: expect.stringContaining('I am a UK taxpayer'),
+    });
+  });
+
+  it('carries a regular gift’s declaration onto every payment', async () => {
+    await recordStripeEvent(
+      event('invoice.paid', {
+        id: 'in_ga',
+        amount_paid: 2000,
+        billing_reason: 'subscription_cycle',
+        customer_email: 'aisha@example.com',
+        parent: {
+          subscription_details: {
+            subscription: 'sub_ga',
+            metadata: { ...meta, gift_aid: 'yes', gift_aid_declared_at: '2026-10-01T09:00:00Z' },
+          },
+        },
+      }),
+    );
+    expect(donationWrites()[0]!.row).toMatchObject({ gift_aid: true, payment_ref: 'in_ga' });
+  });
+
+  it('records no Gift Aid without a declaration, or for an organisation', async () => {
+    for (const m of [
+      { ...meta, frequency: 'one-off' },
+      { ...meta, frequency: 'one-off', donor_type: 'organisation', gift_aid: 'yes' },
+    ])
+      await recordStripeEvent(
+        event('checkout.session.completed', {
+          mode: 'payment',
+          payment_status: 'paid',
+          payment_intent: `pi_${m.donor_type}`,
+          amount_total: 1000,
+          metadata: m,
+        }),
+      );
+    for (const w of donationWrites())
+      expect(w.row).toMatchObject({
+        gift_aid: false,
+        gift_aid_declared_at: null,
+        gift_aid_declaration: null,
+      });
+  });
+});

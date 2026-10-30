@@ -105,6 +105,7 @@ export default async function DonateCompletePage({ searchParams }: PageProps<'/d
           people: Number(meta.people) || undefined,
           reference: referenceFromSession(session.id),
           plan: daily ?? undefined,
+          giftAid: meta.gift_aid === 'yes',
           // Cards saved for later (daily, Jumu'ah) show their first payment instead.
           nextPayment: daily
             ? undefined

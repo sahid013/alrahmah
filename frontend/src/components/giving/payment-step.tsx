@@ -2,7 +2,12 @@ import type { ReactNode } from 'react';
 import { siteConfig } from '@/config/site';
 import type { DonationProgram } from '@/lib/donations/types';
 import { dateRange, nextFridayCharge, remainingCharges } from '@/lib/giving/schedule';
-import { FREQUENCY_LABELS, formatGbp, type DonationRequest } from '@/lib/giving/types';
+import {
+  FREQUENCY_LABELS,
+  formatGbp,
+  giftAidBonus,
+  type DonationRequest,
+} from '@/lib/giving/types';
 import { ErrorBox, StepTitle } from './fields';
 
 const fridayDate = new Intl.DateTimeFormat('en-GB', {
@@ -69,6 +74,14 @@ export function PaymentStep({
       : []),
     ['Name', `${request.donor.firstName} ${request.donor.lastName}`],
     ['Receipt to', request.donor.email],
+    ...(request.giftAid.declared
+      ? ([
+          [
+            'Gift Aid',
+            `Yes, + ${formatGbp(giftAidBonus(request.amount))}${request.frequency === 'one-off' ? '' : ' each payment'} from HMRC`,
+          ],
+        ] as [string, string][])
+      : []),
   ];
 
   return (
@@ -96,7 +109,8 @@ export function PaymentStep({
           Payments are processed by Stripe. {siteConfig.name} never sees or stores your card
           details.
           {daily && ' Your card is saved with Stripe only to take the payments listed above.'} Your
-          information is only used to process your donation.
+          information is only used to process your donation
+          {request.giftAid.declared ? ' and claim Gift Aid' : ''}.
         </p>
       </section>
 

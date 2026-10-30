@@ -1,7 +1,7 @@
 import { countryName } from '@/lib/giving/countries';
-import { DONOR_TYPE_LABELS } from '@/lib/giving/types';
+import { DONOR_TYPE_LABELS, houseFromAddress } from '@/lib/giving/types';
 import type { MailingContact } from '@/lib/mailing-list/types';
-import { sourceOf, type DonorSummary, type RegularGift } from './queries';
+import { isGiftAidClaimable, sourceOf, type DonorSummary, type RegularGift } from './queries';
 import { SUBSCRIPTION_STATUS_LABELS, type Campaign, type Donation } from './types';
 
 export interface CsvColumn<T> {
@@ -62,6 +62,8 @@ export const donationColumns = (campaigns: Campaign[]): CsvColumn<Donation>[] =>
     },
     { header: 'Amount (GBP)', value: (d) => money(d.amount) },
     { header: 'Marketing consent', value: (d) => yesNo(d.marketingConsent) },
+    { header: 'Gift Aid', value: (d) => yesNo(d.giftAid) },
+    { header: 'Gift Aid declared', value: (d) => d.giftAidDeclaredAt?.slice(0, 10) },
     { header: 'Source', value: (d) => sourceOf(d) },
     { header: 'Medium', value: (d) => d.source?.utmMedium },
     { header: 'UTM campaign', value: (d) => d.source?.utmCampaign },
@@ -90,6 +92,7 @@ export const donorColumns: CsvColumn<DonorSummary>[] = [
     value: (d) => (d.recurringStatus ? SUBSCRIPTION_STATUS_LABELS[d.recurringStatus] : 'No'),
   },
   { header: 'Marketing consent', value: (d) => yesNo(d.marketingConsent) },
+  { header: 'Gift Aid', value: (d) => yesNo(d.giftAid) },
   { header: 'First source', value: (d) => d.firstSource },
 ];
 
@@ -152,3 +155,36 @@ export const regularGiftColumns = (campaigns: Campaign[]): CsvColumn<RegularGift
     { header: 'Total (GBP)', value: (g) => money(g.total) },
   ];
 };
+
+/** DD/MM/YY, as HMRC's Gift Aid schedule spreadsheet expects. */
+const hmrcDate = (iso: string) => {
+  const [y, m, d] = iso.slice(0, 10).split('-');
+  return `${d}/${m}/${y!.slice(2)}`;
+};
+
+/** HMRC limits: first and last name 35 characters, house name or number 40. */
+const clip = (s: string, n: number) => s.trim().slice(0, n);
+
+/**
+ * HMRC's Gift Aid schedule (Charities Online spreadsheet), one row per claimable donation
+ * (`isGiftAidClaimable`), in its column order, ready to paste into the claim. Overseas donors
+ * use "X" as the postcode, as HMRC asks.
+ */
+export const giftAidColumns: CsvColumn<Donation>[] = [
+  { header: 'Title', value: () => '' },
+  { header: 'First name or initial', value: (d) => clip(d.donor.firstName, 35) },
+  { header: 'Last name', value: (d) => clip(d.donor.lastName, 35) },
+  { header: 'House name or number', value: (d) => clip(houseFromAddress(d.donor.address), 40) },
+  {
+    header: 'Postcode',
+    value: (d) => (d.donor.country === 'GB' ? d.donor.postcode.toUpperCase() : 'X'),
+  },
+  { header: 'Aggregated donations', value: () => '' },
+  { header: 'Sponsored event', value: () => '' },
+  { header: 'Donation date', value: (d) => hmrcDate(d.createdAt) },
+  { header: 'Amount', value: (d) => money(d.amount) },
+];
+
+/** The claimable donations for the schedule, oldest first. */
+export const giftAidRows = (list: Donation[]) =>
+  list.filter(isGiftAidClaimable).sort((a, b) => a.createdAt.localeCompare(b.createdAt));

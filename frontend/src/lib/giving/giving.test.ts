@@ -5,6 +5,8 @@ import {
   detailsSchema,
   donationRequestSchema,
   fieldErrors,
+  giftAidBonus,
+  houseFromAddress,
   normalisePostcode,
   type DonationRequest,
 } from './types';
@@ -26,6 +28,7 @@ const valid: DonationRequest = {
   amount: 50,
   donor,
   marketingConsent: false,
+  giftAid: { declared: false },
 };
 const errorsOf = (input: unknown) => {
   const r = detailsSchema.safeParse(input);
@@ -97,5 +100,33 @@ describe('countries', () => {
     expect(COUNTRY_OPTIONS[1]![1]).toBe('Afghanistan');
     expect(countryName('BD')).toBe('Bangladesh');
     expect(COUNTRY_OPTIONS.length).toBeGreaterThan(200);
+  });
+});
+
+describe('Gift Aid', () => {
+  it('can be declared on a personal donation', () => {
+    expect(donationRequestSchema.safeParse({ ...valid, giftAid: { declared: true } }).success).toBe(
+      true,
+    );
+  });
+
+  it('is refused for Corporate / Group donations', () => {
+    const errors = errorsOf({
+      ...valid,
+      donor: { ...donor, type: 'organisation', organisation: 'Leeds Traders' },
+      giftAid: { declared: true },
+    });
+    expect(errors['giftAid.declared']).toMatch(/personal/);
+  });
+
+  it('adds 25p for every £1', () => {
+    expect(giftAidBonus(50)).toBe(12.5);
+    expect(giftAidBonus(10.1)).toBe(2.53);
+  });
+
+  it('finds the house name or number for the HMRC schedule', () => {
+    expect(houseFromAddress('6 Sheepscar Way')).toBe('6');
+    expect(houseFromAddress('12A High Street\nLeeds')).toBe('12A');
+    expect(houseFromAddress('Rose Cottage, Mill Lane')).toBe('Rose Cottage');
   });
 });

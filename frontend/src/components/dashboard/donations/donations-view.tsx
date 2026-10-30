@@ -106,6 +106,18 @@ export function DonationsView() {
               <option value="organisation">Corporate / Group</option>
             </Select>
           </Field>
+          <Field label="Gift Aid">
+            <Select
+              value={query.giftAid === undefined ? '' : String(query.giftAid)}
+              onChange={(e) =>
+                update({ giftAid: e.target.value === '' ? undefined : e.target.value === 'true' })
+              }
+            >
+              <option value="">Any</option>
+              <option value="true">Gift Aid declared</option>
+              <option value="false">No Gift Aid</option>
+            </Select>
+          </Field>
           <Field label="Marketing consent">
             <Select
               value={query.marketingConsent === undefined ? '' : String(query.marketingConsent)}
@@ -156,6 +168,11 @@ export function DonationsView() {
         <StatCard label="Total received" value={gbp(totals.total)} hint="Excludes refunds" />
         <StatCard label="Donations" value={String(totals.count)} hint="Successful payments" />
         <StatCard label="Recurring" value={gbp(totals.recurring)} hint="From regular gifts" />
+        <StatCard
+          label="Gift Aid to claim"
+          value={gbp(totals.giftAidValue)}
+          hint={`25% of ${gbp(totals.giftAidEligible)} declared by individuals`}
+        />
       </div>
 
       <Panel

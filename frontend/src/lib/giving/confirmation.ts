@@ -18,6 +18,8 @@ export interface DonationConfirmation {
   plan?: DailyPlan;
   /** Weekly / monthly: when the next payment is taken. */
   nextPayment?: Date;
+  /** The donor added Gift Aid. */
+  giftAid?: boolean;
 }
 
 /** UK calendar date parts of an instant. */

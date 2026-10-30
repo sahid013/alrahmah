@@ -52,6 +52,11 @@ function donationMetadata(r: DonationRequest, campaignTitle: string): Stripe.Met
     donor_country_code: d.country,
     donor_email: d.email,
     marketing_consent: r.marketingConsent ? 'yes' : 'no',
+    // Gift Aid declaration (personal donations only; the wording is GIFT_AID_TEXT). Regular gifts
+    // carry it on every payment, as the declaration covers future donations.
+    gift_aid: r.giftAid.declared && d.type === 'personal' ? 'yes' : 'no',
+    gift_aid_declared_at:
+      r.giftAid.declared && d.type === 'personal' ? new Date().toISOString() : '',
     utm_source: s?.utmSource ?? '',
     utm_medium: s?.utmMedium ?? '',
     utm_campaign: s?.utmCampaign ?? '',

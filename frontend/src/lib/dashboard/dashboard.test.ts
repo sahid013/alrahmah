@@ -176,6 +176,7 @@ describe('exports', () => {
       ['donors', donors, csv.donorColumns],
       ['contacts', donors.filter((d) => d.marketingConsent), csv.contactColumns],
       ['regular', summariseRegularGifts(donations), csv.regularGiftColumns(campaigns)],
+      ['gift aid', csv.giftAidRows(donations), csv.giftAidColumns],
     ];
     for (const [, rows, columns] of sets) {
       const out = csv.toCsv(rows as never[], columns as never);
@@ -235,5 +236,41 @@ describe('mailing list', () => {
     const full = toCsv([c!], mailingColumns(sampleCampaigns()));
     expect(full).toContain('Consent wording');
     expect(full).toContain('Keep me updated.');
+  });
+});
+
+describe('Gift Aid (HMRC schedule)', () => {
+  it('lists only succeeded, declared donations by individuals, oldest first', async () => {
+    const csv = await import('./csv');
+    const rows = csv.giftAidRows(donations);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const d of rows) {
+      expect(d.giftAid).toBe(true);
+      expect(d.status).toBe('succeeded');
+      expect(d.donor.type).toBe('personal');
+    }
+    expect(rows.map((d) => d.createdAt)).toEqual([...rows.map((d) => d.createdAt)].sort());
+  });
+
+  it("uses HMRC's columns, DD/MM/YY dates and X for overseas postcodes", async () => {
+    const csv = await import('./csv');
+    const base = donations.find((d) => d.giftAid && d.status === 'succeeded')!;
+    const uk = { ...base, createdAt: '2026-11-06T12:00:00.000Z', amount: 50 };
+    const abroad = { ...uk, donor: { ...uk.donor, country: 'PK', address: '12A Mall Road' } };
+    const lines = csv.toCsv([uk, abroad], csv.giftAidColumns).split('\r\n');
+    expect(lines[0]).toBe(
+      'Title,First name or initial,Last name,House name or number,Postcode,Aggregated donations,Sponsored event,Donation date,Amount',
+    );
+    expect(lines[1]).toContain(',06/11/26,50.00');
+    expect(lines[2]).toMatch(/,12A,X,,,06\/11\/26,50\.00$/);
+  });
+
+  it('works out the Gift Aid to claim at 25%', () => {
+    const totals = donationTotals(donations);
+    const eligible = donations
+      .filter((d) => d.status === 'succeeded' && d.giftAid && d.donor.type === 'personal')
+      .reduce((n, d) => n + d.amount, 0);
+    expect(totals.giftAidEligible).toBeCloseTo(eligible, 2);
+    expect(totals.giftAidValue).toBeCloseTo(eligible * 0.25, 2);
   });
 });

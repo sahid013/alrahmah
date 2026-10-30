@@ -132,6 +132,8 @@ export function sampleDonations(today = new Date()): Donation[] {
         phone: `07700 9${String(10000 + i * 137).slice(-5)}`,
       },
       marketingConsent: rand() < 0.45,
+      // Two in three individuals add Gift Aid (no extra rand() call, so the sample stays stable).
+      giftAid: i % 3 !== 1,
       source: source ? { ...source, landingPage: '/donate' } : undefined,
     };
   });
@@ -149,6 +151,8 @@ export function sampleDonations(today = new Date()): Donation[] {
       status: rand() < 0.03 ? 'refunded' : 'succeeded',
       donor: d.donor,
       marketingConsent: d.marketingConsent,
+      giftAid: d.giftAid && d.donor.type === 'personal',
+      ...(d.giftAid && d.donor.type === 'personal' && { giftAidDeclaredAt: at.toISOString() }),
       ...(d.source && { source: d.source }),
       paymentRef: ref(out.length + 1),
       ...fields,

@@ -77,13 +77,15 @@ interface DonationRow {
   status: 'succeeded' | 'refunded';
   donor: Record<string, unknown>;
   marketing_consent: boolean;
+  gift_aid: boolean | null;
+  gift_aid_declared_at: string | null;
   subscription_id: string | null;
   subscription_status: 'active' | 'past_due' | 'cancelled' | null;
   source: Record<string, unknown> | null;
 }
 
 const DONATION_COLUMNS =
-  'id,payment_ref,created_at,amount,currency,type,frequency,campaign_id,status,donor,marketing_consent,subscription_id,subscription_status,source';
+  'id,payment_ref,created_at,amount,currency,type,frequency,campaign_id,status,donor,marketing_consent,gift_aid,gift_aid_declared_at,subscription_id,subscription_status,source';
 
 const nextDay = (date: string) => {
   const d = new Date(`${date}T00:00:00Z`);
@@ -104,6 +106,8 @@ function rowToDonation(r: DonationRow): Donation[] {
     status: r.status,
     donor: r.donor,
     marketingConsent: r.marketing_consent,
+    giftAid: r.gift_aid ?? false,
+    ...(r.gift_aid_declared_at && { giftAidDeclaredAt: r.gift_aid_declared_at }),
     ...(r.subscription_id && {
       subscription: { id: r.subscription_id, status: r.subscription_status ?? 'active' },
     }),

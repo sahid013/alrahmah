@@ -16,7 +16,8 @@ import { buildMetadata } from '@/lib/seo';
 export const revalidate = 3600;
 
 export const metadata = buildMetadata({
-  title: `${siteConfig.name} | Mosque in ${siteConfig.address.locality}, ${siteConfig.address.postalCode.split(' ')[0]}`,
+  // Client's wording (October 2026).
+  title: `Al Rahmah Faith Centre - ${siteConfig.address.locality}`,
   description: siteConfig.description,
   path: '/',
   absoluteTitle: true,

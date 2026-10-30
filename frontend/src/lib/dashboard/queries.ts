@@ -17,6 +17,7 @@ export function filterDonations(list: Donation[], q: DonationQuery = {}): Donati
       if (q.type && d.type !== q.type) return false;
       if (q.status && d.status !== q.status) return false;
       if (q.donorType && d.donor.type !== q.donorType) return false;
+      if (q.giftAid !== undefined && d.giftAid !== q.giftAid) return false;
       if (q.marketingConsent !== undefined && d.marketingConsent !== q.marketingConsent)
         return false;
       if (q.source && sourceOf(d) !== q.source) return false;
@@ -61,6 +62,8 @@ export interface DonorSummary {
   recurringStatus?: SubscriptionStatus;
   /** Consent given with their most recent donation. */
   marketingConsent: boolean;
+  /** Declared Gift Aid on any donation in the period. */
+  giftAid: boolean;
   /** Source of their first donation in the period. */
   firstSource: string;
 }
@@ -93,12 +96,14 @@ export function summariseDonors(list: Donation[]): DonorSummary[] {
       lastGift: day,
       recurring: false,
       marketingConsent: false,
+      giftAid: false,
       firstSource: sourceOf(d),
     };
     s.donations += 1;
     s.total += d.amount;
     s.lastGift = day;
     s.marketingConsent = d.marketingConsent;
+    s.giftAid ||= d.giftAid;
     if (d.type === 'recurring') {
       s.recurring = true;
       s.recurringStatus = d.subscription?.status ?? s.recurringStatus;
@@ -169,7 +174,15 @@ export interface DonationTotals {
   count: number;
   /** Value of recurring payments (£). */
   recurring: number;
+  /** Donations Gift Aid can be claimed on (£): succeeded, declared, given by an individual. */
+  giftAidEligible: number;
+  /** 25% Gift Aid on those donations (£). */
+  giftAidValue: number;
 }
+
+/** Donations HMRC will accept a Gift Aid claim on: succeeded, declared, given by an individual. */
+export const isGiftAidClaimable = (d: Donation) =>
+  d.status === 'succeeded' && d.giftAid && d.donor.type === 'personal';
 
 export function donationTotals(list: Donation[]): DonationTotals {
   const ok = list.filter((d) => d.status === 'succeeded');
@@ -178,6 +191,8 @@ export function donationTotals(list: Donation[]): DonationTotals {
     total: sum(ok),
     count: ok.length,
     recurring: sum(ok.filter((d) => d.type === 'recurring')),
+    giftAidEligible: sum(ok.filter(isGiftAidClaimable)),
+    giftAidValue: Math.round(sum(ok.filter(isGiftAidClaimable)) * 25) / 100,
   };
 }
 

@@ -8,6 +8,8 @@ import {
   donationColumns,
   donorColumns,
   downloadCsv,
+  giftAidColumns,
+  giftAidRows,
   toCsv,
 } from '@/lib/dashboard/csv';
 import { summariseDonors, taxYear } from '@/lib/dashboard/queries';
@@ -25,7 +27,8 @@ interface Range {
 }
 
 /**
- * Donor list for a period plus the exports: donations, donors and opted-in contacts.
+ * Donor list for a period plus the exports: donations, donors, opted-in contacts and the HMRC
+ * Gift Aid schedule.
  */
 export function DonorsView() {
   const today = todayAtMasjid();
@@ -52,12 +55,15 @@ export function DonorsView() {
       .includes(search.trim().toLowerCase()),
   );
   const contacts = donors.filter((d) => d.marketingConsent);
+  // HMRC: succeeded payments by individuals with a declaration (refunds excluded).
+  const giftAid = giftAidRows(donations ?? []);
   const suffix = `${range.from ?? 'start'}_to_${range.to ?? today}`;
 
   const exports = [
     {
       title: 'All donations',
-      description: 'One row per successful payment: donor details, campaign, consent and source.',
+      description:
+        'One row per successful payment: donor details, campaign, Gift Aid, consent and source.',
       count: donations?.length ?? 0,
       run: () =>
         downloadCsv(`donations_${suffix}.csv`, toCsv(donations ?? [], donationColumns(campaigns))),
@@ -74,6 +80,13 @@ export function DonorsView() {
         'Donors in this period whose latest donation agreed to email updates. The full list, with unsubscribes, is under Mailing list.',
       count: contacts.length,
       run: () => downloadCsv(`contacts-opted-in_${suffix}.csv`, toCsv(contacts, contactColumns)),
+    },
+    {
+      title: 'Gift Aid schedule (HMRC)',
+      description:
+        "Claimable donations in this period (individuals who declared Gift Aid, refunds left out), in the column order of HMRC's Gift Aid schedule spreadsheet, ready to paste into a Charities Online claim.",
+      count: giftAid.length,
+      run: () => downloadCsv(`gift-aid-schedule_${suffix}.csv`, toCsv(giftAid, giftAidColumns)),
     },
   ];
 
@@ -214,6 +227,7 @@ export function DonorsView() {
                         )}
                         {d.type === 'organisation' && <Badge>Corporate</Badge>}
                         {d.marketingConsent && <Badge tone="success">Opted in</Badge>}
+                        {d.giftAid && <Badge tone="indigo">Gift Aid</Badge>}
                       </span>
                     </td>
                     <td className={`${td} text-xs`}>{d.firstSource}</td>

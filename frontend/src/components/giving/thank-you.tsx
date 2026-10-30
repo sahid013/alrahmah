@@ -61,6 +61,7 @@ export function ThankYou({
     ],
     ['Reference', c.reference],
   ];
+  if (c.giftAid) rows.push(['Gift Aid', 'Added, thank you']);
   if (c.nextPayment) rows.push(['Next payment', formatLongDate(c.nextPayment)]);
   else if (firstDaily && (g.kind === 'daily' || g.kind === 'jumuah'))
     rows.push(['First payment', `${formatLongDate(firstDaily)}, ${formatClock(g.chargeTime)}`]);

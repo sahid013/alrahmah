@@ -38,6 +38,7 @@ const request = (patch: Partial<DonationRequest>): DonationRequest => ({
     phone: '07700 900123',
   },
   marketingConsent: false,
+  giftAid: { declared: false },
   ...patch,
 });
 

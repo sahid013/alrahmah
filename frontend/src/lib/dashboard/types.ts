@@ -96,6 +96,10 @@ export const donationSchema = z.object({
   donor: donorFields.extend({ id: z.string() }),
   /** Opted in to email updates when giving this donation. */
   marketingConsent: z.boolean(),
+  /** Gift Aid declared with this donation (personal donations only). */
+  giftAid: z.boolean().default(false),
+  /** When the donor made the Gift Aid declaration (ISO). */
+  giftAidDeclaredAt: z.string().optional(),
   /** Recurring gifts: the Stripe subscription and its current status. */
   subscription: z.object({ id: z.string(), status: z.enum(SUBSCRIPTION_STATUSES) }).optional(),
   source: sourceSchema.optional(),
@@ -113,6 +117,7 @@ export interface DonationQuery {
   status?: Donation['status'];
   donorType?: Donation['donor']['type'];
   marketingConsent?: boolean;
+  giftAid?: boolean;
   /** `utmSource` value, or 'direct' for donations without one. */
   source?: string;
   /** Matches donor name, organisation, email, phone, postcode or payment reference. */

@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
-import { MARKETING_CONSENT } from '@/lib/giving/consent';
+import { GIFT_AID, MARKETING_CONSENT } from '@/lib/giving/consent';
 import { COUNTRY_OPTIONS, UK } from '@/lib/giving/countries';
 import {
   DONOR_TYPE_LABELS,
   DONOR_TYPES,
+  formatGbp,
+  giftAidBonus,
   normalisePostcode,
   type Donor,
   type DonorType,
@@ -16,15 +18,23 @@ type TextKey = Exclude<keyof Donor, 'type' | 'country'>;
 export function DetailsStep({
   donor,
   marketingConsent,
+  giftAid,
+  amount,
   errors,
   onDonor,
   onConsent,
+  onGiftAid,
 }: {
   donor: Donor;
   marketingConsent: boolean;
+  /** Gift Aid declared (personal donations only). */
+  giftAid: boolean;
+  /** This payment's amount, for "£50 becomes £62.50". */
+  amount: number;
   errors: Record<string, string>;
   onDonor: (patch: Partial<Donor>) => void;
   onConsent: (consent: boolean) => void;
+  onGiftAid: (declared: boolean) => void;
 }) {
   const err = (k: keyof Donor) => errors[`donor.${k}`];
   /** Props for a donor text input: value, change handler, error state. */
@@ -49,6 +59,8 @@ export function DetailsStep({
             onChange={(e) => {
               const type = e.target.value as DonorType;
               onDonor({ type, ...(type === 'personal' && { organisation: undefined }) });
+              // Gift Aid is only for individuals.
+              if (type !== 'personal') onGiftAid(false);
             }}
           >
             {DONOR_TYPES.map((t) => (
@@ -132,14 +144,47 @@ export function DetailsStep({
         </GiveField>
       </div>
 
+      {/* Gift Aid: individual UK taxpayers only, unticked by default. */}
+      {personal && (
+        <section aria-labelledby="gift-aid-title" className="space-y-3">
+          <h3
+            id="gift-aid-title"
+            className="font-label text-sm font-bold tracking-[0.12em] text-white uppercase"
+          >
+            {GIFT_AID.title}
+          </h3>
+          <p className="text-primary-100">
+            {GIFT_AID.intro}
+            {Number.isFinite(amount) && amount > 0 && (
+              <>
+                {' '}
+                Your <span className="font-ui">{formatGbp(amount)}</span> becomes{' '}
+                <strong className="font-ui text-secondary-300">
+                  {formatGbp(amount + giftAidBonus(amount))}
+                </strong>
+                .
+              </>
+            )}
+          </p>
+          <Checkbox checked={giftAid} onChange={onGiftAid} error={errors['giftAid.declared']}>
+            <strong>Yes, {GIFT_AID.declarationLead}</strong> {GIFT_AID.declarationRest}
+          </Checkbox>
+          {/* HMRC: the donor sees the whole declaration, taxpayer statement included, before ticking. */}
+          <div className="space-y-2 text-sm text-primary-200">
+            <p>{GIFT_AID.taxpayer}</p>
+            {giftAid && <p>{GIFT_AID.changes}</p>}
+          </div>
+        </section>
+      )}
+
       {/* Marketing / data consent: optional, unticked by default. */}
       <section aria-label="Keeping in touch" className="space-y-3">
         <Checkbox checked={marketingConsent} onChange={onConsent}>
           <strong>{MARKETING_CONSENT.title}</strong> {MARKETING_CONSENT.body}
         </Checkbox>
         <p className="text-sm text-primary-200">
-          We use your details to process your donation and send your receipt. We never sell or share
-          your information.
+          We use your details to process your donation, send your receipt and claim Gift Aid if you
+          add it. We never sell or share your information.
         </p>
       </section>
     </div>

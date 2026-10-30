@@ -71,6 +71,7 @@ export function DonationDetail({
                 )}
                 {d.status === 'refunded' && <Badge tone="error">Refunded</Badge>}
                 {d.marketingConsent && <Badge tone="success">Opted in</Badge>}
+                {d.giftAid && <Badge tone="indigo">Gift Aid</Badge>}
               </div>
             </div>
             <button type="button" onClick={onClose} className={iconButton} aria-label="Close">
@@ -102,7 +103,12 @@ export function DonationDetail({
               </Row>
               <Row label="Country">{countryName(d.donor.country)}</Row>
             </Section>
-            <Section title="Consent">
+            <Section title="Gift Aid & consent">
+              <Row label="Gift Aid">
+                {d.giftAid
+                  ? `Declared${d.giftAidDeclaredAt ? ` ${shortDate(d.giftAidDeclaredAt)}` : ''} · ${gbp(Math.round(d.amount * 25) / 100)} to claim`
+                  : 'No'}
+              </Row>
               <Row label="Marketing">{d.marketingConsent ? 'Opted in to email updates' : 'No'}</Row>
             </Section>
             <Section title="Payment">
