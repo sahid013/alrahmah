@@ -67,7 +67,7 @@ export default function AppealPage() {
           src="/images/appeal/appeal-hero.webp"
           alt="Aerial view of the property proposed as Al-Rahmah Masjid’s new home, with its car park"
           fill
-          priority
+          preload
           sizes="100vw"
           className="-z-20 object-cover"
         />

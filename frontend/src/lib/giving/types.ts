@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SOURCE_LIMITS } from './source-limits';
 import { COUNTRY_CODES, UK } from './countries';
 
 /**
@@ -109,18 +110,18 @@ export type Donor = z.infer<typeof donorSchema>;
  * and the Meta server events can be matched to the ad click (`fbclid`).
  */
 export const sourceSchema = z.object({
-  utmSource: z.string().max(100).optional(),
-  utmMedium: z.string().max(100).optional(),
-  utmCampaign: z.string().max(100).optional(),
-  utmContent: z.string().max(100).optional(),
-  fbclid: z.string().max(400).optional(),
+  utmSource: z.string().max(SOURCE_LIMITS.utmSource).optional(),
+  utmMedium: z.string().max(SOURCE_LIMITS.utmMedium).optional(),
+  utmCampaign: z.string().max(SOURCE_LIMITS.utmCampaign).optional(),
+  utmContent: z.string().max(SOURCE_LIMITS.utmContent).optional(),
+  fbclid: z.string().max(SOURCE_LIMITS.fbclid).optional(),
   /** When the fbclid arrived (ms), for building `fbc` if the _fbc cookie is missing. */
   fbclidAt: z.number().int().positive().optional(),
-  gclid: z.string().max(200).optional(),
-  gbraid: z.string().max(200).optional(),
-  wbraid: z.string().max(200).optional(),
-  referrer: z.string().max(300).optional(),
-  landingPage: z.string().max(300).optional(),
+  gclid: z.string().max(SOURCE_LIMITS.gclid).optional(),
+  gbraid: z.string().max(SOURCE_LIMITS.gbraid).optional(),
+  wbraid: z.string().max(SOURCE_LIMITS.wbraid).optional(),
+  referrer: z.string().max(SOURCE_LIMITS.referrer).optional(),
+  landingPage: z.string().max(SOURCE_LIMITS.landingPage).optional(),
 });
 export type DonationSource = z.infer<typeof sourceSchema>;
 

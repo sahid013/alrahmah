@@ -7,6 +7,9 @@ const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
 
 const nextConfig: NextConfig = {
   images: {
+    // Next.js's default widths plus 1440, so full-width hero photos on common laptop screens
+    // (1280-1440px) aren't sent at 1920px.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1440, 1920, 2048, 3840],
     remotePatterns: supabaseHost
       ? [{ protocol: 'https', hostname: supabaseHost, pathname: '/storage/v1/object/public/**' }]
       : [],

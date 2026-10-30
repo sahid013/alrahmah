@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { EVENT_CATEGORIES, WEEKDAYS } from './constants';
+
+export { EVENT_CATEGORIES, WEEKDAYS };
 
 /**
  * Event contract. This is the shape the future dashboard / backend API must return
@@ -9,15 +12,6 @@ import { z } from 'zod';
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD');
 const clockTime = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Expected HH:mm (24h)');
 
-export const WEEKDAYS = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-] as const;
 export const weekdaySchema = z.enum(WEEKDAYS);
 
 /** Time of day: a human label ("After Asr", "12pm") and optional clock times for sorting/display. */
@@ -45,12 +39,6 @@ export const eventScheduleSchema = z.discriminatedUnion('kind', [
   }),
 ]);
 
-export const EVENT_CATEGORIES = {
-  course: 'Courses',
-  community: 'Community',
-  youth: 'Youth',
-  sisters: 'Sisters',
-} as const;
 export type EventCategory = keyof typeof EVENT_CATEGORIES;
 
 export const eventSchema = z.object({

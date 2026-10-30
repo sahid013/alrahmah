@@ -98,7 +98,8 @@ export function HeroMobile({ slides, events }: { slides: HeroSlide[]; events: Ev
                           src={slide.background.src}
                           alt={slide.background.alt}
                           fill
-                          priority={i === 0}
+                          loading={i === 0 ? 'eager' : undefined}
+                          fetchPriority={i === 0 ? 'high' : undefined}
                           sizes="100vw"
                           className="-z-20 object-cover"
                         />

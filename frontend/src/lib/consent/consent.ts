@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 /**
  * Cookie consent (UK GDPR / PECR). Strictly necessary storage (the consent cookie itself, the
  * Stripe payment form, dashboard sign-in) needs no consent. Everything else is off until the
@@ -38,15 +36,24 @@ export const CONSENT_CATEGORY_IDS = Object.keys(CONSENT_CATEGORIES) as ConsentCa
 
 export type ConsentChoices = Record<ConsentCategory, boolean>;
 
-const storedSchema = z.object({
-  v: z.literal(CONSENT_VERSION),
-  source: z.boolean(),
-  analytics: z.boolean(),
-  marketing: z.boolean(),
+export interface StoredConsent extends ConsentChoices {
+  v: typeof CONSENT_VERSION;
   /** When the choice was made (ISO), as a record of consent. */
-  at: z.string(),
-});
-export type StoredConsent = z.infer<typeof storedSchema>;
+  at: string;
+}
+
+/**
+ * Checked by hand rather than with zod: this runs on every public page (the cookie banner), and
+ * zod would add about 85 KiB of JavaScript to each one.
+ */
+function toStoredConsent(value: unknown): StoredConsent | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const { v, source, analytics, marketing, at } = value as Record<string, unknown>;
+  if (v !== CONSENT_VERSION || typeof at !== 'string') return null;
+  if (typeof source !== 'boolean' || typeof analytics !== 'boolean') return null;
+  if (typeof marketing !== 'boolean') return null;
+  return { v, source, analytics, marketing, at };
+}
 
 export const ACCEPT_ALL: ConsentChoices = { source: true, analytics: true, marketing: true };
 export const REJECT_ALL: ConsentChoices = { source: false, analytics: false, marketing: false };
@@ -84,8 +91,7 @@ export function readConsent(cookieHeader: string): StoredConsent | null {
     ?.slice(CONSENT_COOKIE.length + 1);
   if (!raw) return null;
   try {
-    const parsed = storedSchema.safeParse(JSON.parse(decodeURIComponent(raw)));
-    return parsed.success ? parsed.data : null;
+    return toStoredConsent(JSON.parse(decodeURIComponent(raw)));
   } catch {
     return null;
   }

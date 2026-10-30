@@ -27,7 +27,7 @@ export function ReportCard({ report }: { report: PublishedReport }) {
             width={report.cover.width}
             height={report.cover.height}
             sizes="(min-width: 1024px) 55vw, 100vw"
-            priority
+            preload
             className="h-auto w-full"
           />
           <span className="sr-only">(opens the PDF in a new tab)</span>

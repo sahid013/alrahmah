@@ -60,7 +60,7 @@ export function Header({ latestEvents }: { latestEvents: EventItem[] }) {
             alt={siteConfig.legalName}
             width={siteConfig.logo.width}
             height={siteConfig.logo.height}
-            priority
+            preload
             className="h-9 w-auto lg:h-16"
           />
         </Link>

@@ -64,7 +64,7 @@ export default async function EventPage({ params }: Props) {
               alt={event.image.alt}
               width={event.image.width}
               height={event.image.height}
-              priority
+              preload
               sizes="(min-width: 1024px) 28rem, 100vw"
               className="h-auto w-full max-w-md"
             />

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowRightIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { inboxFor, type ContactFormId } from '@/lib/contact/types';
+import { inboxFor, type ContactFormId } from '@/lib/contact/forms';
 import { cn } from '@/lib/utils/cn';
 
 const fieldClass =

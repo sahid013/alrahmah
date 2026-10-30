@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { ArrowRightIcon, ChevronIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
-import { eventScheduleText, getEventHref, type EventItem } from '@/lib/events';
+import { eventScheduleText, getEventHref } from '@/lib/events/schedule';
+import type { EventItem } from '@/lib/events/types';
 import { ScheduleBox } from './event-card';
 
 /** Events shown per page. */

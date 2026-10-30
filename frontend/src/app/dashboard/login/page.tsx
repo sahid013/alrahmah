@@ -23,7 +23,7 @@ export default function LoginPage() {
         alt={siteConfig.legalName}
         width={600}
         height={149}
-        priority
+        preload
         className="h-12 w-auto"
       />
       <Suspense>

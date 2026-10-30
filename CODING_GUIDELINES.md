@@ -139,7 +139,8 @@ frontend/src/
 - Export `metadata = buildMetadata({ title, description, path })` (or `generateMetadata` for dynamic routes). This sets title, description, canonical URL, Open Graph and Twitter tags.
 - Exactly one `<h1>` per page; sections use `<h2>` (the `Section` component does this).
 - Semantic HTML: `header`, `nav`, `main`, `section`, `article`, `footer`; real `<a>` links for navigation (`Link` / `ButtonLink`), never `onClick` navigation.
-- Images use `next/image` with meaningful `alt`, and `priority` on the main above-the-fold image.
+- Images use `next/image` with meaningful `alt`. The LCP image (the home hero's first photo) gets `loading="eager"` and `fetchPriority="high"`; other above-the-fold images use `preload` (`priority` is deprecated in Next.js 16). Small images shown at a fixed size get a `sizes` (e.g. the prayer badge icon, `sizes="52px"`), so a 500px file isn't sent for a 52px icon. `next.config.ts` adds a 1440px width to Next.js's default image sizes, so full-width photos on 1280–1440px laptop screens aren't sent at 1920px.
+- **No zod in browser code on public pages.** zod adds about 85 KiB (gzip) to every page that imports it, even indirectly. Keep constants and pure helpers in zod-free files (`lib/events/constants.ts` + `schedule.ts`, with `lib/events/index.ts` exporting only those and `export type *` from `types.ts`; `lib/contact/forms.ts`; `lib/giving/source-limits.ts`) and check small browser data by hand (`readConsent`, `attribution.ts`); the server still validates with zod. Only the donation form uses zod in the browser. Check with a production build that the home page's chunks don't contain `ZodError`.
 - Add the route to `app/sitemap.ts`; mark private pages `noindex: true`.
 - Add JSON-LD (`JsonLd`) with the builders in `lib/structured-data.ts`, never hand-written objects: `siteJsonLd` (Mosque + WebSite, root layout), `servicePageJsonLd` (service pages: Service + breadcrumb), `eventJsonLd` + `breadcrumbJsonLd` (event pages). Every node links to the masjid by `@id` and builds URLs from `siteConfig.url`. Social links flagged `placeholder` in `siteConfig.socials` are left out of `sameAs`.
 - Titles get the "| Al-Rahmah Masjid" suffix from the layout template, so don't repeat the name in a page title (use `absoluteTitle` for the home page, whose title is exactly "Al Rahmah Faith Centre - Leeds", client request, October 2026). Service page titles name the service and Leeds.
@@ -376,7 +377,8 @@ src/lib/events/
 ├── repository.ts   ← listEvents({ search, category, limit }), getEvent(id): the ONLY data source
 ├── schedule.ts     ← pure helpers: occursOn, occurrencesInRange, nextOccurrence, format*
 ├── calendar.ts     ← month grid maths, URL state (calendarHref), todayAtMasjid
-├── index.ts        ← client-safe exports (types + schedule helpers)
+├── constants.ts    ← WEEKDAYS, EVENT_CATEGORIES (no zod)
+├── index.ts        ← client-safe exports (constants, schedule helpers, types only; no zod)
 └── events.test.ts  ← unit tests (npm test)
 ```
 

@@ -1,4 +1,5 @@
-import { WEEKDAYS, type EventItem, type EventOccurrence, type EventSchedule } from './types';
+import { WEEKDAYS } from './constants';
+import type { EventItem, EventOccurrence, EventSchedule } from './types';
 
 /** Pure schedule helpers — safe for server and client components. */
 

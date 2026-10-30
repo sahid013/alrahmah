@@ -47,6 +47,7 @@ export function PrayerBadge() {
         alt=""
         width={500}
         height={364}
+        sizes="52px"
         className="relative w-[46%]"
       />
     </button>
