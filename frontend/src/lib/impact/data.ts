@@ -4,7 +4,10 @@
  */
 
 export interface ImpactStat {
-  value: number;
+  /** The figure; leave out when `text` stands in for it. */
+  value?: number;
+  /** Words shown in place of a figure, e.g. "Hundreds of thousands of pounds". */
+  text?: string;
   /** e.g. "£" for "£585,000". */
   prefix?: string;
   /** Full-size unit after the number, e.g. "m" for "2.8m". */

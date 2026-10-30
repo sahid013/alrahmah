@@ -27,7 +27,7 @@ export default function ImpactReportsPage() {
           ))}
         </Container>
       </section>
-      {latest?.figures && <ImpactSection report={latest.figures} emblem="middle" />}
+      {latest?.figures && <ImpactSection report={latest.figures} />}
     </>
   );
 }

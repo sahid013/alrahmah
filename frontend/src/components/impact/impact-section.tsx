@@ -3,9 +3,7 @@ import { ArrowRightIcon } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
-import { siteConfig } from '@/config/site';
 import type { ImpactGroup, ImpactReport } from '@/lib/impact/data';
-import type { PublishedReport } from '@/lib/impact/reports';
 import { cn } from '@/lib/utils/cn';
 import { StaggerGroup } from '@/components/ui/stagger-group';
 import type { CSSProperties } from 'react';
@@ -25,7 +23,7 @@ function Group({
       <h3 className="font-label text-xs font-bold tracking-[0.3em] text-secondary-300 uppercase sm:text-sm">
         {group.label}
       </h3>
-      <dl className="mt-6 space-y-12">
+      <dl className="mt-6 space-y-9">
         {group.stats.map((stat, i) => (
           <div
             key={stat.caption}
@@ -34,16 +32,24 @@ function Group({
           >
             {/* Visual order: number then caption; <dt>/<dd> keep the caption as the term. */}
             <dt className="order-2 mt-1 text-lg text-primary-100">{stat.caption}</dt>
-            <dd className="order-1 font-heading text-title-4xl leading-none tracking-heading text-white sm:text-title-5xl">
-              {stat.prefix}
-              {new Intl.NumberFormat('en-GB').format(stat.value)}
-              {stat.unit}
-              {stat.suffix && (
-                <span className="ml-1 align-top text-title-2xl text-secondary-300">
-                  {stat.suffix}
-                </span>
-              )}
-            </dd>
+            {stat.text ? (
+              // Words in place of a figure: smaller, so they wrap neatly in the column.
+              <dd className="order-1 font-heading text-title-2xl leading-tight tracking-heading text-balance text-white sm:text-title-3xl">
+                {stat.text}
+              </dd>
+            ) : (
+              // 20px under the title-4xl / title-5xl steps (client request, October 2026).
+              <dd className="order-1 font-heading text-[length:calc(var(--text-title-4xl)-1.25rem)] leading-none tracking-heading text-white sm:text-[length:calc(var(--text-title-5xl)-1.25rem)]">
+                {stat.prefix}
+                {new Intl.NumberFormat('en-GB').format(stat.value ?? 0)}
+                {stat.unit}
+                {stat.suffix && (
+                  <span className="ml-1 align-top text-title-2xl text-secondary-300">
+                    {stat.suffix}
+                  </span>
+                )}
+              </dd>
+            )}
           </div>
         ))}
       </dl>
@@ -52,28 +58,13 @@ function Group({
 }
 
 /**
- * Yearly impact in numbers: intro + first group, middle figures, highlighted right panel.
- * `emblem`: where the brand emblem sits in the space under the middle figures.
- * `cover`: the report's first page, shown at the top of the left column above the details
- * (home page), linking to `report.reportUrl` (a PDF opens in a new tab); the first group then sits in the middle column.
+ * Yearly impact in numbers: intro + first group (left), middle figures above the Al-Rahmah
+ * graphic (on the section's bottom edge), highlighted right panel. Same on the home page and `/impact-reports`.
  */
-export function ImpactSection({
-  report,
-  emblem = 'bottom',
-  cover,
-}: {
-  report: ImpactReport;
-  emblem?: 'bottom' | 'middle';
-  cover?: PublishedReport['cover'];
-}) {
-  // With the cover, the left column is cover + intro, so the first group moves to the middle
-  // column (under the other figures) to keep the columns balanced.
-  const primaryInMiddle = !!cover;
+export function ImpactSection({ report }: { report: ImpactReport }) {
   // A report PDF opens in a new tab, as on /impact-reports.
   const pdf = !!report.reportUrl?.toLowerCase().endsWith('.pdf');
   const newTab = pdf ? { target: '_blank', rel: 'noopener' } : {};
-  // Middle column groups, side by side when there are two or more.
-  const middle = primaryInMiddle ? [...report.secondary, report.primary] : report.secondary;
 
   return (
     <section
@@ -91,23 +82,6 @@ export function ImpactSection({
           {/* Left: intro + primary group */}
           <div className="flex flex-col gap-16 lg:col-span-4 lg:pb-28">
             <Reveal>
-              {cover && (
-                <a
-                  href={report.reportUrl ?? '/impact-reports'}
-                  {...newTab}
-                  className="mb-10 block border border-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-300"
-                >
-                  <Image
-                    src={cover.src}
-                    alt={cover.alt}
-                    width={cover.width}
-                    height={cover.height}
-                    sizes="(min-width: 1536px) 480px, (min-width: 1024px) 30vw, 100vw"
-                    className="h-auto w-full"
-                  />
-                  {pdf && <span className="sr-only">(opens the PDF in a new tab)</span>}
-                </a>
-              )}
               <h2 id="impact-title" className="text-title-3xl text-white sm:text-title-4xl">
                 {report.year} Impact
               </h2>
@@ -129,35 +103,32 @@ export function ImpactSection({
                 </ButtonLink>
               )}
             </Reveal>
-            {!primaryInMiddle && <Group group={report.primary} start={0} />}
+            <Group group={report.primary} start={0} />
           </div>
 
-          {/* Middle: secondary groups (+ the first group with a cover) + brand emblem */}
+          {/* Middle: secondary groups + the Al-Rahmah graphic */}
           <div className="flex flex-col lg:col-span-4">
-            <div className={cn('grid gap-12', middle.length > 1 && 'grid-cols-2')}>
-              {middle.map((group, i) => (
+            <div className={cn('grid gap-12', report.secondary.length > 1 && 'grid-cols-2')}>
+              {report.secondary.map((group, i) => (
                 <Group
                   key={group.label}
                   group={group}
                   start={
-                    (primaryInMiddle ? 0 : report.primary.stats.length) +
-                    middle.slice(0, i).reduce((n, g) => n + g.stats.length, 0)
+                    report.primary.stats.length +
+                    report.secondary.slice(0, i).reduce((n, g) => n + g.stats.length, 0)
                   }
                 />
               ))}
             </div>
-            <div
-              className={cn(
-                'mt-16 flex flex-1 justify-center lg:mt-12',
-                emblem === 'bottom' ? 'items-end' : 'items-center lg:pb-28',
-              )}
-            >
+            {/* Sits on the bottom edge (desktop) or on the panel below (phones); well into the left gap, with room on its right. */}
+            <div className="mt-16 -mb-16 flex flex-1 items-end justify-center lg:mt-12 lg:mr-4 lg:mb-0 lg:-ml-12 xl:-ml-32">
               <Image
-                src={siteConfig.logoMarkLight}
-                alt=""
-                width={168}
-                height={134}
-                className="pointer-events-none w-3/5 max-w-sm opacity-15 lg:w-[80%] lg:max-w-none"
+                src="/images/impact/al-rahmah-graphics.webp"
+                alt="Illustration of the Al-Rahmah Faith Centre, its walls showing prayer, iftar and the community"
+                width={1352}
+                height={978}
+                sizes="(min-width: 1024px) 36vw, 100vw"
+                className="block h-auto w-full max-w-lg lg:max-w-none"
               />
             </div>
           </div>

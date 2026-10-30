@@ -55,7 +55,11 @@ export const impactReports: PublishedReport[] = [
           label: 'In the masjid',
           stats: [
             { value: 35, caption: 'Shahadahs taken at our masjid' },
-            { value: 150, caption: 'Madrasah students' },
+            {
+              text: 'Hundreds of thousands of pounds',
+              caption:
+                'Together, our community has raised hundreds of thousands of pounds for humanitarian causes, supporting those in need across the wider Ummah.',
+            },
           ],
         },
       ],
@@ -63,8 +67,8 @@ export const impactReports: PublishedReport[] = [
         label: 'The next chapter',
         stats: [
           { value: 1000, suffix: '+', caption: 'Worshippers, up from about 350 today' },
-          { value: 200, suffix: '+', caption: 'Students, with 50+ children waiting' },
-          { prefix: '£', value: 585000, caption: 'Raised so far, 54% of the milestone' },
+          { value: 200, suffix: '+', caption: 'Students' },
+          { prefix: '£', value: 585000, caption: 'Raised so far' },
         ],
       },
     },

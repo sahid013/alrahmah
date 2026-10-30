@@ -41,11 +41,8 @@ export default async function HomePage() {
       <GreetingSection />
       <EventsSection events={events.slice(0, 3)} />
       {latestReport?.figures && (
-        // The newest report's figures (as on /impact-reports); the cover and button open its PDF.
-        <ImpactSection
-          report={{ ...latestReport.figures, reportUrl: latestReport.pdf.href }}
-          cover={latestReport.cover}
-        />
+        // The newest report's figures (as on /impact-reports); the button opens its PDF.
+        <ImpactSection report={{ ...latestReport.figures, reportUrl: latestReport.pdf.href }} />
       )}
       <KhutbahsSection khutbahs={khutbahs} />
       <ServicesSection />
