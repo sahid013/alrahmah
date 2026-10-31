@@ -56,9 +56,11 @@ export const impactReports: PublishedReport[] = [
           stats: [
             { value: 35, caption: 'Shahadahs taken at our masjid' },
             {
-              text: 'Hundreds of thousands of pounds',
-              caption:
-                'Together, our community has raised hundreds of thousands of pounds for humanitarian causes, supporting those in need across the wider Ummah.',
+              prefix: '£',
+              value: 100000,
+              unit: 's',
+              suffix: '+',
+              caption: 'Raised by our community for humanitarian causes',
             },
           ],
         },
@@ -67,8 +69,8 @@ export const impactReports: PublishedReport[] = [
         label: 'The next chapter',
         stats: [
           { value: 1000, suffix: '+', caption: 'Worshippers, up from about 350 today' },
-          { value: 200, suffix: '+', caption: 'Students' },
-          { prefix: '£', value: 585000, caption: 'Raised so far' },
+          { value: 200, suffix: '+', caption: 'Places for Madrasah students' },
+          { prefix: '£', value: 585000, caption: 'Raised so far for the masjid expansion' },
         ],
       },
     },

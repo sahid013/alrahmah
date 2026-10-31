@@ -32,24 +32,17 @@ function Group({
           >
             {/* Visual order: number then caption; <dt>/<dd> keep the caption as the term. */}
             <dt className="order-2 mt-1 text-lg text-primary-100">{stat.caption}</dt>
-            {stat.text ? (
-              // Words in place of a figure: smaller, so they wrap neatly in the column.
-              <dd className="order-1 font-heading text-title-2xl leading-tight tracking-heading text-balance text-white sm:text-title-3xl">
-                {stat.text}
-              </dd>
-            ) : (
-              // 20px under the title-4xl / title-5xl steps (client request, October 2026).
-              <dd className="order-1 font-heading text-[length:calc(var(--text-title-4xl)-1.25rem)] leading-none tracking-heading text-white sm:text-[length:calc(var(--text-title-5xl)-1.25rem)]">
-                {stat.prefix}
-                {new Intl.NumberFormat('en-GB').format(stat.value ?? 0)}
-                {stat.unit}
-                {stat.suffix && (
-                  <span className="ml-1 align-top text-title-2xl text-secondary-300">
-                    {stat.suffix}
-                  </span>
-                )}
-              </dd>
-            )}
+            {/* 20px under the title-4xl / title-5xl steps (client request, October 2026). */}
+            <dd className="order-1 font-heading text-[length:calc(var(--text-title-4xl)-1.25rem)] leading-none tracking-heading text-white sm:text-[length:calc(var(--text-title-5xl)-1.25rem)]">
+              {stat.prefix}
+              {new Intl.NumberFormat('en-GB').format(stat.value)}
+              {stat.unit}
+              {stat.suffix && (
+                <span className="ml-1 align-top text-[0.6em] text-secondary-300 sm:text-title-2xl">
+                  {stat.suffix}
+                </span>
+              )}
+            </dd>
           </div>
         ))}
       </dl>
@@ -121,14 +114,16 @@ export function ImpactSection({ report }: { report: ImpactReport }) {
               ))}
             </div>
             {/* Sits on the bottom edge (desktop) or on the panel below (phones); well into the left gap, with room on its right. */}
-            <div className="mt-16 -mb-16 flex flex-1 items-end justify-center lg:mt-12 lg:mr-4 lg:mb-0 lg:-ml-12 xl:-ml-32">
+            <div className="mt-16 -mb-16 flex flex-1 items-end justify-center drop-shadow-[0_16px_40px_rgb(0_0_0/0.45)] lg:mt-12 lg:mr-4 lg:mb-0 lg:-ml-12 xl:-ml-32">
               <Image
                 src="/images/impact/al-rahmah-graphics.webp"
                 alt="Illustration of the Al-Rahmah Faith Centre, its walls showing prayer, iftar and the community"
                 width={1352}
                 height={978}
                 sizes="(min-width: 1024px) 36vw, 100vw"
-                className="block h-auto w-full max-w-lg lg:max-w-none"
+                // The bottom fades out (alpha mask). The soft dark shadow is on the wrapper, so it
+                // follows the faded shape (client request; the one exception to "no drop shadows").
+                className="block h-auto w-full max-w-lg mask-b-from-60% mask-b-to-100% lg:max-w-none"
               />
             </div>
           </div>
