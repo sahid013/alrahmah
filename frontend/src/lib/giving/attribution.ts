@@ -46,6 +46,36 @@ function toSource(value: unknown): DonationSource {
   return source;
 }
 
+/** The page the visitor arrived on, without consent: kept in memory only (never stored). */
+let arrival: DonationSource | undefined;
+
+/**
+ * Without "Donation source" consent (marketing team, November 2026: most visitors decline, so most
+ * donations from the ads arrived in Stripe with no source): the campaign tags of the link the
+ * visitor arrived on, the referring site and that landing page, read from the URL when the site
+ * first loads and kept in this page's memory, nothing saved in the browser. Moving between pages
+ * keeps it (client-side navigation); a reload or a new tab starts again. No ad click ids
+ * (fbclid, gclid…), so no fbc for these donors.
+ */
+export function rememberArrival(location: Location, referrer: string) {
+  if (arrival) return;
+  try {
+    const params = new URLSearchParams(location.search);
+    const get = (name: string) => params.get(name) || undefined;
+    const external = referrer && new URL(referrer).host !== location.host ? referrer : undefined;
+    arrival = toSource({
+      utmSource: get('utm_source'),
+      utmMedium: get('utm_medium'),
+      utmCampaign: get('utm_campaign'),
+      utmContent: get('utm_content'),
+      referrer: external?.slice(0, 300),
+      landingPage: location.pathname.slice(0, 300),
+    });
+  } catch {
+    /* odd values: no source */
+  }
+}
+
 export function captureSource(location: Location, referrer: string, now = Date.now()) {
   try {
     const params = new URLSearchParams(location.search);
@@ -86,11 +116,13 @@ export function clearSource() {
   }
 }
 
+/** The source to send with a donation: the stored one (with consent), else the arrival page's. */
 export function readSource(): DonationSource | undefined {
   try {
     const raw = sessionStorage.getItem(KEY);
-    return raw ? toSource(JSON.parse(raw)) : undefined;
+    if (raw) return toSource(JSON.parse(raw));
   } catch {
-    return undefined;
+    /* storage unavailable or odd values */
   }
+  return arrival;
 }

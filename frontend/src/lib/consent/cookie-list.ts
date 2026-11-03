@@ -57,7 +57,8 @@ export const cookieGroups: CookieGroup[] = [
   {
     title: 'Donation source',
     optional: true,
-    description: 'Only with your consent.',
+    description:
+      'Only with your consent. Without it nothing is stored: if you donate on the visit you arrived with campaign tags in the link (for example from one of our adverts or newsletters), those tags, the site you came from and the page you arrived on are sent with your donation.',
     entries: [
       {
         name: 'alrahmah.source (session storage)',
