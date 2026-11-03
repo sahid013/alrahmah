@@ -94,10 +94,16 @@ interface PaymentSession {
   eventId: string;
 }
 
-async function startSession(request: DonationRequest): Promise<PaymentSession> {
+async function startSession(
+  request: DonationRequest,
+  captchaToken: string | null,
+): Promise<PaymentSession> {
   const res = await fetch('/api/giving/session', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(captchaToken && { 'x-turnstile-token': captchaToken }),
+    },
     body: JSON.stringify(request),
   });
   const data = (await res.json().catch(() => ({}))) as Partial<PaymentSession> & {
@@ -119,17 +125,23 @@ async function startSession(request: DonationRequest): Promise<PaymentSession> {
 export function StripePayment({
   request,
   unit,
+  captchaToken,
+  onRetry,
   onPaid,
 }: {
   request: DonationRequest;
   /** Daily causes: "night" or "day" (for the button). */
   unit?: 'night' | 'day' | 'Friday';
+  /** Turnstile token from `HumanCheck` (null when it isn't set up). */
+  captchaToken: string | null;
+  /** Starts again with a fresh check, when the session couldn't start. */
+  onRetry: () => void;
   onPaid: (result: PaidResult) => void;
 }) {
   // One session per mount; the promises are created once. If the session can't start, both
   // reject and Stripe's provider shows the error.
   const [{ stripe, clientSecret, eventId }] = useState(() => {
-    const session = startSession(request);
+    const session = startSession(request, captchaToken);
     return {
       stripe: session.then((s) => loadStripeFor(s.publishableKey)),
       clientSecret: session.then((s) => s.clientSecret),
@@ -167,7 +179,13 @@ export function StripePayment({
 
   return (
     <CheckoutElementsProvider stripe={stripe} options={options}>
-      <PaymentForm request={request} unit={unit} eventId={eventId} onPaid={onPaid} />
+      <PaymentForm
+        request={request}
+        unit={unit}
+        eventId={eventId}
+        onRetry={onRetry}
+        onPaid={onPaid}
+      />
     </CheckoutElementsProvider>
   );
 }
@@ -176,12 +194,14 @@ function PaymentForm({
   request,
   unit,
   eventId,
+  onRetry,
   onPaid,
 }: {
   request: DonationRequest;
   unit?: 'night' | 'day' | 'Friday';
   /** Resolved before the form shows (it comes with the session). */
   eventId: Promise<string>;
+  onRetry: () => void;
   onPaid: (result: PaidResult) => void;
 }) {
   const state = useCheckoutElements();
@@ -197,7 +217,15 @@ function PaymentForm({
         <div className="h-12 animate-pulse bg-white/10 motion-reduce:animate-none" />
       </div>
     );
-  if (state.type === 'error') return <ErrorBox>{state.error.message}</ErrorBox>;
+  if (state.type === 'error')
+    return (
+      <ErrorBox>
+        {state.error.message}{' '}
+        <button type="button" onClick={onRetry} className="underline hover:text-white">
+          Try again
+        </button>
+      </ErrorBox>
+    );
 
   const { checkout } = state;
 

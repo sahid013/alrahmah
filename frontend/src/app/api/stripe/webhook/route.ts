@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import Stripe from 'stripe';
+import { noteFailedAttempt } from '@/lib/giving/protection';
 import { recordStripeEvent } from '@/lib/giving/record';
+import { sendReceiptSafely } from '@/lib/giving/receipt';
 import { serverEventFor } from '@/lib/giving/server-events';
 import type { DailyPlan } from '@/lib/giving/schedule';
 import { sendMetaEventSafely } from '@/lib/meta/capi';
@@ -13,8 +15,9 @@ import { webhookSecrets } from '@/lib/giving/stripe-mode';
  * the payment mode never breaks either (see `lib/giving/stripe-mode.ts`).
  * Subscribe the endpoint to: checkout.session.completed, checkout.session.async_payment_succeeded,
  * checkout.session.async_payment_failed, invoice.paid, invoice.payment_failed, charge.refunded,
- * customer.subscription.deleted. Donations are recorded in Supabase (`lib/giving/record.ts`),
- * then reported to Meta (`lib/giving/server-events.ts`); a Meta failure is logged, never retried
+ * customer.subscription.deleted, payment_intent.payment_failed, setup_intent.setup_failed (the
+ * last two, with invoice.payment_failed, count declined cards: `lib/giving/protection.ts`). Donations are recorded in Supabase (`lib/giving/record.ts`),
+ * the donor gets a receipt email (`lib/giving/receipt.ts`), then it's reported to Meta (`lib/giving/server-events.ts`); a Meta failure is logged, never retried
  * through Stripe, so it can't hold up recording.
  */
 export async function POST(request: NextRequest) {
@@ -55,6 +58,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Card-testing protection: count declined attempts, close the session after too many.
+  await noteFailedAttempt(event);
+
   try {
     await recordStripeEvent(event);
   } catch (error) {
@@ -66,6 +72,9 @@ export async function POST(request: NextRequest) {
     );
     return NextResponse.json({ error: 'Recording failed' }, { status: 500 });
   }
+
+  // The donor's receipt email (first successful payment only; never fails the webhook).
+  await sendReceiptSafely(event, plan);
 
   try {
     const server = await serverEventFor(event, plan);

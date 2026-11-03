@@ -33,6 +33,7 @@ import {
 import { AmountStep, amountFor, initialAmount, type AmountValue } from './amount-step';
 import { DonatePanel } from './donate-panel';
 import { DetailsStep } from './details-step';
+import { HumanCheck } from './human-check';
 import { PaymentStep } from './payment-step';
 import { STEPS, Stepper } from './stepper';
 import { StripePayment, type PaidResult } from './stripe-payment';
@@ -334,12 +335,17 @@ export function DonationFlow({
                   {step === 2 && (
                     <PaymentStep request={request} program={program} error={payError}>
                       {stripeMode ? (
-                        <StripePayment
-                          key={JSON.stringify(request)}
-                          request={request}
-                          unit={unit}
-                          onPaid={paid}
-                        />
+                        <HumanCheck key={JSON.stringify(request)}>
+                          {(captchaToken, retry) => (
+                            <StripePayment
+                              request={request}
+                              unit={unit}
+                              captchaToken={captchaToken}
+                              onRetry={retry}
+                              onPaid={paid}
+                            />
+                          )}
+                        </HumanCheck>
                       ) : (
                         <p className="border border-dashed border-white/20 bg-white/5 p-6 text-primary-100">
                           <strong className="text-secondary-300">Preview:</strong> online card

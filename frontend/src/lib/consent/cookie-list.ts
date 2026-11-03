@@ -40,6 +40,13 @@ export const cookieGroups: CookieGroup[] = [
         duration: '1 year; 30 minutes',
       },
       {
+        name: 'Turnstile (no cookies)',
+        provider: 'Cloudflare',
+        purpose:
+          'Checks you are a person, not an automated attack, before a payment starts. Runs only at the payment step of the donation form and sets no tracking cookies.',
+        duration: 'Not stored',
+      },
+      {
         name: 'sb-…-auth-token (local storage)',
         provider: 'Supabase',
         purpose: 'Keeps masjid staff signed in to the website dashboard. Not used for visitors.',
