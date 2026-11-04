@@ -10,7 +10,14 @@ import {
   type Donor,
   type DonorType,
 } from '@/lib/giving/types';
-import { GiveField, GiveInput, GiveSelect, GiveTextarea, StepTitle } from './fields';
+import {
+  GiveField,
+  GiveInput,
+  GiveSelect,
+  GiveTextarea,
+  StepTitle,
+  PrivacyNoticeLink,
+} from './fields';
 
 /** Text inputs for the donor fields, keyed by name. */
 type TextKey = Exclude<keyof Donor, 'type' | 'country'>;
@@ -184,7 +191,8 @@ export function DetailsStep({
         </Checkbox>
         <p className="text-sm text-primary-200">
           We use your details to process your donation, send your receipt and claim Gift Aid if you
-          add it. We never sell or share your information.
+          add it. We never sell your information. See our <PrivacyNoticeLink /> for who we share it
+          with.
         </p>
       </section>
     </div>

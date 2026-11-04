@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { CookieSettingsButton } from '@/components/consent/cookie-settings-button';
 import { buttonStyles } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
@@ -26,6 +27,11 @@ export default function CookiesPage() {
           Cookies are small files a website stores in your browser. This page lists every cookie and
           similar storage the {siteConfig.name} website uses ({siteConfig.legalName}, the charity
           that runs the masjid). Apart from the necessary ones, nothing is stored until you agree.
+          How we use the personal data you give us is explained in our{' '}
+          <Link href="/privacy" className={link}>
+            privacy notice
+          </Link>
+          .
         </Text>
         <div className="mt-8">
           <CookieSettingsButton className={buttonStyles({ size: 'sm' })} />

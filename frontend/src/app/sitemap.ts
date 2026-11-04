@@ -27,6 +27,7 @@ const staticRoutes = [
   '/vision-mission',
   '/volunteering',
   '/cookies',
+  '/privacy',
   EVENTS_PAGE,
 ];
 

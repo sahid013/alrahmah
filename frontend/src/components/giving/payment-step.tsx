@@ -8,7 +8,7 @@ import {
   giftAidBonus,
   type DonationRequest,
 } from '@/lib/giving/types';
-import { ErrorBox, StepTitle } from './fields';
+import { ErrorBox, PrivacyNoticeLink, StepTitle } from './fields';
 
 const fridayDate = new Intl.DateTimeFormat('en-GB', {
   weekday: 'long',
@@ -108,9 +108,9 @@ export function PaymentStep({
         <p className="mt-3 text-sm text-primary-200">
           Payments are processed by Stripe. {siteConfig.name} never sees or stores your card
           details.
-          {daily && ' Your card is saved with Stripe only to take the payments listed above.'} Your
-          information is only used to process your donation
-          {request.giftAid.declared ? ' and claim Gift Aid' : ''}.
+          {daily && ' Your card is saved with Stripe only to take the payments listed above.'} This
+          form is protected by Cloudflare Turnstile. We never sell your information. See our{' '}
+          <PrivacyNoticeLink /> for who we share it with.
         </p>
       </section>
 

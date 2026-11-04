@@ -36,6 +36,13 @@ export function CookieBanner() {
               className="text-primary-500 underline underline-offset-4 hover:text-secondary-700"
             >
               cookie policy
+            </Link>{' '}
+            and{' '}
+            <Link
+              href="/privacy"
+              className="text-primary-500 underline underline-offset-4 hover:text-secondary-700"
+            >
+              privacy notice
             </Link>
             .
           </p>

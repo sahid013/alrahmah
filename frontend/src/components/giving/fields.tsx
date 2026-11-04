@@ -105,3 +105,17 @@ export const ErrorBox = ({ children }: { children: ReactNode }) => (
     {children}
   </p>
 );
+
+/** The privacy notice, from the donation form: opens in a new tab so the form isn't lost. */
+export function PrivacyNoticeLink() {
+  return (
+    <a
+      href="/privacy"
+      target="_blank"
+      rel="noopener"
+      className="text-secondary-300 underline underline-offset-4 hover:text-white"
+    >
+      privacy notice
+    </a>
+  );
+}

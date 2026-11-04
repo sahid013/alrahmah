@@ -46,6 +46,7 @@ export const siteConfig = {
     '/vision-mission',
     '/volunteering',
     '/cookies',
+    '/privacy',
   ],
   /**
    * Prayer-time calculation settings for the masjid's location.

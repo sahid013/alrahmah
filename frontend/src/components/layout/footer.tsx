@@ -141,6 +141,9 @@ export function Footer() {
           Serving {siteConfig.address.locality} since {siteConfig.foundingYear}
         </p>
         <p className="flex gap-6 lg:ml-auto">
+          <Link href="/privacy" className="hover:text-white">
+            Privacy notice
+          </Link>
           <Link href="/cookies" className="hover:text-white">
             Cookie policy
           </Link>
