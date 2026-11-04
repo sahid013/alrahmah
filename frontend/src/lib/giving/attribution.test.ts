@@ -16,7 +16,7 @@ describe('rememberArrival (no "Donation source" consent)', () => {
   it("sends the arrival page's campaign tags, referrer and landing page, without storing them", () => {
     rememberArrival(
       at(
-        'https://www.alrahmahmasjid.co.uk/donate/masjid-expansion?utm_source=facebook&utm_medium=paid&utm_campaign=expansion&utm_content=video1&fbclid=abc&gclid=xyz',
+        'https://www.alrahmahmasjid.co.uk/donate/masjid-expansion?utm_source=facebook&utm_medium=paid&utm_campaign=expansion&utm_content=video1&utm_term=feed&fbclid=abc&gclid=xyz',
       ),
       'https://l.facebook.com/',
     );
@@ -27,6 +27,7 @@ describe('rememberArrival (no "Donation source" consent)', () => {
       utmMedium: 'paid',
       utmCampaign: 'expansion',
       utmContent: 'video1',
+      utmTerm: 'feed',
       referrer: 'https://l.facebook.com/',
       landingPage: '/donate/masjid-expansion',
     });

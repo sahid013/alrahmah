@@ -8,6 +8,7 @@ export const SOURCE_LIMITS = {
   utmMedium: 100,
   utmCampaign: 100,
   utmContent: 100,
+  utmTerm: 100,
   fbclid: 400,
   gclid: 200,
   gbraid: 200,

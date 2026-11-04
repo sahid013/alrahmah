@@ -72,6 +72,7 @@ export function visitMetadata(
     ga_client_id: visit.gaClientId ?? '',
     ga_session_id: visit.gaSessionId ?? '',
     utm_content: source?.utmContent ?? '',
+    utm_term: source?.utmTerm ?? '',
     gclid: source?.gclid ?? '',
     gbraid: source?.gbraid ?? '',
     wbraid: source?.wbraid ?? '',

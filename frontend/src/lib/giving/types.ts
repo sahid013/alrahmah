@@ -114,6 +114,7 @@ export const sourceSchema = z.object({
   utmMedium: z.string().max(SOURCE_LIMITS.utmMedium).optional(),
   utmCampaign: z.string().max(SOURCE_LIMITS.utmCampaign).optional(),
   utmContent: z.string().max(SOURCE_LIMITS.utmContent).optional(),
+  utmTerm: z.string().max(SOURCE_LIMITS.utmTerm).optional(),
   fbclid: z.string().max(SOURCE_LIMITS.fbclid).optional(),
   /** When the fbclid arrived (ms), for building `fbc` if the _fbc cookie is missing. */
   fbclidAt: z.number().int().positive().optional(),

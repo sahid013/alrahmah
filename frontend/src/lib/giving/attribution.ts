@@ -14,6 +14,7 @@ const SOURCE_KEYS = [
   'utmMedium',
   'utmCampaign',
   'utmContent',
+  'utmTerm',
   'fbclid',
   'fbclidAt',
   'gclid',
@@ -68,6 +69,7 @@ export function rememberArrival(location: Location, referrer: string) {
       utmMedium: get('utm_medium'),
       utmCampaign: get('utm_campaign'),
       utmContent: get('utm_content'),
+      utmTerm: get('utm_term'),
       referrer: external?.slice(0, 300),
       landingPage: location.pathname.slice(0, 300),
     });
@@ -86,6 +88,7 @@ export function captureSource(location: Location, referrer: string, now = Date.n
       utmMedium: get('utm_medium'),
       utmCampaign: get('utm_campaign'),
       utmContent: get('utm_content'),
+      utmTerm: get('utm_term'),
       fbclid,
       fbclidAt: fbclid ? now : undefined,
       gclid: get('gclid'),
