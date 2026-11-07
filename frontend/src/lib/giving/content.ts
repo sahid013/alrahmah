@@ -7,7 +7,7 @@ import { siteConfig } from '@/config/site';
  */
 export const donatePanel = {
   background: {
-    src: '/images/services/Al rahman quran academy.webp',
+    src: '/images/services/al-rahmah-madrasah.webp',
     alt: '',
   },
   title: siteConfig.name,

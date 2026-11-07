@@ -15,11 +15,11 @@ const courses = education.children ?? [];
 export const metadata = buildMetadata({
   title: 'Islamic Education in Leeds',
   description:
-    'Quran Academy for children aged 5–15, Sunday lessons open to all and sisters’ only lessons at Al-Rahmah Masjid, Leeds.',
+    'Al-Rahmah Madrasah for children aged 5–15, Sunday lessons open to all and sisters’ only lessons at Al-Rahmah Masjid, Leeds.',
   path: '/services/education',
 });
 
-/** Education overview: the academy and weekly lessons, each with its key facts and page link. */
+/** Education overview: the madrasah and weekly lessons, each with its key facts and page link. */
 export default function ServicesEducationPage() {
   return (
     <>
@@ -34,7 +34,7 @@ export default function ServicesEducationPage() {
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-pretty text-neutral-600 sm:text-xl">
               The masjid has always been a place of study. Children learn the Qur’an and Islamic
-              studies at our Quran Academy, and weekly lessons on Sundays are open to the whole
+              studies at Al-Rahmah Madrasah, and weekly lessons on Sundays are open to the whole
               community, with a lesson for sisters only.
             </p>
           </Reveal>

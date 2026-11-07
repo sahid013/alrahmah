@@ -49,7 +49,7 @@ export const PRIVACY_USES: PrivacySection[] = [
     id: 'contact',
     title: 'Contact forms',
     paragraphs: [
-      'When you send a message through the website (general enquiries, funerals, Quran Academy), we keep your name, email address and message, and email it to the right team so they can reply.',
+      'When you send a message through the website (general enquiries and funerals), we keep your name, email address and message, and email it to the right team so they can reply.',
       'Lawful basis: our legitimate interest in answering you.',
     ],
   },

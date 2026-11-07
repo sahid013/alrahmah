@@ -36,17 +36,17 @@ export const services: Service[] = [
     title: 'Education',
     href: '/services/education',
     image: {
-      src: '/images/services/Al rahman quran academy.webp',
+      src: '/images/services/al-rahmah-madrasah.webp',
       alt: 'Children and families arriving at Al-Rahmah Faith Centre for classes',
     },
     icon: 'education',
     summary: 'Qur’an, Islamic studies and weekly classes for all ages.',
     children: [
       {
-        title: 'Al-Rahmah Quran Academy',
-        href: '/services/education/quran-academy',
+        title: 'Al-Rahmah Madrasah',
+        href: '/services/education/madrasah',
         image: {
-          src: '/images/services/Al rahman quran academy.webp',
+          src: '/images/services/al-rahmah-madrasah.webp',
           alt: 'Children and families arriving at Al-Rahmah Faith Centre for Quran classes',
         },
         icon: 'quran',

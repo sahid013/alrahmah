@@ -1,9 +1,11 @@
 import Image from 'next/image';
-import { ContactForm } from '@/components/contact/contact-form';
+import { ArrowRightIcon } from '@/components/icons';
+import { ButtonLink } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { PageHero } from '@/components/ui/page-hero';
 import { Reveal } from '@/components/ui/reveal';
 import { JsonLd } from '@/components/seo/json-ld';
+import { siteConfig } from '@/config/site';
 import { buildMetadata } from '@/lib/seo';
 import { flattenServices } from '@/lib/services/data';
 import { servicePageJsonLd } from '@/lib/structured-data';
@@ -14,20 +16,20 @@ const description =
 export const metadata = buildMetadata({
   title: 'Quran Classes for Children in Leeds',
   description,
-  path: '/services/education/quran-academy',
+  path: '/services/education/madrasah',
 });
 
-/** Same photo as the academy's preview card (`lib/services/data.ts`). */
-const academy = flattenServices().find((s) => s.href === '/services/education/quran-academy')!;
+/** Same photo as the madrasah's preview card (`lib/services/data.ts`). */
+const madrasah = flattenServices().find((s) => s.href === '/services/education/madrasah')!;
 
 const structuredData = servicePageJsonLd({
-  name: 'Al-Rahmah Quran Academy',
+  name: 'Al-Rahmah Madrasah',
   serviceType: 'Quran and Islamic studies classes for children',
   description,
-  path: '/services/education/quran-academy',
+  path: '/services/education/madrasah',
 });
 
-/** Key facts from the academy copy, shown as a quick-read strip. */
+/** Key facts from the madrasah copy, shown as a quick-read strip. */
 const facts = [
   { value: '100+', label: 'Students' },
   { value: '5–15', label: 'Years old' },
@@ -36,18 +38,18 @@ const facts = [
 
 const paragraph = 'text-lg leading-relaxed text-pretty text-neutral-600 sm:text-xl';
 
-export default function QuranAcademyPage() {
+export default function MadrasahPage() {
   return (
     <>
       <JsonLd data={structuredData} />
-      <PageHero eyebrow="Education" title="Al-Rahmah Quran Academy" />
+      <PageHero eyebrow="Education" title="Al-Rahmah Madrasah" />
 
-      <section aria-labelledby="academy-title" className="py-20 sm:py-28">
+      <section aria-labelledby="madrasah-title" className="py-20 sm:py-28">
         <Container className="grid items-center gap-16 lg:grid-cols-12">
           <div className="lg:col-span-6">
             <Reveal>
-              <h2 id="academy-title" className="text-title-3xl leading-none sm:text-title-4xl">
-                Al-Rahmah Quran Academy
+              <h2 id="madrasah-title" className="text-title-3xl leading-none sm:text-title-4xl">
+                Al-Rahmah Madrasah
               </h2>
             </Reveal>
             <div className="mt-8 max-w-3xl space-y-6">
@@ -60,7 +62,7 @@ export default function QuranAcademyPage() {
               <Reveal order={2}>
                 <p className={paragraph}>
                   Currently, we have over 100 students aged from 5 to 15 years old being taught by
-                  female and male teachers under the supervision of Imam Umar Muqaddam. The academy
+                  female and male teachers under the supervision of Imam Umar Muqaddam. The madrasah
                   runs weekly from Monday to Thursday one hour a day between 5pm to 7pm.
                 </p>
               </Reveal>
@@ -80,12 +82,12 @@ export default function QuranAcademyPage() {
               </dl>
             </Reveal>
           </div>
-          {academy.image && (
+          {madrasah.image && (
             <Reveal order={1} className="lg:col-span-6">
               <div className="relative aspect-4/3 overflow-hidden bg-primary-50">
                 <Image
-                  src={academy.image.src}
-                  alt={academy.image.alt}
+                  src={madrasah.image.src}
+                  alt={madrasah.image.alt}
                   fill
                   sizes="(min-width: 1024px) 45vw, 100vw"
                   className="object-cover"
@@ -97,26 +99,29 @@ export default function QuranAcademyPage() {
       </section>
 
       <section aria-labelledby="register-title" className="bg-primary-50 py-20 sm:py-28">
-        <Container className="grid gap-12 lg:grid-cols-12 lg:gap-16">
-          <Reveal className="lg:col-span-5">
+        <Container>
+          <Reveal className="max-w-3xl">
             <p className="font-label text-xs font-bold tracking-[0.3em] text-secondary-700 uppercase sm:text-sm">
               Waiting list
             </p>
             <h2 id="register-title" className="mt-3 text-title-3xl leading-none sm:text-title-4xl">
-              Register your interest
+              Register your child
             </h2>
             <p className={`mt-6 ${paragraph}`}>
-              Kindly note there is currently a waiting list to join. Please fill out the online form
-              below to register your interest today for your child to join the academy. For further
-              enquires please contact the masjid.
+              Kindly note there is currently a waiting list to join. Please fill out the
+              registration form to register your interest for your child to join the madrasah. For
+              further enquiries please contact the masjid.
             </p>
-          </Reveal>
-          <Reveal order={1} className="lg:col-span-7">
-            <ContactForm
-              form="quran-academy"
-              messageLabel="About your child"
-              messagePlaceholder="Your child’s name and age, and anything we should know"
-            />
+            <ButtonLink
+              href={siteConfig.links.madrasahRegistration}
+              target="_blank"
+              rel="noopener noreferrer"
+              size="lg"
+              className="mt-8"
+            >
+              Registration form
+              <ArrowRightIcon />
+            </ButtonLink>
           </Reveal>
         </Container>
       </section>

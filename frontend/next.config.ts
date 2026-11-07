@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
       // The donation flow moved from /give to /donate.
       { source: '/give', destination: '/donate', permanent: true },
       { source: '/give/:path*', destination: '/donate/:path*', permanent: true },
+      // Al-Rahmah Quran Academy was renamed Al-Rahmah Madrasah (client, November 2026).
+      {
+        source: '/services/education/quran-academy',
+        destination: '/services/education/madrasah',
+        permanent: true,
+      },
       // Causes are now Masjid Expansion, Fitrana, Last 10 Nights and First 10 Days of Dhul
       // Hijjah (client, October 2026). The new building appeal became Masjid Expansion; links to
       // removed causes go to "Select your cause".

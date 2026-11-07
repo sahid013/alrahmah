@@ -9,7 +9,7 @@ export default function MessagesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Messages"
-        description="Everything sent through the website’s contact forms (Contact, Funerals, Quran Academy). Each message is also emailed to that form’s inbox; open one to read it in full and reply."
+        description="Everything sent through the website’s contact forms (Contact and Funerals, plus earlier Al-Rahmah Madrasah registrations). Each message is also emailed to that form’s inbox; open one to read it in full and reply."
       />
       <MessagesView />
     </div>

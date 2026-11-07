@@ -36,7 +36,7 @@ export const siteConfig = {
     '/events',
     '/services',
     '/services/education',
-    '/services/education/quran-academy',
+    '/services/education/madrasah',
     '/services/education/sisters-lessons',
     '/services/education/sunday-lessons',
     '/services/funerals',
@@ -92,6 +92,8 @@ export const siteConfig = {
     /** External Google Form for nikah bookings (the nikah certificate details). */
     nikahBooking:
       'https://docs.google.com/forms/d/e/1FAIpQLSeEoYMAjxOIh11N9MqCvBy0GGGSkPsCnSoXGZaDHTQma3jOVg/viewform?usp=header',
+    /** External Google Form for Al-Rahmah Madrasah registrations (client, November 2026). */
+    madrasahRegistration: 'https://forms.gle/FFYWsrBqJKzKTLdP9',
   },
   /** YouTube channel, and its "Weekly Khutbah Videos" playlist (newest first) shown on the home page. */
   youtube: {

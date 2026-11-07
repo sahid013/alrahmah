@@ -16,7 +16,7 @@ const LAYOUT = [
   'lg:col-span-2', // Sunday lessons
   'lg:col-span-2', // Sisters' lessons
   'lg:col-span-3', // Nikah
-  'lg:col-span-3', // Quran Academy
+  'lg:col-span-3', // Al-Rahmah Madrasah
 ];
 
 /** Home-page mosaic of the masjid's services (same list as the navbar "Services" menu). */
@@ -27,7 +27,7 @@ export function ServicesSection({ items = flattenServices() }: { items?: Service
     'Sunday Weekly Lessons',
     'Sisters’ Only Lessons',
     'Nikah (Marriage)',
-    'Al-Rahmah Quran Academy',
+    'Al-Rahmah Madrasah',
   ];
   const sorted = [...items].sort(
     (a, b) => (order.indexOf(a.title) + 1 || 99) - (order.indexOf(b.title) + 1 || 99),

@@ -17,7 +17,7 @@ const staticRoutes = [
   '/donations',
   '/services',
   '/services/education',
-  '/services/education/quran-academy',
+  '/services/education/madrasah',
   '/services/education/sisters-lessons',
   '/services/education/sunday-lessons',
   '/services/funerals',
