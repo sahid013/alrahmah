@@ -52,7 +52,7 @@ export const services: Service[] = [
         icon: 'quran',
         summary:
           'Qur’an and Islamic studies for children aged 5 to 15, taught by male and female teachers under Imam Umar Muqaddam.',
-        facts: ['Ages 5–15', 'Mon–Thu, 5pm–7pm', 'Waiting list'],
+        facts: ['Ages 5–15', 'Mon–Fri, 5pm–7pm', 'Waiting list'],
       },
       {
         title: 'Sunday Weekly Lessons',

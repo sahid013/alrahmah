@@ -11,7 +11,7 @@ import { flattenServices } from '@/lib/services/data';
 import { servicePageJsonLd } from '@/lib/structured-data';
 
 const description =
-  'Qur’an and Islamic studies for children aged 5 to 15 at Al-Rahmah Masjid Leeds, Monday to Thursday between 5pm and 7pm.';
+  'Qur’an and Islamic studies for children aged 5 to 15 at Al-Rahmah Masjid Leeds, Monday to Friday between 5pm and 7pm.';
 
 export const metadata = buildMetadata({
   title: 'Quran Classes for Children in Leeds',
@@ -33,7 +33,7 @@ const structuredData = servicePageJsonLd({
 const facts = [
   { value: '100+', label: 'Students' },
   { value: '5–15', label: 'Years old' },
-  { value: 'Mon–Thu', label: '1 hour a day, 5pm–7pm' },
+  { value: 'Mon–Fri', label: '1 hour a day, 5pm–7pm' },
 ];
 
 const paragraph = 'text-lg leading-relaxed text-pretty text-neutral-600 sm:text-xl';
@@ -63,7 +63,7 @@ export default function MadrasahPage() {
                 <p className={paragraph}>
                   Currently, we have over 100 students aged from 5 to 15 years old being taught by
                   female and male teachers under the supervision of Imam Umar Muqaddam. The madrasah
-                  runs weekly from Monday to Thursday one hour a day between 5pm to 7pm.
+                  runs weekly from Monday to Friday one hour a day between 5pm to 7pm.
                 </p>
               </Reveal>
             </div>
