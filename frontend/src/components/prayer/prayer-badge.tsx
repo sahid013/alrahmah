@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { useId } from 'react';
 import { useSalahCountdown } from '@/lib/hooks/use-salah-countdown';
 import { formatSalahTime } from '@/lib/prayer-times';
@@ -10,12 +11,14 @@ import { usePrayerTimesDialog } from './prayer-times-provider';
  * Fixed round badge (bottom-right on phones, bottom-left from `sm`), white with navy:
  * "PRAYER TIMES" on a continuously rotating ring around the Al-Rahmah building icon. Opens the
  * shared prayer times popup. The circle is the design system's deliberate exception to square
- * corners (`.shape-round`).
+ * corners (`.shape-round`). Hidden on the donation form (`/donate/<cause>`, `/donate/complete`),
+ * where on phones it covered "Other amount" and the Next / payment buttons.
  */
 export function PrayerBadge() {
   const { next } = useSalahCountdown();
   const { open } = usePrayerTimesDialog();
   const ringId = useId();
+  if (usePathname().startsWith('/donate/')) return null;
 
   return (
     <button

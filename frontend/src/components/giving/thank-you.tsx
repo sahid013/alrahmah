@@ -81,7 +81,8 @@ export function ThankYou({
         <p className="text-lg text-primary-100">
           Your donation to <strong className="text-white">{program.title}</strong>{' '}
           {c.plan ? 'is set up. Nothing has been taken today.' : 'has been received.'}
-          {c.email && ` A confirmation is on its way to ${c.email}.`}
+          {c.email &&
+            ` A receipt is on its way to ${c.email}. If it isn’t in your inbox in a few minutes, please check your junk or spam folder and mark it as not junk.`}
         </p>
         <dl className="border-t border-white/10">
           {rows.map(([label, value]) => (
