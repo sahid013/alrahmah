@@ -306,7 +306,7 @@ export function DonationFlow({
             <Stepper current={step} onSelect={goTo} />
             <form
               noValidate
-              className="mt-12 overflow-x-clip"
+              className="mt-6 overflow-x-clip sm:mt-12"
               onSubmit={(e) => {
                 e.preventDefault();
                 void next();

@@ -57,7 +57,9 @@ export function DetailsStep({
 
   return (
     <div className="space-y-10">
-      <StepTitle id="step-title">Your details</StepTitle>
+      <StepTitle id="step-title" className="max-sm:mb-5">
+        Your details
+      </StepTitle>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <GiveField label="Donating as" required className="sm:col-span-2">

@@ -86,7 +86,9 @@ export function PaymentStep({
 
   return (
     <div className="space-y-10">
-      <StepTitle id="step-title">Payment</StepTitle>
+      <StepTitle id="step-title" className="max-sm:mb-5">
+        Payment
+      </StepTitle>
 
       <dl className="divide-y divide-white/10 border-y border-white/10">
         {rows.map(([k, v]) => (

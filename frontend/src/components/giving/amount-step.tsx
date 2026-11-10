@@ -25,6 +25,7 @@ import {
 } from '@/lib/giving/presets';
 import { cn } from '@/lib/utils/cn';
 import { Choice, StepTitle } from './fields';
+import { MonthlyNudge } from './monthly-nudge';
 
 export interface AmountValue {
   frequency: Frequency;
@@ -92,7 +93,7 @@ export function AmountStep({
 
   return (
     <div className="space-y-10">
-      <div>
+      <div className="max-sm:mb-5">
         <p className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-primary-200">
           <span>
             Giving to <strong className="text-white">{program.title}</strong>
@@ -165,6 +166,12 @@ export function AmountStep({
             value={value.amountText}
             error={errors.amount}
             onChange={(amountText) => onChange({ amountText })}
+          />
+          <MonthlyNudge
+            show={value.frequency === 'one-off' && Number.isFinite(amount) && amount > 0}
+            monthlyAmount={amount}
+            cause={program.title}
+            onAccept={() => onChange({ frequency: 'monthly', amountText: String(amount) })}
           />
         </>
       )}
