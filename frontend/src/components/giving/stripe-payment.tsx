@@ -5,13 +5,16 @@ import {
   PaymentElement,
   useCheckoutElements,
 } from '@stripe/react-stripe-js/checkout';
+import { motion } from 'motion/react';
 import { loadStripe, type Appearance, type Stripe } from '@stripe/stripe-js';
 import { useMemo, useRef, useState } from 'react';
 import { HeartIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import type { DailyPlan } from '@/lib/giving/schedule';
 import { amountWithFrequency, type DonationRequest } from '@/lib/giving/types';
+import { cn } from '@/lib/utils/cn';
 import { ErrorBox } from './fields';
+import { PaymentLoading } from './payment-loading';
 
 /** A finished payment step, for the Thank you step and the Purchase / Subscribe event. */
 export interface PaidResult {
@@ -207,20 +210,16 @@ function PaymentForm({
   const state = useCheckoutElements();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  // Stripe's fields take a moment to draw after the session loads: keep the loader until then.
+  const [ready, setReady] = useState(false);
+  const [loadError, setLoadError] = useState<string>();
   const method = useRef('card');
 
-  if (state.type === 'loading')
-    return (
-      <div aria-busy="true" className="space-y-3">
-        <span className="sr-only">Loading secure payment form…</span>
-        <div className="h-12 animate-pulse bg-white/10 motion-reduce:animate-none" />
-        <div className="h-12 animate-pulse bg-white/10 motion-reduce:animate-none" />
-      </div>
-    );
-  if (state.type === 'error')
+  if (state.type === 'loading') return <PaymentLoading />;
+  if (state.type === 'error' || loadError)
     return (
       <ErrorBox>
-        {state.error.message}{' '}
+        {state.type === 'error' ? state.error.message : loadError}{' '}
         <button type="button" onClick={onRetry} className="underline hover:text-white">
           Try again
         </button>
@@ -252,28 +251,42 @@ function PaymentForm({
   };
 
   return (
-    <div className="space-y-6">
-      <PaymentElement
-        options={{ layout: 'tabs' }}
-        onChange={(e) => {
-          method.current = e.value.type;
-        }}
-      />
-      {error && <ErrorBox>{error}</ErrorBox>}
-      <Button
-        type="button"
-        size="lg"
-        variant="secondary"
-        className="w-full"
-        loading={busy}
-        disabled={!checkout.canConfirm}
-        onClick={() => void pay()}
+    <div className="relative">
+      {!ready && <PaymentLoading />}
+      {/* Laid out (and drawing) invisibly behind the loader, then faded in. */}
+      <motion.div
+        initial={false}
+        animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+        transition={{ duration: 0.45, ease: [0.45, 0, 0.2, 1] }}
+        aria-hidden={!ready}
+        className={cn('space-y-6', !ready && 'pointer-events-none absolute inset-x-0 top-0')}
       >
-        <HeartIcon className="size-4" />
-        {busy
-          ? 'Processing…'
-          : `${request.frequency === 'daily' || unit === 'Friday' ? 'Confirm' : 'Donate'} ${amountWithFrequency(request.amount, request.frequency, unit)}`}
-      </Button>
+        <PaymentElement
+          options={{ layout: 'tabs' }}
+          onReady={() => setReady(true)}
+          onLoadError={() =>
+            setLoadError('The payment options couldn’t load. Check your connection.')
+          }
+          onChange={(e) => {
+            method.current = e.value.type;
+          }}
+        />
+        {error && <ErrorBox>{error}</ErrorBox>}
+        <Button
+          type="button"
+          size="lg"
+          variant="secondary"
+          className="w-full"
+          loading={busy}
+          disabled={!checkout.canConfirm}
+          onClick={() => void pay()}
+        >
+          <HeartIcon className="size-4" />
+          {busy
+            ? 'Processing…'
+            : `${request.frequency === 'daily' || unit === 'Friday' ? 'Confirm' : 'Donate'} ${amountWithFrequency(request.amount, request.frequency, unit)}`}
+        </Button>
+      </motion.div>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ErrorBox } from './fields';
+import { PaymentLoading } from './payment-loading';
 
 /**
  * Cloudflare Turnstile before the payment session starts (card-testing protection,
@@ -111,11 +112,7 @@ export function HumanCheck({
           </button>
         </ErrorBox>
       ) : (
-        <div aria-busy="true" className="space-y-3">
-          <span className="sr-only">Checking your connection is secure…</span>
-          <div className="h-12 animate-pulse bg-white/10 motion-reduce:animate-none" />
-          <div className="h-12 animate-pulse bg-white/10 motion-reduce:animate-none" />
-        </div>
+        <PaymentLoading />
       )}
       {/* Turnstile's widget: empty unless Cloudflare asks the donor to tick a box. */}
       <div ref={box} />

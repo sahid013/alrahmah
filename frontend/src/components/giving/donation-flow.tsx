@@ -30,6 +30,8 @@ import {
   type Donor,
   givingUnit,
 } from '@/lib/giving/types';
+import { useMediaQuery } from '@/lib/hooks/use-media-query';
+import { cn } from '@/lib/utils/cn';
 import { AmountStep, amountFor, initialAmount, type AmountValue } from './amount-step';
 import { DonatePanel } from './donate-panel';
 import { DetailsStep } from './details-step';
@@ -276,6 +278,17 @@ export function DonationFlow({
       : 'Next';
   // With Stripe, the Payment Element has its own Donate button.
   const showSubmit = !(step === 2 && stripeMode);
+  // Phones (below `sm`): Back / Next stick to the bottom of the screen, and Next works only once
+  // the step's required fields are filled (marketing team, November 2026). Larger screens keep
+  // Next always on, showing what's missing when pressed.
+  const phone = useMediaQuery('(max-width: 639.98px)');
+  const stepComplete =
+    step === 0
+      ? amountSchema.safeParse(request).success
+      : step === 1
+        ? detailsSchema.safeParse(request).success
+        : true;
+  const waiting = phone && !stepComplete && !busy;
 
   const slide = {
     initial: { opacity: 0, x: 32 * direction },
@@ -379,7 +392,22 @@ export function DonationFlow({
               </AnimatePresence>
 
               {step < STEPS.length - 1 && (
-                <div className="mt-14 flex flex-wrap items-center justify-between gap-4">
+                <div
+                  className={cn(
+                    'flex flex-wrap items-center justify-between gap-4',
+                    // Amount step on phones: half the gap (client request, November 2026).
+                    step === 0 ? 'mt-7 sm:mt-14' : 'mt-14',
+                    showSubmit &&
+                      'max-sm:sticky max-sm:bottom-0 max-sm:z-30 max-sm:-mx-4 max-sm:gap-y-2 max-sm:border-t max-sm:border-white/10 max-sm:bg-primary-950 max-sm:px-4 max-sm:pt-3 max-sm:pb-[max(0.75rem,env(safe-area-inset-bottom))]',
+                  )}
+                >
+                  {waiting && (
+                    <p className="w-full text-sm text-primary-200" aria-live="polite">
+                      {step === 0
+                        ? 'Choose an amount to continue.'
+                        : 'Fill in the fields marked * to continue.'}
+                    </p>
+                  )}
                   {step > 0 ? (
                     <button
                       type="button"
@@ -390,10 +418,17 @@ export function DonationFlow({
                       Back
                     </button>
                   ) : (
-                    <span />
+                    <span className="max-sm:hidden" />
                   )}
                   {showSubmit && (
-                    <Button type="submit" size="lg" variant="secondary" loading={busy}>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      variant="secondary"
+                      loading={busy}
+                      disabled={waiting}
+                      className="max-sm:flex-1"
+                    >
                       {nextLabel}
                       {step < 2 && <ArrowRightIcon className="size-4" />}
                     </Button>

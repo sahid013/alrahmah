@@ -135,7 +135,7 @@ export function AmountStep({
                       })
                     }
                     className={cn(
-                      'relative font-label text-base tracking-[0.08em] uppercase',
+                      'relative font-label text-xs tracking-[0.08em] uppercase sm:text-base',
                       recommended && !selected && 'border-secondary-400',
                     )}
                   >
