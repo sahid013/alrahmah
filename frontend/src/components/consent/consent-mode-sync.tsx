@@ -8,6 +8,7 @@ import {
   trackingCookieCategory,
   type ConsentChoices,
 } from '@/lib/consent/consent';
+import { consentUpdateEntry } from '@/lib/giving/tracking';
 import { useConsent } from './consent-provider';
 
 declare global {
@@ -42,7 +43,8 @@ function clearTrackingCookies(choices: ConsentChoices) {
  * Keeps Google Consent Mode in step with the cookie banner. Tag Manager itself is loaded on every
  * page by the root layout (`lib/consent/gtm.ts`), with everything denied until the saved choice
  * is applied. When the visitor makes or changes a choice here, this sends a Consent Mode update
- * plus a `consent_update` event (for tags that should fire as soon as consent is given), and
+ * plus a `consent_update` event (for tags that should fire as soon as consent is given; it
+ * carries its own PageView event_id, `consentUpdateEntry`), and
  * clears the cookies of any category they switched off.
  */
 export function ConsentModeSync() {
@@ -59,7 +61,9 @@ export function ConsentModeSync() {
     } else if (applied.current !== key) {
       applied.current = key;
       gtag('consent', 'update', googleConsent(current));
-      window.dataLayer!.push({ event: 'consent_update' });
+      window.dataLayer!.push(
+        consentUpdateEntry({ path: window.location.pathname, location: window.location.href }),
+      );
     }
     clearTrackingCookies(current);
   }, [ready, choices]);

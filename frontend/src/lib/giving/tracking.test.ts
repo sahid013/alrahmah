@@ -4,6 +4,7 @@ import {
   annualValue,
   causeParam,
   completionEvent,
+  consentUpdateEntry,
   dataLayerEntry,
   donationParams,
   donationTypeParam,
@@ -134,6 +135,32 @@ describe('dataLayerEntry', () => {
     expect(entry).toHaveProperty('annual_value', undefined);
     expect(entry).toHaveProperty('value', undefined);
     expect(entry).toMatchObject({ event: 'ViewContent', cause: 'x' });
+  });
+});
+
+describe('consentUpdateEntry', () => {
+  const page = {
+    path: '/donate/masjid-expansion',
+    location: 'https://x.test/donate/masjid-expansion',
+  };
+
+  it("carries its own PageView event_id, not the last event's", () => {
+    const entry = consentUpdateEntry(page);
+    expect(entry).toMatchObject({
+      event: 'consent_update',
+      page_path: page.path,
+      page_location: page.location,
+    });
+    expect(entry.event_id).toMatch(/^PageView-.+/);
+    expect(entry.event_id).not.toMatch(/ViewContent/);
+  });
+
+  it('is a new id every time, with no donation parameters left over', () => {
+    const a = consentUpdateEntry(page);
+    const b = consentUpdateEntry(page);
+    expect(a.event_id).not.toBe(b.event_id);
+    expect(a).toHaveProperty('value', undefined);
+    expect(a).toHaveProperty('cause', undefined);
   });
 });
 

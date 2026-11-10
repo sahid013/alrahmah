@@ -40,7 +40,7 @@ export interface CompletionParams extends DonationParams {
 }
 
 export interface TrackingEvent {
-  event: DonationEventName | 'PageView';
+  event: DonationEventName | 'PageView' | 'consent_update';
   event_id: string;
   [param: string]: unknown;
 }
@@ -185,6 +185,21 @@ export function newId(): string {
 /** `{ event, event_id, ...params }` with every parameter key present (see `PARAMS`). */
 export function dataLayerEntry(e: TrackingEvent): Record<string, unknown> {
   return { ...Object.fromEntries(PARAMS.map((k) => [k, undefined])), ...e };
+}
+
+/**
+ * The `consent_update` push when a visitor makes or changes a cookie choice. Tags that fire on it
+ * (the Meta pixel's PageView, held back until marketing consent) read `event_id` from GTM's data
+ * model, which otherwise still holds the previous push's id: on a donation page, ViewContent's.
+ * So it carries a PageView id of its own, the current page, and cleared donation parameters.
+ */
+export function consentUpdateEntry(page: { path: string; location: string }) {
+  return dataLayerEntry({
+    event: 'consent_update',
+    event_id: `PageView-${newId()}`,
+    page_path: page.path,
+    page_location: page.location,
+  });
 }
 
 /**
