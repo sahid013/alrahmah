@@ -25,7 +25,6 @@ import {
 } from '@/lib/giving/presets';
 import { cn } from '@/lib/utils/cn';
 import { Choice, StepTitle } from './fields';
-import { MonthlyNudge } from './monthly-nudge';
 
 export interface AmountValue {
   frequency: Frequency;
@@ -166,12 +165,6 @@ export function AmountStep({
             value={value.amountText}
             error={errors.amount}
             onChange={(amountText) => onChange({ amountText })}
-          />
-          <MonthlyNudge
-            show={value.frequency === 'one-off' && Number.isFinite(amount) && amount > 0}
-            monthlyAmount={amount}
-            cause={program.title}
-            onAccept={() => onChange({ frequency: 'monthly', amountText: String(amount) })}
           />
         </>
       )}
